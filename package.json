@@ -1,0 +1,11 @@
+{
+  "name": "securepdf-vault",
+  "version": "1.0.0",
+  "description": "SecurePDF Vault is a MERN-based application for securely uploading, protecting, storing, and sharing PDF documents.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "type": "commonjs"
+}
