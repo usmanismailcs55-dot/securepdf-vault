@@ -5,6 +5,7 @@ import Card from "./components/Card";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function Home() {
   return (
@@ -44,12 +45,16 @@ function App() {
       <Navbar />
 
       <Routes>
+        {/* Public route */}
         <Route path="/" element={<Home />} />
 
-        <Route path="/dashboard" element={<Dashboard />} />
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
 
+        {/* Public routes */}
         <Route path="/register" element={<Register />} />
-
         <Route path="/login" element={<Login />} />
       </Routes>
     </div>
@@ -57,3 +62,4 @@ function App() {
 }
 
 export default App;
+
