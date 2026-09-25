@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Card from "./components/Card";
@@ -6,6 +5,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PdfUpload from "./components/PdfUpload";
 
 function Home() {
   return (
@@ -34,6 +34,10 @@ function Dashboard() {
         <p className="mt-2 text-slate-600">
           Your documents will appear here.
         </p>
+
+        <div className="mt-6">
+          <PdfUpload />
+        </div>
       </Card>
     </DashboardLayout>
   );
@@ -53,7 +57,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>
 
-        {/* Public routes */}
+        {/* Authentication routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
       </Routes>
@@ -62,4 +66,3 @@ function App() {
 }
 
 export default App;
-
