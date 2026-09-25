@@ -7,6 +7,7 @@ const errorHandler = require("./errorHandler");
 const testRoutes = require("./routes/testRoutes");
 const authRoutes = require("./routes/authRoutes");
 const emailVerificationRoutes = require("./routes/emailVerificationRoutes");
+const documentRoutes = require("./routes/documentRoutes");
 
 require("./utils/sendEmail");
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/test", testRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", emailVerificationRoutes);
+app.use("/api/documents", documentRoutes);
 
 app.use(errorHandler);
 
