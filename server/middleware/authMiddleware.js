@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 
-const authMiddleware = (req, res, next) => {
+const { findSessionByToken } = require("../services/sessionService");
+
+const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -15,7 +17,17 @@ const authMiddleware = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    const session = await findSessionByToken(token);
+
+    if (!session) {
+      return res.status(401).json({
+        success: false,
+        message: "Session is invalid or has been revoked",
+      });
+    }
+
     req.user = decoded;
+    req.session = session;
 
     next();
   } catch (error) {
