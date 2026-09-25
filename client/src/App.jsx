@@ -4,6 +4,8 @@ import Card from "./components/Card";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PdfUpload from "./components/PdfUpload";
 
@@ -60,6 +62,14 @@ function App() {
         {/* Authentication routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route
+          path="/forgot-password"
+          element={<ForgotPassword />}
+        />
+        <Route
+          path="/reset-password/:token"
+          element={<ResetPassword />}
+        />
       </Routes>
     </div>
   );

@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
   LockKeyhole,
@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -18,6 +20,7 @@ export default function Login() {
   });
 
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,8 +33,10 @@ export default function Login() {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setError("");
 
     if (!formData.email.trim()) {
       setError("Please enter your email address.");
@@ -43,7 +48,44 @@ export default function Login() {
       return;
     }
 
-    console.log("Login:", formData);
+    try {
+      setIsLoading(true);
+
+      const response = await fetch(
+        "http://localhost:5000/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Unable to sign in. Please try again.");
+        return;
+      }
+
+      localStorage.setItem("accessToken", data.accessToken);
+
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      navigate("/dashboard");
+    } catch (error) {
+      setError(
+        "Unable to connect to the server. Please make sure the backend is running."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -55,7 +97,6 @@ export default function Login() {
           <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
 
           <div className="relative flex w-full flex-col justify-between p-12 xl:p-16">
-            {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-600/30">
                 <ShieldCheck
@@ -73,7 +114,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Main content */}
             <div className="max-w-lg">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">
                 <LockKeyhole size={15} className="text-blue-400" />
@@ -179,7 +219,8 @@ export default function Login() {
                     onChange={handleChange}
                     autoComplete="email"
                     placeholder="you@example.com"
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                    disabled={isLoading}
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </div>
 
@@ -210,13 +251,15 @@ export default function Login() {
                       onChange={handleChange}
                       autoComplete="current-password"
                       placeholder="Enter your password"
-                      className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                      disabled={isLoading}
+                      className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                     />
 
                     <button
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                      disabled={isLoading}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
@@ -245,14 +288,17 @@ export default function Login() {
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[0.99]"
+                  disabled={isLoading}
+                  className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Sign In
+                  {isLoading ? "Signing In..." : "Sign In"}
 
-                  <ArrowRight
-                    size={17}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
+                  {!isLoading && (
+                    <ArrowRight
+                      size={17}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
+                  )}
                 </button>
               </form>
 
