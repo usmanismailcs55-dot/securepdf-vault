@@ -6,6 +6,26 @@ const protectPdf = require("../utils/protectPdf");
 const generatePdfPassword = require("../utils/generatePdfPassword");
 const verifyPdfProtection = require("../utils/verifyPdfProtection");
 
+const getDocuments = async (req, res, next) => {
+  try {
+    const documents = await Document.find({
+      owner: req.user.userId,
+      isDeleted: false,
+    })
+      .select(
+        "_id originalFilename fileSize protectionStatus isPasswordProtected createdAt updatedAt"
+      )
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      documents,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const protectDocument = async (req, res, next) => {
   let document = null;
   let protectedPath = null;
@@ -119,5 +139,6 @@ const protectDocument = async (req, res, next) => {
 };
 
 module.exports = {
+  getDocuments,
   protectDocument,
 };
