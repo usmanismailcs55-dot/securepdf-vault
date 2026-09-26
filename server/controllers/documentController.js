@@ -4,12 +4,16 @@ const fs = require("fs");
 const Document = require("../models/Document");
 const protectPdf = require("../utils/protectPdf");
 const generatePdfPassword = require("../utils/generatePdfPassword");
+const verifyPdfProtection = require("../utils/verifyPdfProtection");
 
 const protectDocument = async (req, res, next) => {
+  let document = null;
+  let protectedPath = null;
+
   try {
     const { documentId } = req.params;
 
-    const document = await Document.findOne({
+    document = await Document.findOne({
       _id: documentId,
       owner: req.user.userId,
       isDeleted: false,
@@ -43,9 +47,11 @@ const protectDocument = async (req, res, next) => {
 
     fs.mkdirSync(protectedDirectory, { recursive: true });
 
-    const protectedFilename = `protected-${document.storedFilename}`;
+    const protectedFilename = `protected-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 10)}.pdf`;
 
-    const protectedPath = path.join(
+    protectedPath = path.join(
       protectedDirectory,
       protectedFilename
     );
@@ -56,9 +62,35 @@ const protectDocument = async (req, res, next) => {
       password
     );
 
+    // Verify that the generated PDF is actually protected
+    const isProtected = await verifyPdfProtection(protectedPath);
+
+    if (!isProtected) {
+      if (fs.existsSync(protectedPath)) {
+        fs.unlinkSync(protectedPath);
+      }
+
+      document.protectionStatus = "failed";
+      document.processingError =
+        "PDF protection verification failed";
+
+      await document.save();
+
+      return res.status(500).json({
+        success: false,
+        message: "PDF protection verification failed",
+      });
+    }
+
+    // Delete the unprotected original PDF
+    if (fs.existsSync(document.originalPath)) {
+      fs.unlinkSync(document.originalPath);
+    }
+
     document.protectedPath = protectedPath;
     document.protectionStatus = "protected";
     document.isPasswordProtected = true;
+    document.processingError = null;
 
     await document.save();
 
@@ -68,6 +100,20 @@ const protectDocument = async (req, res, next) => {
       documentId: document._id,
     });
   } catch (error) {
+    // Clean up protected PDF if processing failed
+    if (protectedPath && fs.existsSync(protectedPath)) {
+      fs.unlinkSync(protectedPath);
+    }
+
+    // Mark document processing as failed
+    if (document) {
+      document.protectionStatus = "failed";
+      document.processingError =
+        error.message || "PDF processing failed";
+
+      await document.save();
+    }
+
     next(error);
   }
 };
