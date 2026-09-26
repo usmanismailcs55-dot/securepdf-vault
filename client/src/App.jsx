@@ -5,6 +5,7 @@ import {
   CircleAlert,
   Circle,
   Download,
+  History,
 } from "lucide-react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -19,6 +20,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PdfUpload from "./components/PdfUpload";
 import {
   getDocuments,
+  getAccessHistory,
   downloadDocument,
 } from "./services/documentService";
 
@@ -41,6 +43,8 @@ function Home() {
 function Dashboard() {
   const [documents, setDocuments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [accessHistory, setAccessHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloadingId, setDownloadingId] = useState(null);
@@ -52,8 +56,11 @@ function Dashboard() {
 
       const data = await getDocuments();
       setDocuments(data);
+
+      const history = await getAccessHistory();
+      setAccessHistory(history);
     } catch (error) {
-      setError(error.message || "Failed to load documents.");
+      setError(error.message || "Failed to load dashboard.");
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +101,9 @@ function Dashboard() {
       Math.log(bytes) / Math.log(1024)
     );
 
-    return `${(bytes / Math.pow(1024, index)).toFixed(2)} ${units[index]}`;
+    return `${(bytes / Math.pow(1024, index)).toFixed(2)} ${
+      units[index]
+    }`;
   };
 
   const formatDate = (date) => {
@@ -112,11 +121,18 @@ function Dashboard() {
     0
   );
 
-  const filteredDocuments = documents.filter((document) =>
-    document.originalFilename
+  // Search + Status Filter
+  const filteredDocuments = documents.filter((document) => {
+    const matchesSearch = document.originalFilename
       .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+      .includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all" ||
+      document.protectionStatus === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const getProtectionStatus = (status) => {
     switch (status) {
@@ -231,7 +247,7 @@ function Dashboard() {
 
         {/* Documents Section */}
         <Card>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-slate-900">
                 Your Documents
@@ -242,25 +258,53 @@ function Dashboard() {
               </p>
             </div>
 
-            {/* Search */}
-            <div className="w-full sm:max-w-xs">
-              <label
-                htmlFor="document-search"
-                className="mb-1 block text-sm font-medium text-slate-700"
-              >
-                Search documents
-              </label>
+            {/* Search and Filter */}
+            <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+              {/* Search */}
+              <div className="w-full sm:w-64">
+                <label
+                  htmlFor="document-search"
+                  className="mb-1 block text-sm font-medium text-slate-700"
+                >
+                  Search documents
+                </label>
 
-              <input
-                id="document-search"
-                type="text"
-                value={searchTerm}
-                onChange={(event) =>
-                  setSearchTerm(event.target.value)
-                }
-                placeholder="Search by filename..."
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
+                <input
+                  id="document-search"
+                  type="text"
+                  value={searchTerm}
+                  onChange={(event) =>
+                    setSearchTerm(event.target.value)
+                  }
+                  placeholder="Search by filename..."
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div className="w-full sm:w-48">
+                <label
+                  htmlFor="status-filter"
+                  className="mb-1 block text-sm font-medium text-slate-700"
+                >
+                  Filter by status
+                </label>
+
+                <select
+                  id="status-filter"
+                  value={statusFilter}
+                  onChange={(event) =>
+                    setStatusFilter(event.target.value)
+                  }
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="all">All Documents</option>
+                  <option value="protected">Protected</option>
+                  <option value="processing">Processing</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -297,7 +341,7 @@ function Dashboard() {
               </div>
             )}
 
-          {/* No Search Results */}
+          {/* No Search/Filter Results */}
           {!isLoading &&
             !error &&
             documents.length > 0 &&
@@ -308,7 +352,7 @@ function Dashboard() {
                 </p>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Try searching with a different filename.
+                  Try changing your search or status filter.
                 </p>
               </div>
             )}
@@ -435,6 +479,97 @@ function Dashboard() {
                 </div>
               </div>
             )}
+        </Card>
+
+        {/* Access History */}
+        <Card>
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
+              <History
+                size={20}
+                aria-hidden="true"
+              />
+            </div>
+
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">
+                Access History
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-600">
+                Recent activity on your protected documents.
+              </p>
+            </div>
+          </div>
+
+          {accessHistory.length === 0 ? (
+            <div className="mt-6 rounded-lg border border-dashed border-slate-300 p-8 text-center">
+              <p className="font-medium text-slate-700">
+                No access history yet
+              </p>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Download activity will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-6 overflow-hidden rounded-lg border border-slate-200">
+              {/* History Header */}
+              <div className="hidden grid-cols-4 gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid">
+                <span>Document</span>
+                <span>Action</span>
+                <span>Status</span>
+                <span>Date</span>
+              </div>
+
+              {/* History Items */}
+              <div className="divide-y divide-slate-200">
+                {accessHistory.map((log) => (
+                  <div
+                    key={log._id}
+                    className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center sm:gap-4"
+                  >
+                    {/* Document */}
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-slate-900">
+                        {log.document?.originalFilename ||
+                          "Unknown document"}
+                      </p>
+                    </div>
+
+                    {/* Action */}
+                    <div>
+                      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold capitalize text-slate-700">
+                        {log.action}
+                      </span>
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                          log.success
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {log.success
+                          ? "Successful"
+                          : "Failed"}
+                      </span>
+                    </div>
+
+                    {/* Date */}
+                    <p className="text-sm text-slate-600">
+                      {new Date(
+                        log.createdAt
+                      ).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </DashboardLayout>

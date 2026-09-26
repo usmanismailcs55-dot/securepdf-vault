@@ -6,6 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const {
   getDocuments,
+  getAccessHistory,
   protectDocument,
   downloadDocument,
   deleteDocument,
@@ -18,6 +19,13 @@ router.use("/upload", uploadRouter);
 
 // Get current user's documents
 router.get("/", authMiddleware, getDocuments);
+
+// Get current user's access history
+router.get(
+  "/access-history",
+  authMiddleware,
+  getAccessHistory
+);
 
 // Protect PDF
 router.post(

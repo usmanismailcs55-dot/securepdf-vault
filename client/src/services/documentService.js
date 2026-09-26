@@ -21,6 +21,30 @@ export const getDocuments = async () => {
   return data.documents;
 };
 
+export const getAccessHistory = async () => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const response = await fetch(
+    `${API_URL}/documents/access-history`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Failed to fetch access history."
+    );
+  }
+
+  return data.accessLogs;
+};
+
 export const downloadDocument = async (
   documentId,
   filename

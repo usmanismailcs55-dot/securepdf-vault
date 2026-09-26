@@ -28,6 +28,24 @@ const getDocuments = async (req, res, next) => {
   }
 };
 
+const getAccessHistory = async (req, res, next) => {
+  try {
+    const accessLogs = await AccessLog.find({
+      owner: req.user.userId,
+    })
+      .populate("document", "originalFilename")
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    return res.status(200).json({
+      success: true,
+      accessLogs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const protectDocument = async (req, res, next) => {
   let document = null;
   let protectedPath = null;
@@ -254,7 +272,9 @@ const deleteDocument = async (req, res, next) => {
 
 module.exports = {
   getDocuments,
+  getAccessHistory,
   protectDocument,
   downloadDocument,
   deleteDocument,
 };
+
