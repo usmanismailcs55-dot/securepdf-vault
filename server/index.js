@@ -9,6 +9,7 @@ const testRoutes = require("./routes/testRoutes");
 const authRoutes = require("./routes/authRoutes");
 const emailVerificationRoutes = require("./routes/emailVerificationRoutes");
 const documentRoutes = require("./routes/documentRoutes");
+const secureLinkRoutes = require("./routes/secureLinkRoutes");
 
 require("./utils/sendEmail");
 
@@ -29,6 +30,7 @@ app.use("/api/test", testRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", emailVerificationRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/secure-links", secureLinkRoutes);
 
 app.use(errorHandler);
 

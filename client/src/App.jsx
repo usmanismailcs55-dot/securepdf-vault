@@ -16,6 +16,7 @@ import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PdfUpload from "./components/PdfUpload";
 import { getDocuments } from "./services/documentService";
+import { getSecureLinkStatus } from "./services/secureLinkService";
 
 function Home() {
   return (
