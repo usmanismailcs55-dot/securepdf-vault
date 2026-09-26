@@ -8,6 +8,7 @@ const {
   getDocuments,
   protectDocument,
   downloadDocument,
+  deleteDocument,
 } = require("../controllers/documentController");
 
 const uploadRouter = require("./uploadRoutes");
@@ -30,6 +31,13 @@ router.get(
   "/:documentId/download",
   authMiddleware,
   downloadDocument
+);
+
+// Delete document
+router.delete(
+  "/:documentId",
+  authMiddleware,
+  deleteDocument
 );
 
 module.exports = router;

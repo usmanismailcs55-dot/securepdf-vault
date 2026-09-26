@@ -219,8 +219,42 @@ const downloadDocument = async (req, res, next) => {
   }
 };
 
+// Delete document
+const deleteDocument = async (req, res, next) => {
+  try {
+    const { documentId } = req.params;
+
+    const document = await Document.findOne({
+      _id: documentId,
+      owner: req.user.userId,
+      isDeleted: false,
+    });
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    // Soft delete the document
+    document.isDeleted = true;
+    document.deletedAt = new Date();
+
+    await document.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Document deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDocuments,
   protectDocument,
   downloadDocument,
+  deleteDocument,
 };

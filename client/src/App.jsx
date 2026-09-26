@@ -40,6 +40,7 @@ function Home() {
 
 function Dashboard() {
   const [documents, setDocuments] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloadingId, setDownloadingId] = useState(null);
@@ -109,6 +110,12 @@ function Dashboard() {
     (total, document) =>
       total + (document.downloadCount || 0),
     0
+  );
+
+  const filteredDocuments = documents.filter((document) =>
+    document.originalFilename
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
 
   const getProtectionStatus = (status) => {
@@ -224,14 +231,37 @@ function Dashboard() {
 
         {/* Documents Section */}
         <Card>
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900">
-              Your Documents
-            </h2>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">
+                Your Documents
+              </h2>
 
-            <p className="mt-1 text-sm text-slate-600">
-              Your uploaded documents will appear here.
-            </p>
+              <p className="mt-1 text-sm text-slate-600">
+                Your uploaded documents will appear here.
+              </p>
+            </div>
+
+            {/* Search */}
+            <div className="w-full sm:max-w-xs">
+              <label
+                htmlFor="document-search"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
+                Search documents
+              </label>
+
+              <input
+                id="document-search"
+                type="text"
+                value={searchTerm}
+                onChange={(event) =>
+                  setSearchTerm(event.target.value)
+                }
+                placeholder="Search by filename..."
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
           </div>
 
           {/* Loading */}
@@ -267,10 +297,26 @@ function Dashboard() {
               </div>
             )}
 
+          {/* No Search Results */}
+          {!isLoading &&
+            !error &&
+            documents.length > 0 &&
+            filteredDocuments.length === 0 && (
+              <div className="mt-6 rounded-lg border border-dashed border-slate-300 p-8 text-center">
+                <p className="font-medium text-slate-700">
+                  No matching documents
+                </p>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Try searching with a different filename.
+                </p>
+              </div>
+            )}
+
           {/* Document List */}
           {!isLoading &&
             !error &&
-            documents.length > 0 && (
+            filteredDocuments.length > 0 && (
               <div className="mt-6 overflow-hidden rounded-lg border border-slate-200">
                 {/* Header */}
                 <div className="hidden grid-cols-7 gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid">
@@ -285,7 +331,7 @@ function Dashboard() {
 
                 {/* Documents */}
                 <div className="divide-y divide-slate-200">
-                  {documents.map((document) => {
+                  {filteredDocuments.map((document) => {
                     const status = getProtectionStatus(
                       document.protectionStatus
                     );
