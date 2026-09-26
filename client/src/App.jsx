@@ -4,6 +4,7 @@ import {
   Clock3,
   CircleAlert,
   Circle,
+  Download,
 } from "lucide-react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -16,8 +17,10 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PdfUpload from "./components/PdfUpload";
-import { getDocuments } from "./services/documentService";
-import { getSecureLinkStatus } from "./services/secureLinkService";
+import {
+  getDocuments,
+  downloadDocument,
+} from "./services/documentService";
 
 function Home() {
   return (
@@ -39,24 +42,45 @@ function Dashboard() {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [downloadingId, setDownloadingId] = useState(null);
+
+  const loadDocuments = async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      const data = await getDocuments();
+      setDocuments(data);
+    } catch (error) {
+      setError(error.message || "Failed to load documents.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadDocuments = async () => {
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const data = await getDocuments();
-        setDocuments(data);
-      } catch (error) {
-        setError(error.message || "Failed to load documents.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadDocuments();
   }, []);
+
+  const handleDownload = async (document) => {
+    try {
+      setDownloadingId(document._id);
+      setError("");
+
+      await downloadDocument(
+        document._id,
+        document.originalFilename
+      );
+
+      await loadDocuments();
+    } catch (error) {
+      setError(
+        error.message || "Failed to download document."
+      );
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const formatFileSize = (bytes) => {
     if (!bytes) {
@@ -69,9 +93,7 @@ function Dashboard() {
       Math.log(bytes) / Math.log(1024)
     );
 
-    return `${(bytes / Math.pow(1024, index)).toFixed(2)} ${
-      units[index]
-    }`;
+    return `${(bytes / Math.pow(1024, index)).toFixed(2)} ${units[index]}`;
   };
 
   const formatDate = (date) => {
@@ -81,6 +103,12 @@ function Dashboard() {
   const protectedDocuments = documents.filter(
     (document) =>
       document.protectionStatus === "protected"
+  );
+
+  const totalDownloads = documents.reduce(
+    (total, document) =>
+      total + (document.downloadCount || 0),
+    0
   );
 
   const getProtectionStatus = (status) => {
@@ -174,7 +202,7 @@ function Dashboard() {
             </p>
 
             <p className="mt-2 text-3xl font-bold text-slate-900">
-              0
+              {totalDownloads}
             </p>
           </Card>
         </div>
@@ -245,12 +273,14 @@ function Dashboard() {
             documents.length > 0 && (
               <div className="mt-6 overflow-hidden rounded-lg border border-slate-200">
                 {/* Header */}
-                <div className="hidden grid-cols-5 gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid">
+                <div className="hidden grid-cols-7 gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid">
                   <span>Document</span>
                   <span>Size</span>
                   <span>Status</span>
                   <span>Uploaded</span>
+                  <span>Downloads</span>
                   <span>Expiration</span>
+                  <span>Action</span>
                 </div>
 
                 {/* Documents */}
@@ -265,7 +295,7 @@ function Dashboard() {
                     return (
                       <div
                         key={document._id}
-                        className="grid gap-3 px-5 py-4 sm:grid-cols-5 sm:items-center sm:gap-4"
+                        className="grid gap-3 px-5 py-4 sm:grid-cols-7 sm:items-center sm:gap-4"
                       >
                         {/* Filename */}
                         <div className="min-w-0">
@@ -298,16 +328,60 @@ function Dashboard() {
                           </span>
                         </div>
 
-                        {/* Date */}
+                        {/* Uploaded Date */}
                         <p className="text-sm text-slate-600">
                           {formatDate(document.createdAt)}
                         </p>
+
+                        {/* Downloads */}
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">
+                            {document.downloadCount || 0}
+                          </p>
+
+                          {document.lastDownloadedAt && (
+                            <p className="mt-1 text-xs text-slate-500">
+                              Last:{" "}
+                              {formatDate(
+                                document.lastDownloadedAt
+                              )}
+                            </p>
+                          )}
+                        </div>
 
                         {/* Expiration Status */}
                         <div>
                           <ExpirationStatus
                             expiresAt={document.expiresAt}
                           />
+                        </div>
+
+                        {/* Download Action */}
+                        <div>
+                          {document.protectionStatus ===
+                            "protected" && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDownload(document)
+                              }
+                              disabled={
+                                downloadingId ===
+                                document._id
+                              }
+                              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                            >
+                              <Download
+                                size={14}
+                                aria-hidden="true"
+                              />
+
+                              {downloadingId ===
+                              document._id
+                                ? "Downloading..."
+                                : "Download"}
+                            </button>
+                          )}
                         </div>
                       </div>
                     );

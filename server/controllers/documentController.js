@@ -2,6 +2,8 @@ const path = require("path");
 const fs = require("fs");
 
 const Document = require("../models/Document");
+const AccessLog = require("../models/AccessLog");
+
 const protectPdf = require("../utils/protectPdf");
 const generatePdfPassword = require("../utils/generatePdfPassword");
 const verifyPdfProtection = require("../utils/verifyPdfProtection");
@@ -13,7 +15,7 @@ const getDocuments = async (req, res, next) => {
       isDeleted: false,
     })
       .select(
-        "_id originalFilename fileSize protectionStatus isPasswordProtected expiresAt createdAt updatedAt"
+        "_id originalFilename fileSize protectionStatus isPasswordProtected downloadCount lastDownloadedAt expiresAt createdAt updatedAt"
       )
       .sort({ createdAt: -1 });
 
@@ -138,7 +140,87 @@ const protectDocument = async (req, res, next) => {
   }
 };
 
+const downloadDocument = async (req, res, next) => {
+  try {
+    const { documentId } = req.params;
+
+    const document = await Document.findOne({
+      _id: documentId,
+      owner: req.user.userId,
+      isDeleted: false,
+    });
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    if (document.protectionStatus !== "protected") {
+      return res.status(400).json({
+        success: false,
+        message: "Document is not protected yet",
+      });
+    }
+
+    if (!document.protectedPath) {
+      return res.status(404).json({
+        success: false,
+        message: "Protected PDF file not found",
+      });
+    }
+
+    if (!fs.existsSync(document.protectedPath)) {
+      return res.status(404).json({
+        success: false,
+        message: "Protected PDF file does not exist",
+      });
+    }
+
+    // Check document expiration
+    if (
+      document.expiresAt &&
+      new Date(document.expiresAt).getTime() <= Date.now()
+    ) {
+      return res.status(410).json({
+        success: false,
+        message: "Document has expired",
+      });
+    }
+
+    // Update download statistics
+    document.downloadCount += 1;
+    document.lastDownloadedAt = new Date();
+
+    await document.save();
+
+    // Record download in access history
+    await AccessLog.create({
+      document: document._id,
+      owner: document.owner,
+      action: "download",
+      ipAddress: req.ip || null,
+      userAgent: req.get("user-agent") || null,
+      success: true,
+    });
+
+    return res.download(
+      document.protectedPath,
+      document.originalFilename,
+      (error) => {
+        if (error) {
+          next(error);
+        }
+      }
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDocuments,
   protectDocument,
+  downloadDocument,
 };

@@ -55,6 +55,17 @@ const documentSchema = new mongoose.Schema(
       default: false,
     },
 
+    downloadCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    lastDownloadedAt: {
+      type: Date,
+      default: null,
+    },
+
     processingError: {
       type: String,
       default: null,

@@ -2,11 +2,12 @@ const express = require("express");
 
 const router = express.Router();
 
-const authMiddleware = require("../middleware/authmiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const {
   getDocuments,
   protectDocument,
+  downloadDocument,
 } = require("../controllers/documentController");
 
 const uploadRouter = require("./uploadRoutes");
@@ -22,6 +23,13 @@ router.post(
   "/:documentId/protect",
   authMiddleware,
   protectDocument
+);
+
+// Download protected PDF
+router.get(
+  "/:documentId/download",
+  authMiddleware,
+  downloadDocument
 );
 
 module.exports = router;
