@@ -7,7 +7,7 @@ const validatePdfSignature = require("../utils/validatePdf");
 const generateStorageName = require("../utils/generateStorageName");
 
 const Document = require("../models/Document");
-const authMiddleware = require("../middleware/authmiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 

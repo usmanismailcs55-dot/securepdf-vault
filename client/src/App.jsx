@@ -9,6 +9,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Card from "./components/Card";
 import DashboardLayout from "./layouts/DashboardLayout";
+import ExpirationStatus from "./components/ExpirationStatus";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -244,11 +245,12 @@ function Dashboard() {
             documents.length > 0 && (
               <div className="mt-6 overflow-hidden rounded-lg border border-slate-200">
                 {/* Header */}
-                <div className="hidden grid-cols-4 gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid">
+                <div className="hidden grid-cols-5 gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid">
                   <span>Document</span>
                   <span>Size</span>
                   <span>Status</span>
                   <span>Uploaded</span>
+                  <span>Expiration</span>
                 </div>
 
                 {/* Documents */}
@@ -263,7 +265,7 @@ function Dashboard() {
                     return (
                       <div
                         key={document._id}
-                        className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center sm:gap-4"
+                        className="grid gap-3 px-5 py-4 sm:grid-cols-5 sm:items-center sm:gap-4"
                       >
                         {/* Filename */}
                         <div className="min-w-0">
@@ -281,7 +283,7 @@ function Dashboard() {
                           {formatFileSize(document.fileSize)}
                         </p>
 
-                        {/* Status */}
+                        {/* Protection Status */}
                         <div>
                           <span
                             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${status.className}`}
@@ -300,6 +302,13 @@ function Dashboard() {
                         <p className="text-sm text-slate-600">
                           {formatDate(document.createdAt)}
                         </p>
+
+                        {/* Expiration Status */}
+                        <div>
+                          <ExpirationStatus
+                            expiresAt={document.expiresAt}
+                          />
+                        </div>
                       </div>
                     );
                   })}

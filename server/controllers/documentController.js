@@ -13,7 +13,7 @@ const getDocuments = async (req, res, next) => {
       isDeleted: false,
     })
       .select(
-        "_id originalFilename fileSize protectionStatus isPasswordProtected createdAt updatedAt"
+        "_id originalFilename fileSize protectionStatus isPasswordProtected expiresAt createdAt updatedAt"
       )
       .sort({ createdAt: -1 });
 
