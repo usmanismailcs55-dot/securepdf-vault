@@ -1,17 +1,19 @@
+const path = require("path");
+const fs = require("fs");
+
 const Document = require("../models/Document");
+const protectPdf = require("../utils/protectPdf");
+const generatePdfPassword = require("../utils/generatePdfPassword");
 
 const protectDocument = async (req, res, next) => {
   try {
     const { documentId } = req.params;
 
-    console.log("DEBUG documentId:", documentId);
-    console.log("DEBUG userId:", req.user.userId);
-
     const document = await Document.findOne({
       _id: documentId,
-    }).lean();
-
-    console.log("DEBUG document:", document);
+      owner: req.user.userId,
+      isDeleted: false,
+    });
 
     if (!document) {
       return res.status(404).json({
@@ -27,9 +29,42 @@ const protectDocument = async (req, res, next) => {
       });
     }
 
+    document.protectionStatus = "processing";
+    document.processingError = null;
+    await document.save();
+
+    const password = generatePdfPassword();
+
+    const protectedDirectory = path.join(
+      __dirname,
+      "..",
+      "protected-pdfs"
+    );
+
+    fs.mkdirSync(protectedDirectory, { recursive: true });
+
+    const protectedFilename = `protected-${document.storedFilename}`;
+
+    const protectedPath = path.join(
+      protectedDirectory,
+      protectedFilename
+    );
+
+    await protectPdf(
+      document.originalPath,
+      protectedPath,
+      password
+    );
+
+    document.protectedPath = protectedPath;
+    document.protectionStatus = "protected";
+    document.isPasswordProtected = true;
+
+    await document.save();
+
     return res.status(200).json({
       success: true,
-      message: "Document protection process started",
+      message: "PDF protected successfully",
       documentId: document._id,
     });
   } catch (error) {

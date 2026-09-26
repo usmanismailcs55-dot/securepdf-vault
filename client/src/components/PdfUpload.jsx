@@ -3,12 +3,100 @@ import { FileUp, FileText } from "lucide-react";
 
 export default function PdfUpload() {
   const [file, setFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
 
+    setMessage("");
+    setError("");
+
     if (selectedFile) {
       setFile(selectedFile);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      return;
+    }
+
+    setIsUploading(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        setError("You are not authenticated. Please log in again.");
+        return;
+      }
+
+      // Upload PDF
+      const formData = new FormData();
+      formData.append("pdf", file);
+
+      const uploadResponse = await fetch(
+        "http://localhost:5000/api/documents/upload",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      const uploadData = await uploadResponse.json();
+
+      if (!uploadResponse.ok) {
+        setError(uploadData.message || "Failed to upload PDF.");
+        return;
+      }
+
+      const documentId = uploadData.document?.id;
+
+      if (!documentId) {
+        setError("PDF uploaded, but document ID was not returned.");
+        return;
+      }
+
+      // Protect PDF
+      setMessage("PDF uploaded. Protecting your PDF...");
+
+      const protectResponse = await fetch(
+        `http://localhost:5000/api/documents/${documentId}/protect`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const protectData = await protectResponse.json();
+
+      if (!protectResponse.ok) {
+        setError(
+          protectData.message ||
+            "PDF was uploaded, but protection failed."
+        );
+        return;
+      }
+
+      setMessage("PDF uploaded and protected successfully.");
+      setFile(null);
+    } catch (error) {
+      console.error("PDF processing error:", error);
+
+      setError(
+        "Unable to connect to the server. Please make sure the backend is running."
+      );
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -47,6 +135,7 @@ export default function PdfUpload() {
             accept=".pdf,application/pdf"
             onChange={handleFileChange}
             className="hidden"
+            disabled={isUploading}
           />
         </label>
 
@@ -68,14 +157,28 @@ export default function PdfUpload() {
           </div>
         )}
 
+        {message && (
+          <div className="mt-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            {message}
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {error}
+          </div>
+        )}
+
         <button
           type="button"
-          disabled={!file}
+          onClick={handleUpload}
+          disabled={!file || isUploading}
           className="mt-5 w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
-          Upload PDF
+          {isUploading ? "Protecting PDF..." : "Upload PDF"}
         </button>
       </div>
     </div>
   );
 }
+
