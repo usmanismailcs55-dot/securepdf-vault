@@ -1,4 +1,10 @@
 import { useEffect, useState } from "react";
+import {
+  CheckCircle2,
+  Clock3,
+  CircleAlert,
+  Circle,
+} from "lucide-react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Card from "./components/Card";
@@ -56,6 +62,7 @@ function Dashboard() {
     }
 
     const units = ["Bytes", "KB", "MB", "GB"];
+
     const index = Math.floor(
       Math.log(bytes) / Math.log(1024)
     );
@@ -73,6 +80,45 @@ function Dashboard() {
     (document) =>
       document.protectionStatus === "protected"
   );
+
+  const getProtectionStatus = (status) => {
+    switch (status) {
+      case "protected":
+        return {
+          label: "Protected",
+          icon: CheckCircle2,
+          className: "bg-green-100 text-green-700",
+        };
+
+      case "processing":
+        return {
+          label: "Processing",
+          icon: Clock3,
+          className: "bg-yellow-100 text-yellow-700",
+        };
+
+      case "failed":
+        return {
+          label: "Failed",
+          icon: CircleAlert,
+          className: "bg-red-100 text-red-700",
+        };
+
+      case "pending":
+        return {
+          label: "Pending",
+          icon: Circle,
+          className: "bg-slate-100 text-slate-700",
+        };
+
+      default:
+        return {
+          label: "Unknown",
+          icon: Circle,
+          className: "bg-slate-100 text-slate-700",
+        };
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -206,53 +252,56 @@ function Dashboard() {
 
                 {/* Documents */}
                 <div className="divide-y divide-slate-200">
-                  {documents.map((document) => (
-                    <div
-                      key={document._id}
-                      className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center sm:gap-4"
-                    >
-                      {/* Filename */}
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-slate-900">
-                          {document.originalFilename}
-                        </p>
+                  {documents.map((document) => {
+                    const status = getProtectionStatus(
+                      document.protectionStatus
+                    );
 
-                        <p className="mt-1 text-xs text-slate-500 sm:hidden">
+                    const StatusIcon = status.icon;
+
+                    return (
+                      <div
+                        key={document._id}
+                        className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center sm:gap-4"
+                      >
+                        {/* Filename */}
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-slate-900">
+                            {document.originalFilename}
+                          </p>
+
+                          <p className="mt-1 text-xs text-slate-500 sm:hidden">
+                            {formatFileSize(document.fileSize)}
+                          </p>
+                        </div>
+
+                        {/* Size */}
+                        <p className="hidden text-sm text-slate-600 sm:block">
                           {formatFileSize(document.fileSize)}
                         </p>
+
+                        {/* Status */}
+                        <div>
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${status.className}`}
+                          >
+                            <StatusIcon
+                              size={14}
+                              strokeWidth={2}
+                              aria-hidden="true"
+                            />
+
+                            {status.label}
+                          </span>
+                        </div>
+
+                        {/* Date */}
+                        <p className="text-sm text-slate-600">
+                          {formatDate(document.createdAt)}
+                        </p>
                       </div>
-
-                      {/* Size */}
-                      <p className="hidden text-sm text-slate-600 sm:block">
-                        {formatFileSize(document.fileSize)}
-                      </p>
-
-                      {/* Status */}
-                      <div>
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                            document.protectionStatus ===
-                            "protected"
-                              ? "bg-green-100 text-green-700"
-                              : document.protectionStatus ===
-                                "failed"
-                              ? "bg-red-100 text-red-700"
-                              : document.protectionStatus ===
-                                "processing"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-slate-100 text-slate-700"
-                          }`}
-                        >
-                          {document.protectionStatus}
-                        </span>
-                      </div>
-
-                      {/* Date */}
-                      <p className="text-sm text-slate-600">
-                        {formatDate(document.createdAt)}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -273,7 +322,10 @@ function App() {
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/dashboard"
+            element={<Dashboard />}
+          />
         </Route>
 
         {/* Authentication routes */}
