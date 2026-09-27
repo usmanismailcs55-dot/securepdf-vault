@@ -7,86 +7,295 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/create", authMiddleware, async (req, res) => {
-  try {
-    const amount = Number(req.body.amount);
+const TRON_API_URL =
+  process.env.TRON_API_URL || "https://api.trongrid.io";
 
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return res.status(400).json({
-        message: "A valid payment amount is required",
-      });
+const USDT_CONTRACT_HEX =
+  "41a614f803b6fd780986a42c78ec9c7f77e6ded13c";
+
+const TRC20_TRANSFER_SELECTOR = "a9059cbb";
+
+const base58Alphabet =
+  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+const decodeBase58Address = (address) => {
+  let value = 0n;
+
+  for (const character of address) {
+    const index = base58Alphabet.indexOf(character);
+
+    if (index === -1) {
+      throw new Error("Invalid TRON address");
     }
 
-    const network = process.env.PAYMENT_NETWORK;
-    const asset = process.env.PAYMENT_ASSET;
-    const receivingWallet =
-      process.env.PAYMENT_RECEIVING_WALLET;
+    value =
+      value * 58n + BigInt(index);
+  }
 
-    if (!network || !asset || !receivingWallet) {
-      return res.status(500).json({
-        message: "Crypto payment configuration is incomplete",
-      });
+  let hex = value.toString(16);
+
+  if (hex.length % 2 !== 0) {
+    hex = `0${hex}`;
+  }
+
+  hex = hex.padStart(50, "0");
+
+  return hex.slice(0, 42).toLowerCase();
+};
+
+const getTransactionData = async (transactionHash) => {
+  const transactionResponse = await fetch(
+    `${TRON_API_URL}/wallet/gettransactionbyid`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        value: transactionHash,
+      }),
     }
+  );
 
-    const paymentReference = `SPV-${crypto.randomUUID()}`;
+  if (!transactionResponse.ok) {
+    throw new Error(
+      `TRON transaction request failed with status ${transactionResponse.status}`
+    );
+  }
 
-    const payment = await Payment.create({
-      user: req.user.userId,
-      paymentType: "crypto",
-      provider: "trust_wallet",
-      paymentReference,
-      amount,
-      currency: asset,
-      asset,
-      receivingWallet,
-      status: "pending",
-    });
+  const transaction =
+    await transactionResponse.json();
 
-    // Step 129:
-    // Create or reset the user's subscription status
-    // to pending while payment is awaiting verification.
-    const subscription =
-      await Subscription.findOneAndUpdate(
-        {
+  if (
+    !transaction ||
+    !transaction.txID
+  ) {
+    return null;
+  }
+
+  const infoResponse = await fetch(
+    `${TRON_API_URL}/wallet/gettransactioninfobyid`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        value: transactionHash,
+      }),
+    }
+  );
+
+  if (!infoResponse.ok) {
+    throw new Error(
+      `TRON transaction information request failed with status ${infoResponse.status}`
+    );
+  }
+
+  const transactionInfo =
+    await infoResponse.json();
+
+  return {
+    transaction,
+    transactionInfo,
+  };
+};
+
+const extractTransferDetails = ({
+  transaction,
+  transactionInfo,
+}) => {
+  const contract =
+    transaction?.raw_data?.contract?.[0];
+
+  if (
+    !contract ||
+    contract.type !== "TriggerSmartContract"
+  ) {
+    return null;
+  }
+
+  const parameter =
+    contract.parameter?.value;
+
+  if (!parameter) {
+    return null;
+  }
+
+  const contractAddress =
+    String(
+      parameter.contract_address || ""
+    ).toLowerCase();
+
+  if (
+    contractAddress !==
+    USDT_CONTRACT_HEX
+  ) {
+    return null;
+  }
+
+  const data = String(
+    parameter.data || ""
+  ).toLowerCase();
+
+  if (
+    !data.startsWith(
+      TRC20_TRANSFER_SELECTOR
+    )
+  ) {
+    return null;
+  }
+
+  const transferData =
+    data.slice(8);
+
+  if (transferData.length < 128) {
+    return null;
+  }
+
+  const recipientHex =
+    `41${transferData.slice(24, 64)}`;
+
+  const amountHex =
+    transferData.slice(64, 128);
+
+  const amountRaw =
+    BigInt(`0x${amountHex}`);
+
+  return {
+    recipient:
+      recipientHex.toLowerCase(),
+
+    amountRaw,
+
+    amountUSDT:
+      Number(amountRaw) / 1_000_000,
+
+    eventLogs:
+      transactionInfo?.log || [],
+  };
+};
+
+router.post(
+  "/create",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const amount =
+        Number(req.body.amount);
+
+      if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+      ) {
+        return res.status(400).json({
+          message:
+            "A valid payment amount is required",
+        });
+      }
+
+      const network =
+        process.env.PAYMENT_NETWORK;
+
+      const asset =
+        process.env.PAYMENT_ASSET;
+
+      const receivingWallet =
+        process.env.PAYMENT_RECEIVING_WALLET;
+
+      if (
+        !network ||
+        !asset ||
+        !receivingWallet
+      ) {
+        return res.status(500).json({
+          message:
+            "Crypto payment configuration is incomplete",
+        });
+      }
+
+      const paymentReference =
+        `SPV-${crypto.randomUUID()}`;
+
+      const payment =
+        await Payment.create({
           user: req.user.userId,
-        },
-        {
-          $set: {
-            status: "pending",
-            payment: payment._id,
+          paymentType: "crypto",
+          provider: "trust_wallet",
+          paymentReference,
+          amount,
+          currency: asset,
+          asset,
+          receivingWallet,
+          status: "pending",
+        });
+
+      const subscription =
+        await Subscription.findOneAndUpdate(
+          {
+            user: req.user.userId,
           },
-        },
-        {
-          new: true,
-          upsert: true,
-          setDefaultsOnInsert: true,
-        }
+          {
+            $set: {
+              status: "pending",
+              payment: payment._id,
+            },
+          },
+          {
+            new: true,
+            upsert: true,
+            setDefaultsOnInsert: true,
+          }
+        );
+
+      res.status(201).json({
+        message:
+          "Crypto payment created",
+
+        paymentId:
+          payment._id,
+
+        paymentReference:
+          payment.paymentReference,
+
+        amount:
+          payment.amount,
+
+        currency:
+          payment.currency,
+
+        asset:
+          payment.asset,
+
+        receivingWallet:
+          payment.receivingWallet,
+
+        status:
+          payment.status,
+
+        subscriptionStatus:
+          subscription.status,
+
+        network,
+      });
+    } catch (error) {
+      console.error(
+        "Create crypto payment error:",
+        error
       );
 
-    res.status(201).json({
-      message: "Crypto payment created",
-      paymentId: payment._id,
-      paymentReference: payment.paymentReference,
-      amount: payment.amount,
-      currency: payment.currency,
-      asset: payment.asset,
-      receivingWallet: payment.receivingWallet,
-      status: payment.status,
-      subscriptionStatus: subscription.status,
-      network,
-    });
-  } catch (error) {
-    console.error("Create crypto payment error:", error);
-
-    res.status(500).json({
-      message: "Failed to create crypto payment",
-    });
+      res.status(500).json({
+        message:
+          "Failed to create crypto payment",
+      });
+    }
   }
-});
+);
 
 /*
- * Step 125:
- * Prevent duplicate transaction hash reuse.
+ * Steps 125, 132, 133:
+ * Associate transaction hash and verify
+ * the actual TRC-20 USDT payment.
  */
 router.post(
   "/submit-transaction",
@@ -98,7 +307,10 @@ router.post(
         transactionHash,
       } = req.body;
 
-      if (!paymentReference || !transactionHash) {
+      if (
+        !paymentReference ||
+        !transactionHash
+      ) {
         return res.status(400).json({
           message:
             "Payment reference and transaction hash are required",
@@ -106,26 +318,38 @@ router.post(
       }
 
       const normalizedHash =
-        transactionHash.trim().toLowerCase();
+        transactionHash
+          .trim()
+          .toLowerCase();
 
-      const payment = await Payment.findOne({
-        paymentReference,
-        user: req.user.userId,
-      });
-
-      if (!payment) {
-        return res.status(404).json({
-          message: "Payment not found",
+      if (
+        !/^[a-f0-9]{64}$/.test(
+          normalizedHash
+        )
+      ) {
+        return res.status(400).json({
+          message:
+            "Invalid TRON transaction hash.",
         });
       }
 
-      /*
-       * Check whether this transaction hash has already
-       * been associated with another payment.
-       */
+      const payment =
+        await Payment.findOne({
+          paymentReference,
+          user: req.user.userId,
+        });
+
+      if (!payment) {
+        return res.status(404).json({
+          message:
+            "Payment not found",
+        });
+      }
+
       const existingPayment =
         await Payment.findOne({
-          transactionHash: normalizedHash,
+          transactionHash:
+            normalizedHash,
         });
 
       if (
@@ -139,14 +363,10 @@ router.post(
         });
       }
 
-      /*
-       * Prevent the same payment from being assigned
-       * a different transaction after one has already
-       * been submitted.
-       */
       if (
         payment.transactionHash &&
-        payment.transactionHash !== normalizedHash
+        payment.transactionHash !==
+          normalizedHash
       ) {
         return res.status(409).json({
           message:
@@ -154,23 +374,235 @@ router.post(
         });
       }
 
-      payment.transactionHash = normalizedHash;
+      const blockchainData =
+        await getTransactionData(
+          normalizedHash
+        );
+
+      if (!blockchainData) {
+        return res.status(400).json({
+          message:
+            "Transaction was not found on the TRON network.",
+        });
+      }
+
+      const {
+        transaction,
+        transactionInfo,
+      } = blockchainData;
+
+      if (
+        !transactionInfo ||
+        transactionInfo.blockNumber ===
+          undefined
+      ) {
+        return res.status(202).json({
+          message:
+            "Transaction is still pending confirmation.",
+
+          status:
+            "pending",
+        });
+      }
+
+      if (
+        transactionInfo.receipt?.result &&
+        transactionInfo.receipt.result !==
+          "SUCCESS"
+      ) {
+        payment.transactionHash =
+          normalizedHash;
+
+        payment.status =
+          "failed";
+
+        payment.failureReason =
+          `Blockchain execution failed: ${transactionInfo.receipt.result}`;
+
+        await payment.save();
+
+        await Subscription.findOneAndUpdate(
+          {
+            user: req.user.userId,
+          },
+          {
+            $set: {
+              status: "inactive",
+            },
+          }
+        );
+
+        return res.status(400).json({
+          message:
+            "The blockchain transaction failed.",
+
+          status:
+            "failed",
+        });
+      }
+
+      const transferDetails =
+        extractTransferDetails({
+          transaction,
+          transactionInfo,
+        });
+
+      if (!transferDetails) {
+        payment.transactionHash =
+          normalizedHash;
+
+        payment.status =
+          "failed";
+
+        payment.failureReason =
+          "Transaction is not a valid TRC-20 USDT transfer.";
+
+        await payment.save();
+
+        return res.status(400).json({
+          message:
+            "Transaction is not a valid TRC-20 USDT transfer.",
+
+          status:
+            "failed",
+        });
+      }
+
+      const configuredWalletHex =
+        decodeBase58Address(
+          payment.receivingWallet
+        );
+
+      if (
+        transferDetails.recipient !==
+        configuredWalletHex
+      ) {
+        payment.transactionHash =
+          normalizedHash;
+
+        payment.status =
+          "failed";
+
+        payment.failureReason =
+          "Transaction was not sent to the configured receiving wallet.";
+
+        await payment.save();
+
+        return res.status(400).json({
+          message:
+            "Transaction was not sent to the configured receiving wallet.",
+
+          status:
+            "failed",
+        });
+      }
+
+      const requiredAmount =
+        Number(payment.amount);
+
+      const receivedAmount =
+        transferDetails.amountUSDT;
+
+      /*
+       * Step 132:
+       * Handle underpayment.
+       */
+      if (
+        receivedAmount <
+        requiredAmount
+      ) {
+        payment.transactionHash =
+          normalizedHash;
+
+        payment.status =
+          "failed";
+
+        payment.failureReason =
+          `Underpayment: received ${receivedAmount} ${payment.asset}; required ${requiredAmount} ${payment.asset}.`;
+
+        await payment.save();
+
+        await Subscription.findOneAndUpdate(
+          {
+            user: req.user.userId,
+          },
+          {
+            $set: {
+              status: "inactive",
+              payment: payment._id,
+              startedAt: null,
+              expiresAt: null,
+            },
+          }
+        );
+
+        return res.status(400).json({
+          message:
+            `Underpayment detected. Received ${receivedAmount} ${payment.asset}; required ${requiredAmount} ${payment.asset}.`,
+
+          status:
+            "underpaid",
+
+          receivedAmount,
+
+          requiredAmount,
+        });
+      }
+
+      /*
+       * Step 133:
+       * Accept overpayment.
+       *
+       * Any amount greater than the required
+       * amount is accepted as a successful payment.
+       */
+      const isOverpayment =
+        receivedAmount >
+        requiredAmount;
+
+      payment.transactionHash =
+        normalizedHash;
+
+      payment.status =
+        "paid";
+
+      payment.paidAt =
+        new Date();
+
+      payment.failureReason =
+        null;
 
       await payment.save();
 
       return res.status(200).json({
         message:
-          "Transaction hash associated with payment.",
-        paymentReference: payment.paymentReference,
-        transactionHash: payment.transactionHash,
+          isOverpayment
+            ? "Payment verified successfully. Overpayment accepted."
+            : "Payment verified successfully.",
+
+        paymentReference:
+          payment.paymentReference,
+
+        transactionHash:
+          payment.transactionHash,
+
+        receivedAmount,
+
+        requiredAmount,
+
+        overpaymentAmount:
+          isOverpayment
+            ? receivedAmount -
+              requiredAmount
+            : 0,
+
+        status:
+          "paid",
       });
     } catch (error) {
-      /*
-       * MongoDB unique-index protection.
-       * This also protects against two requests arriving
-       * at nearly the same time.
-       */
-      if (error.code === 11000) {
+      if (
+        error.code === 11000
+      ) {
         return res.status(409).json({
           message:
             "This transaction has already been used.",
@@ -184,7 +616,7 @@ router.post(
 
       return res.status(500).json({
         message:
-          "Failed to submit transaction.",
+          "Failed to verify transaction.",
       });
     }
   }
@@ -202,32 +634,34 @@ router.post(
   authMiddleware,
   async (req, res) => {
     try {
-      const { paymentReference } = req.body;
+      const {
+        paymentReference,
+      } = req.body;
 
       if (!paymentReference) {
         return res.status(400).json({
-          message: "Payment reference is required",
+          message:
+            "Payment reference is required",
         });
       }
 
-      const payment = await Payment.findOne({
-        paymentReference,
-        user: req.user.userId,
-      });
+      const payment =
+        await Payment.findOne({
+          paymentReference,
+          user: req.user.userId,
+        });
 
       if (!payment) {
         return res.status(404).json({
-          message: "Payment not found",
+          message:
+            "Payment not found",
         });
       }
 
-      /*
-       * Security requirement:
-       * A subscription can only be activated when the
-       * payment has already been marked as paid by the
-       * payment-verification process.
-       */
-      if (payment.status !== "paid") {
+      if (
+        payment.status !==
+        "paid"
+      ) {
         return res.status(400).json({
           message:
             "Subscription cannot be activated until the payment is successfully verified.",
@@ -235,14 +669,21 @@ router.post(
       }
 
       if (!payment.paidAt) {
-        payment.paidAt = new Date();
+        payment.paidAt =
+          new Date();
+
         await payment.save();
       }
 
-      const startedAt = payment.paidAt;
+      const startedAt =
+        payment.paidAt;
 
-      const expiresAt = new Date(startedAt);
-      expiresAt.setDate(expiresAt.getDate() + 30);
+      const expiresAt =
+        new Date(startedAt);
+
+      expiresAt.setDate(
+        expiresAt.getDate() + 30
+      );
 
       const subscription =
         await Subscription.findOneAndUpdate(
@@ -251,26 +692,38 @@ router.post(
           },
           {
             $set: {
-              status: "active",
-              payment: payment._id,
+              status:
+                "active",
+
+              payment:
+                payment._id,
+
               startedAt,
+
               expiresAt,
             },
           },
           {
             new: true,
             upsert: true,
-            setDefaultsOnInsert: true,
+            setDefaultsOnInsert:
+              true,
           }
         );
 
       return res.status(200).json({
         message:
           "Subscription activated successfully.",
+
         subscription: {
-          status: subscription.status,
-          startedAt: subscription.startedAt,
-          expiresAt: subscription.expiresAt,
+          status:
+            subscription.status,
+
+          startedAt:
+            subscription.startedAt,
+
+          expiresAt:
+            subscription.expiresAt,
         },
       });
     } catch (error) {
