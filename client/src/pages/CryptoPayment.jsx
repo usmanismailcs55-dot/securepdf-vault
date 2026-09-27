@@ -45,6 +45,74 @@ export default function CryptoPayment() {
   const [paymentStatusType, setPaymentStatusType] =
     useState("");
 
+  const [paymentHistory, setPaymentHistory] =
+    useState([]);
+
+  const [historyLoading, setHistoryLoading] =
+    useState(true);
+
+  const [historyError, setHistoryError] =
+    useState("");
+
+  useEffect(() => {
+    const accessToken =
+      localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      setHistoryError(
+        "You must be logged in to view payment history."
+      );
+      setHistoryLoading(false);
+      return;
+    }
+
+    const loadPaymentHistory = async () => {
+      try {
+        setHistoryLoading(true);
+        setHistoryError("");
+
+        const response = await fetch(
+          "http://localhost:5000/api/payments/history",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Failed to load payment history."
+          );
+        }
+
+        setPaymentHistory(
+          Array.isArray(data.payments)
+            ? data.payments
+            : []
+        );
+      } catch (error) {
+        console.error(
+          "Load payment history error:",
+          error
+        );
+
+        setHistoryError(
+          error.message ||
+            "Unable to load payment history."
+        );
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+
+    loadPaymentHistory();
+  }, []);
+
   useEffect(() => {
     const createPayment = async () => {
       try {
@@ -90,7 +158,6 @@ export default function CryptoPayment() {
           data.paymentReference
         );
 
-        // Step 134: Payment status notification
         setPaymentStatus(
           "Payment created. Waiting for your transaction."
         );
@@ -106,7 +173,6 @@ export default function CryptoPayment() {
             "Unable to create payment."
         );
 
-        // Step 134: Payment status notification
         setPaymentStatus(
           "Unable to create the payment."
         );
@@ -147,7 +213,6 @@ export default function CryptoPayment() {
     setQueryStatus("");
     setTransactionData(null);
 
-    // Step 134: Reset status while editing
     setPaymentStatus("");
     setPaymentStatusType("");
   };
@@ -162,7 +227,6 @@ export default function CryptoPayment() {
     setQueryStatus("");
     setTransactionData(null);
 
-    // Step 134: Clear previous status
     setPaymentStatus("");
     setPaymentStatusType("");
 
@@ -179,7 +243,6 @@ export default function CryptoPayment() {
       return;
     }
 
-    // Step 118: Validate hash format
     const tronTransactionHashRegex =
       /^[a-fA-F0-9]{64}$/;
 
@@ -188,7 +251,6 @@ export default function CryptoPayment() {
         "Please enter your transaction hash."
       );
 
-      // Step 134: Payment status notification
       setPaymentStatus(
         "Please enter your transaction hash."
       );
@@ -202,7 +264,6 @@ export default function CryptoPayment() {
         "Invalid TRON transaction hash. The transaction hash must contain exactly 64 hexadecimal characters."
       );
 
-      // Step 134: Payment status notification
       setPaymentStatus(
         "Payment could not be verified because the transaction hash is invalid."
       );
@@ -216,14 +277,12 @@ export default function CryptoPayment() {
       "Querying the TRON blockchain..."
     );
 
-    // Step 134: Payment status notification
     setPaymentStatus(
       "Your payment is being verified..."
     );
     setPaymentStatusType("pending");
 
     try {
-      // Step 119: Query TRON blockchain
       const response = await fetch(
         `${tronApiUrl}/wallet/gettransactionbyid`,
         {
@@ -276,11 +335,6 @@ export default function CryptoPayment() {
         return;
       }
 
-      /*
-       * Step 126:
-       * A transaction can exist on TRON before its
-       * execution information is available.
-       */
       setQueryStatus(
         "Transaction found. Checking confirmation status..."
       );
@@ -317,9 +371,6 @@ export default function CryptoPayment() {
         transactionInfo
       );
 
-      /*
-       * Pending transaction
-       */
       if (
         !transactionInfo ||
         Object.keys(transactionInfo).length === 0
@@ -343,10 +394,6 @@ export default function CryptoPayment() {
         return;
       }
 
-      /*
-       * A block number indicates that the transaction
-       * has been included in a TRON block.
-       */
       if (
         transactionInfo.blockNumber === undefined ||
         transactionInfo.blockNumber === null
@@ -370,7 +417,6 @@ export default function CryptoPayment() {
         return;
       }
 
-      // Step 120: Verify blockchain transaction execution
       if (
         transactionInfo.receipt &&
         transactionInfo.receipt.result
@@ -399,9 +445,6 @@ export default function CryptoPayment() {
         }
       }
 
-      /*
-       * Step 121: Verify transaction amount
-       */
       const transferAmount =
         data?.raw_data?.contract?.[0]?.parameter?.value?.amount;
 
@@ -434,7 +477,6 @@ export default function CryptoPayment() {
         return;
       }
 
-      // Step 122: Verify crypto/token asset
       const contractType =
         data?.raw_data?.contract?.[0]?.type;
 
@@ -451,7 +493,6 @@ export default function CryptoPayment() {
         return;
       }
 
-      // Step 123: Verify receiving wallet
       const contractParameter =
         data?.raw_data?.contract?.[0]?.parameter?.value;
 
@@ -474,7 +515,6 @@ export default function CryptoPayment() {
         return;
       }
 
-      // Step 124/125: Associate transaction with payment
       const paymentResponse = await fetch(
         "http://localhost:5000/api/payments/submit-transaction",
         {
@@ -530,10 +570,6 @@ export default function CryptoPayment() {
         return;
       }
 
-      /*
-       * Step 133:
-       * Overpayment is accepted.
-       */
       const receivedAmount =
         Number(paymentResult.receivedAmount);
 
@@ -568,6 +604,40 @@ export default function CryptoPayment() {
       setQueryStatus(
         `Transaction verified and associated with payment reference ${paymentReference}.`
       );
+
+      /*
+       * Refresh payment history after successful verification.
+       */
+      try {
+        const accessToken =
+          localStorage.getItem("accessToken");
+
+        const historyResponse = await fetch(
+          "http://localhost:5000/api/payments/history",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        const historyData =
+          await historyResponse.json();
+
+        if (historyResponse.ok) {
+          setPaymentHistory(
+            Array.isArray(historyData.payments)
+              ? historyData.payments
+              : []
+          );
+        }
+      } catch (historyRefreshError) {
+        console.error(
+          "Refresh payment history error:",
+          historyRefreshError
+        );
+      }
     } catch (error) {
       console.error(
         "Failed to query TRON transaction:",
@@ -617,6 +687,30 @@ export default function CryptoPayment() {
         }
       />
     );
+  };
+
+  const formatPaymentDate = (date) => {
+    if (!date) {
+      return "—";
+    }
+
+    return new Date(date).toLocaleString();
+  };
+
+  const getHistoryStatusClasses = (status) => {
+    if (status === "paid") {
+      return "bg-green-100 text-green-800";
+    }
+
+    if (
+      status === "failed" ||
+      status === "expired" ||
+      status === "refunded"
+    ) {
+      return "bg-red-100 text-red-800";
+    }
+
+    return "bg-yellow-100 text-yellow-800";
   };
 
   return (
@@ -1003,6 +1097,119 @@ export default function CryptoPayment() {
                   {transactionData.paymentReference}
                 </p>
 
+              </div>
+            )}
+
+          </div>
+
+          {/* Step 136: Payment History */}
+          <div className="border rounded-xl p-6 mt-6">
+
+            <h2 className="text-xl font-semibold text-gray-900 mb-5">
+              Payment History
+            </h2>
+
+            {historyLoading ? (
+              <p className="text-sm text-gray-600">
+                Loading payment history...
+              </p>
+            ) : historyError ? (
+              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <AlertTriangle
+                  className="text-red-600 flex-shrink-0"
+                  size={20}
+                />
+
+                <p className="text-sm text-red-700">
+                  {historyError}
+                </p>
+              </div>
+            ) : paymentHistory.length === 0 ? (
+              <p className="text-sm text-gray-600">
+                No payment history found.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {paymentHistory.map((payment) => (
+                  <div
+                    key={payment._id}
+                    className="border rounded-lg p-4"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          {payment.paymentReference}
+                        </p>
+
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatPaymentDate(
+                            payment.createdAt
+                          )}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`inline-flex w-fit px-3 py-1 rounded-full text-xs font-semibold uppercase ${getHistoryStatusClasses(
+                          payment.status
+                        )}`}
+                      >
+                        {payment.status}
+                      </span>
+
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+
+                      <div>
+                        <span className="text-gray-500">
+                          Amount
+                        </span>
+
+                        <p className="font-medium text-gray-900">
+                          {payment.amount}{" "}
+                          {payment.asset}
+                        </p>
+                      </div>
+
+                      <div>
+                        <span className="text-gray-500">
+                          Paid At
+                        </span>
+
+                        <p className="font-medium text-gray-900">
+                          {formatPaymentDate(
+                            payment.paidAt
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <span className="text-gray-500">
+                          Transaction Hash
+                        </span>
+
+                        <p className="font-mono text-xs text-gray-900 break-all mt-1">
+                          {payment.transactionHash ||
+                            "Not submitted"}
+                        </p>
+                      </div>
+
+                      {payment.failureReason && (
+                        <div className="md:col-span-2">
+                          <span className="text-gray-500">
+                            Failure Reason
+                          </span>
+
+                          <p className="text-sm text-red-700 mt-1">
+                            {payment.failureReason}
+                          </p>
+                        </div>
+                      )}
+
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

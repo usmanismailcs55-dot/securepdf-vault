@@ -172,6 +172,44 @@ const extractTransferDetails = ({
   };
 };
 
+/*
+ * Step 136:
+ * Return payment history for the logged-in user only.
+ */
+router.get(
+  "/history",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const payments =
+        await Payment.find({
+          user: req.user.userId,
+        })
+          .select(
+            "paymentReference amount currency asset status transactionHash paidAt failureReason createdAt expiresAt"
+          )
+          .sort({
+            createdAt: -1,
+          })
+          .lean();
+
+      return res.status(200).json({
+        payments,
+      });
+    } catch (error) {
+      console.error(
+        "Get payment history error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to load payment history.",
+      });
+    }
+  }
+);
+
 router.post(
   "/create",
   authMiddleware,
