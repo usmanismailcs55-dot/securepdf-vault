@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
+const subscriptionMiddleware = require("../middleware/subscriptionMiddleware");
 
 const {
   getDocuments,
@@ -15,15 +16,26 @@ const {
 const uploadRouter = require("./uploadRoutes");
 
 // Upload PDF
-router.use("/upload", uploadRouter);
+router.use(
+  "/upload",
+  authMiddleware,
+  subscriptionMiddleware,
+  uploadRouter
+);
 
 // Get current user's documents
-router.get("/", authMiddleware, getDocuments);
+router.get(
+  "/",
+  authMiddleware,
+  subscriptionMiddleware,
+  getDocuments
+);
 
 // Get current user's access history
 router.get(
   "/access-history",
   authMiddleware,
+  subscriptionMiddleware,
   getAccessHistory
 );
 
@@ -31,6 +43,7 @@ router.get(
 router.post(
   "/:documentId/protect",
   authMiddleware,
+  subscriptionMiddleware,
   protectDocument
 );
 
@@ -38,6 +51,7 @@ router.post(
 router.get(
   "/:documentId/download",
   authMiddleware,
+  subscriptionMiddleware,
   downloadDocument
 );
 
@@ -45,6 +59,7 @@ router.get(
 router.delete(
   "/:documentId",
   authMiddleware,
+  subscriptionMiddleware,
   deleteDocument
 );
 
