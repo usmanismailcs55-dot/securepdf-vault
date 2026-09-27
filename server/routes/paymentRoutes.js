@@ -30,7 +30,7 @@ router.post("/create", authMiddleware, async (req, res) => {
     const paymentReference = `SPV-${crypto.randomUUID()}`;
 
     const payment = await Payment.create({
-      user: req.user._id,
+      user: req.user.userId,
       paymentType: "crypto",
       provider: "trust_wallet",
       paymentReference,
@@ -60,5 +60,111 @@ router.post("/create", authMiddleware, async (req, res) => {
     });
   }
 });
+
+/*
+ * Step 125:
+ * Prevent duplicate transaction hash reuse.
+ */
+router.post(
+  "/submit-transaction",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const {
+        paymentReference,
+        transactionHash,
+      } = req.body;
+
+      if (!paymentReference || !transactionHash) {
+        return res.status(400).json({
+          message:
+            "Payment reference and transaction hash are required",
+        });
+      }
+
+      const normalizedHash =
+        transactionHash.trim().toLowerCase();
+
+      const payment = await Payment.findOne({
+        paymentReference,
+        user: req.user.userId,
+      });
+
+      if (!payment) {
+        return res.status(404).json({
+          message: "Payment not found",
+        });
+      }
+
+      /*
+       * Check whether this transaction hash has already
+       * been associated with another payment.
+       */
+      const existingPayment =
+        await Payment.findOne({
+          transactionHash: normalizedHash,
+        });
+
+      if (
+        existingPayment &&
+        existingPayment._id.toString() !==
+          payment._id.toString()
+      ) {
+        return res.status(409).json({
+          message:
+            "This transaction has already been used for another payment.",
+        });
+      }
+
+      /*
+       * Prevent the same payment from being assigned
+       * a different transaction after one has already
+       * been submitted.
+       */
+      if (
+        payment.transactionHash &&
+        payment.transactionHash !== normalizedHash
+      ) {
+        return res.status(409).json({
+          message:
+            "A different transaction has already been submitted for this payment.",
+        });
+      }
+
+      payment.transactionHash = normalizedHash;
+
+      await payment.save();
+
+      return res.status(200).json({
+        message:
+          "Transaction hash associated with payment.",
+        paymentReference: payment.paymentReference,
+        transactionHash: payment.transactionHash,
+      });
+    } catch (error) {
+      /*
+       * MongoDB unique-index protection.
+       * This also protects against two requests arriving
+       * at nearly the same time.
+       */
+      if (error.code === 11000) {
+        return res.status(409).json({
+          message:
+            "This transaction has already been used.",
+        });
+      }
+
+      console.error(
+        "Submit transaction error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to submit transaction.",
+      });
+    }
+  }
+);
 
 module.exports = router;
