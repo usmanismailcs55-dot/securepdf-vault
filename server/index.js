@@ -10,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const emailVerificationRoutes = require("./routes/emailVerificationRoutes");
 const documentRoutes = require("./routes/documentRoutes");
 const secureLinkRoutes = require("./routes/secureLinkRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 require("./utils/sendEmail");
 
@@ -31,6 +32,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", emailVerificationRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/secure-links", secureLinkRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.use(errorHandler);
 
@@ -39,4 +41,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-

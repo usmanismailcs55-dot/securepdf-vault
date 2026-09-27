@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Subscription from "./pages/Subscription";
+import CryptoPayment from "./pages/CryptoPayment";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import PdfUpload from "./components/PdfUpload";
@@ -564,6 +565,7 @@ function Dashboard() {
               </div>
             )}
 
+
         </Card>
 
 
@@ -718,6 +720,13 @@ function App() {
         <Route
           path="/subscription"
           element={<Subscription />}
+        />
+
+
+        {/* Crypto Payment route */}
+        <Route
+          path="/payment/crypto"
+          element={<CryptoPayment />}
         />
 
 

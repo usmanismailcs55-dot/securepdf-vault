@@ -1,59 +1,110 @@
-import { useState } from "react";
+import { Check } from "lucide-react";
+
+const plans = [
+  {
+    name: "Pro",
+    price: "$5",
+    period: "month",
+    features: [
+      "PDF password protection",
+      "Secure document links",
+      "Document expiration",
+      "Download tracking",
+      "Access history",
+    ],
+  },
+];
 
 export default function Subscription() {
-  const [loading, setLoading] = useState(false);
+  const handleSubscribe = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
 
-  const handleSubscribe = () => {
-    setLoading(true);
+      if (!accessToken) {
+        alert("Please login first.");
+        return;
+      }
 
-    // Payment checkout will be added in Step 112
-    setTimeout(() => {
-      setLoading(false);
-      alert("Payment checkout will be added in Step 112.");
-    }, 500);
+      const response = await fetch(
+        "http://localhost:5000/api/payments/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            plan: "monthly",
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to create payment");
+      }
+
+      console.log("Payment created:", data);
+
+      alert(
+        `Payment created successfully.\nPayment Reference: ${data.paymentReference}`
+      );
+    } catch (error) {
+      console.error("Subscription error:", error);
+      alert(error.message);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
-        <h1 className="text-3xl font-bold text-gray-900 text-center">
-          SecurePDF Vault
-        </h1>
+    <div className="min-h-screen bg-gray-50 px-4 py-12">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Choose Your Plan
+          </h1>
 
-        <p className="text-gray-500 text-center mt-2">
-          Protect and securely share your PDF files.
-        </p>
-
-        <div className="border rounded-xl p-6 mt-8">
-          <h2 className="text-2xl font-semibold">
-            Premium Plan
-          </h2>
-
-          <p className="text-4xl font-bold mt-4">
-            $5
-            <span className="text-base font-normal text-gray-500">
-              {" "}
-              / month
-            </span>
+          <p className="mt-2 text-gray-600">
+            Unlock SecurePDF Vault features with a paid subscription.
           </p>
+        </div>
 
-          <ul className="mt-6 space-y-3 text-gray-700">
-            <li>✓ PDF password protection</li>
-            <li>✓ Secure PDF links</li>
-            <li>✓ Link expiration</li>
-            <li>✓ Download tracking</li>
-            <li>✓ Secure document storage</li>
-          </ul>
+        <div className="mx-auto max-w-md rounded-2xl border bg-white p-8 shadow-sm">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {plans[0].name}
+            </h2>
+
+            <div className="mt-4">
+              <span className="text-4xl font-bold text-gray-900">
+                {plans[0].price}
+              </span>
+
+              <span className="text-gray-500">
+                /{plans[0].period}
+              </span>
+            </div>
+          </div>
+
+          <div className="my-8 space-y-4">
+            {plans[0].features.map((feature) => (
+              <div key={feature} className="flex items-center gap-3">
+                <Check className="h-5 w-5 text-green-600" />
+
+                <span className="text-gray-700">{feature}</span>
+              </div>
+            ))}
+          </div>
 
           <button
             onClick={handleSubscribe}
-            disabled={loading}
-            className="w-full mt-8 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 disabled:opacity-50"
+            className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700"
           >
-            {loading ? "Loading..." : "Subscribe Now"}
+            Subscribe
           </button>
         </div>
       </div>
     </div>
   );
 }
+
