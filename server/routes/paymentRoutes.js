@@ -2,6 +2,7 @@ const express = require("express");
 const crypto = require("crypto");
 
 const Payment = require("../models/Payment");
+const Subscription = require("../models/Subscription");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -41,6 +42,27 @@ router.post("/create", authMiddleware, async (req, res) => {
       status: "pending",
     });
 
+    // Step 129:
+    // Create or reset the user's subscription status
+    // to pending while payment is awaiting verification.
+    const subscription =
+      await Subscription.findOneAndUpdate(
+        {
+          user: req.user.userId,
+        },
+        {
+          $set: {
+            status: "pending",
+            payment: payment._id,
+          },
+        },
+        {
+          new: true,
+          upsert: true,
+          setDefaultsOnInsert: true,
+        }
+      );
+
     res.status(201).json({
       message: "Crypto payment created",
       paymentId: payment._id,
@@ -50,6 +72,7 @@ router.post("/create", authMiddleware, async (req, res) => {
       asset: payment.asset,
       receivingWallet: payment.receivingWallet,
       status: payment.status,
+      subscriptionStatus: subscription.status,
       network,
     });
   } catch (error) {
