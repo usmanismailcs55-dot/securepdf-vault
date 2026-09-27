@@ -8,51 +8,55 @@ const router = express.Router();
 
 router.post("/create", authMiddleware, async (req, res) => {
   try {
-    const { plan } = req.body;
+    const amount = Number(req.body.amount);
 
-    if (!plan) {
+    if (!Number.isFinite(amount) || amount <= 0) {
       return res.status(400).json({
-        message: "Subscription plan is required",
+        message: "A valid payment amount is required",
       });
     }
 
-    if (!["monthly", "yearly"].includes(plan)) {
-      return res.status(400).json({
-        message: "Invalid subscription plan",
+    const network = process.env.PAYMENT_NETWORK;
+    const asset = process.env.PAYMENT_ASSET;
+    const receivingWallet =
+      process.env.PAYMENT_RECEIVING_WALLET;
+
+    if (!network || !asset || !receivingWallet) {
+      return res.status(500).json({
+        message: "Crypto payment configuration is incomplete",
       });
     }
-
-    const amount = plan === "monthly" ? 5 : 50;
 
     const paymentReference = `SPV-${crypto.randomUUID()}`;
 
     const payment = await Payment.create({
       user: req.user._id,
-      paymentType: "subscription",
+      paymentType: "crypto",
       provider: "trust_wallet",
       paymentReference,
       amount,
-      currency: "USD",
-      asset: "USDT",
+      currency: asset,
+      asset,
+      receivingWallet,
       status: "pending",
-      subscriptionPlan: plan,
     });
 
     res.status(201).json({
-      message: "Payment created",
+      message: "Crypto payment created",
       paymentId: payment._id,
       paymentReference: payment.paymentReference,
       amount: payment.amount,
       currency: payment.currency,
       asset: payment.asset,
+      receivingWallet: payment.receivingWallet,
       status: payment.status,
-      subscriptionPlan: payment.subscriptionPlan,
+      network,
     });
   } catch (error) {
-    console.error("Create payment error:", error);
+    console.error("Create crypto payment error:", error);
 
     res.status(500).json({
-      message: "Failed to create payment",
+      message: "Failed to create crypto payment",
     });
   }
 });

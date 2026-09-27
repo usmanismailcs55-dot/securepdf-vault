@@ -17,7 +17,6 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import Subscription from "./pages/Subscription";
 import CryptoPayment from "./pages/CryptoPayment";
 
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -713,13 +712,6 @@ function App() {
         <Route
           path="/"
           element={<Home />}
-        />
-
-
-        {/* Subscription route */}
-        <Route
-          path="/subscription"
-          element={<Subscription />}
         />
 
 

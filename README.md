@@ -11,7 +11,6 @@ SecurePDF Vault is a MERN-based application for securely uploading, protecting, 
 * 📄 PDF processing
 * 🔐 JWT authentication
 * 🛡️ Security-focused API
-* 💳 Subscription payments
 * 🪙 Cryptocurrency payment verification
 
 ## 📁 Project Structure

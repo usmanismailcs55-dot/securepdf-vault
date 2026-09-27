@@ -11,14 +11,16 @@ const paymentSchema = new mongoose.Schema(
 
     paymentType: {
       type: String,
-      enum: ["subscription", "crypto"],
+      enum: ["crypto"],
       required: true,
+      default: "crypto",
     },
 
     provider: {
       type: String,
-      enum: ["stripe", "trust_wallet"],
+      enum: ["trust_wallet"],
       required: true,
+      default: "trust_wallet",
     },
 
     paymentReference: {
@@ -51,14 +53,14 @@ const paymentSchema = new mongoose.Schema(
 
     asset: {
       type: String,
-      default: null,
+      required: true,
       uppercase: true,
       trim: true,
     },
 
     receivingWallet: {
       type: String,
-      default: null,
+      required: true,
       trim: true,
     },
 
@@ -67,12 +69,6 @@ const paymentSchema = new mongoose.Schema(
       enum: ["pending", "paid", "failed", "expired", "refunded"],
       default: "pending",
       index: true,
-    },
-
-    subscriptionPlan: {
-      type: String,
-      enum: ["monthly", "yearly"],
-      default: null,
     },
 
     paidAt: {

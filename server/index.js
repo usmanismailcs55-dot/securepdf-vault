@@ -36,8 +36,19 @@ app.use("/api/payments", paymentRoutes);
 
 app.use(errorHandler);
 
+// Verify payment configuration without exposing the wallet address
+console.log(
+  "Payment config:",
+  process.env.PAYMENT_NETWORK,
+  process.env.PAYMENT_ASSET,
+  process.env.PAYMENT_RECEIVING_WALLET
+    ? "wallet configured"
+    : "wallet missing"
+);
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
