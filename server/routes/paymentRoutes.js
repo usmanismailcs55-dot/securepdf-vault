@@ -2,6 +2,7 @@ const express = require("express");
 const crypto = require("crypto");
 
 const Payment = require("../models/Payment");
+const PaymentVerificationLog = require("../models/PaymentVerificationLog");
 const Subscription = require("../models/Subscription");
 const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -327,7 +328,38 @@ router.post(
 );
 
 /*
- * Steps 125, 132, 133, 135:
+ * Step 137:
+ * Create a persistent payment verification event log.
+ */
+const logPaymentVerificationEvent = async ({
+  payment,
+  userId,
+  event,
+  status,
+  transactionHash = null,
+  details = null,
+}) => {
+  try {
+    await PaymentVerificationLog.create({
+      payment: payment._id,
+      user: userId,
+      paymentReference:
+        payment.paymentReference,
+      transactionHash,
+      event,
+      status,
+      details,
+    });
+  } catch (logError) {
+    console.error(
+      "Payment verification logging error:",
+      logError
+    );
+  }
+};
+
+/*
+ * Steps 125, 132, 133, 135, 137:
  * Associate transaction hash and verify
  * the actual TRC-20 USDT payment.
  */
@@ -335,6 +367,9 @@ router.post(
   "/submit-transaction",
   authMiddleware,
   async (req, res) => {
+    let paymentForLogging = null;
+    let normalizedHashForLogging = null;
+
     try {
       const {
         paymentReference,
@@ -355,6 +390,9 @@ router.post(
         transactionHash
           .trim()
           .toLowerCase();
+
+      normalizedHashForLogging =
+        normalizedHash;
 
       if (
         !/^[a-f0-9]{64}$/.test(
@@ -380,6 +418,20 @@ router.post(
         });
       }
 
+      paymentForLogging = payment;
+
+      await logPaymentVerificationEvent({
+        payment,
+        userId: req.user.userId,
+        event:
+          "verification_started",
+        status: "pending",
+        transactionHash:
+          normalizedHash,
+        details:
+          "Payment verification started.",
+      });
+
       const existingPayment =
         await Payment.findOne({
           transactionHash:
@@ -391,6 +443,18 @@ router.post(
         existingPayment._id.toString() !==
           payment._id.toString()
       ) {
+        await logPaymentVerificationEvent({
+          payment,
+          userId: req.user.userId,
+          event:
+            "verification_failed",
+          status: "failed",
+          transactionHash:
+            normalizedHash,
+          details:
+            "Transaction hash has already been used for another payment.",
+        });
+
         return res.status(409).json({
           message:
             "This transaction has already been used for another payment.",
@@ -402,6 +466,18 @@ router.post(
         payment.transactionHash !==
           normalizedHash
       ) {
+        await logPaymentVerificationEvent({
+          payment,
+          userId: req.user.userId,
+          event:
+            "verification_failed",
+          status: "failed",
+          transactionHash:
+            normalizedHash,
+          details:
+            "A different transaction hash was already submitted for this payment.",
+        });
+
         return res.status(409).json({
           message:
             "A different transaction has already been submitted for this payment.",
@@ -414,6 +490,18 @@ router.post(
         );
 
       if (!blockchainData) {
+        await logPaymentVerificationEvent({
+          payment,
+          userId: req.user.userId,
+          event:
+            "verification_failed",
+          status: "failed",
+          transactionHash:
+            normalizedHash,
+          details:
+            "Transaction was not found on the TRON network.",
+        });
+
         return res.status(400).json({
           message:
             "Transaction was not found on the TRON network.",
@@ -430,6 +518,18 @@ router.post(
         transactionInfo.blockNumber ===
           undefined
       ) {
+        await logPaymentVerificationEvent({
+          payment,
+          userId: req.user.userId,
+          event:
+            "transaction_pending",
+          status: "pending",
+          transactionHash:
+            normalizedHash,
+          details:
+            "Transaction is still pending confirmation.",
+        });
+
         return res.status(202).json({
           message:
             "Transaction is still pending confirmation.",
@@ -466,6 +566,18 @@ router.post(
           }
         );
 
+        await logPaymentVerificationEvent({
+          payment,
+          userId: req.user.userId,
+          event:
+            "verification_failed",
+          status: "failed",
+          transactionHash:
+            normalizedHash,
+          details:
+            payment.failureReason,
+        });
+
         return res.status(400).json({
           message:
             "The blockchain transaction failed.",
@@ -492,6 +604,18 @@ router.post(
           "Transaction is not a valid TRC-20 USDT transfer.";
 
         await payment.save();
+
+        await logPaymentVerificationEvent({
+          payment,
+          userId: req.user.userId,
+          event:
+            "verification_failed",
+          status: "failed",
+          transactionHash:
+            normalizedHash,
+          details:
+            payment.failureReason,
+        });
 
         return res.status(400).json({
           message:
@@ -521,6 +645,18 @@ router.post(
           "Transaction was not sent to the configured receiving wallet.";
 
         await payment.save();
+
+        await logPaymentVerificationEvent({
+          payment,
+          userId: req.user.userId,
+          event:
+            "verification_failed",
+          status: "failed",
+          transactionHash:
+            normalizedHash,
+          details:
+            payment.failureReason,
+        });
 
         return res.status(400).json({
           message:
@@ -570,6 +706,18 @@ router.post(
           }
         );
 
+        await logPaymentVerificationEvent({
+          payment,
+          userId: req.user.userId,
+          event:
+            "underpayment",
+          status: "failed",
+          transactionHash:
+            normalizedHash,
+          details:
+            payment.failureReason,
+        });
+
         return res.status(400).json({
           message:
             `Underpayment detected. Received ${receivedAmount} ${payment.asset}; required ${requiredAmount} ${payment.asset}.`,
@@ -604,6 +752,22 @@ router.post(
         null;
 
       await payment.save();
+
+      await logPaymentVerificationEvent({
+        payment,
+        userId: req.user.userId,
+        event:
+          isOverpayment
+            ? "overpayment"
+            : "verification_success",
+        status: "paid",
+        transactionHash:
+          normalizedHash,
+        details:
+          isOverpayment
+            ? `Overpayment accepted. Received ${receivedAmount} ${payment.asset}; required ${requiredAmount} ${payment.asset}.`
+            : `Payment successfully verified. Received ${receivedAmount} ${payment.asset}.`,
+      });
 
       /*
        * Step 135:
@@ -681,6 +845,26 @@ router.post(
           "paid",
       });
     } catch (error) {
+      if (
+        paymentForLogging
+      ) {
+        await logPaymentVerificationEvent({
+          payment:
+            paymentForLogging,
+          userId:
+            req.user.userId,
+          event:
+            "verification_failed",
+          status:
+            "failed",
+          transactionHash:
+            normalizedHashForLogging,
+          details:
+            error.message ||
+            "Unexpected payment verification error.",
+        });
+      }
+
       if (
         error.code === 11000
       ) {
