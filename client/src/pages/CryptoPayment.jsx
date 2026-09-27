@@ -39,10 +39,6 @@ export default function CryptoPayment() {
   const [paymentError, setPaymentError] =
     useState("");
 
-  /*
-   * Create the payment record on the backend.
-   * The backend generates the official payment reference.
-   */
   useEffect(() => {
     const createPayment = async () => {
       try {
@@ -214,22 +210,121 @@ export default function CryptoPayment() {
         return;
       }
 
-      // Step 120: Verify blockchain transaction execution
-      if (data.ret && data.ret.length > 0) {
-        const contractResult =
-          data.ret[0].contractRet;
+      /*
+       * Step 126:
+       * A transaction can exist on TRON before its
+       * execution information is available.
+       *
+       * Query transaction info separately to determine
+       * whether the transaction has been confirmed.
+       */
+      setQueryStatus(
+        "Transaction found. Checking confirmation status..."
+      );
 
-        if (contractResult !== "SUCCESS") {
+      const infoResponse = await fetch(
+        `${tronApiUrl}/wallet/gettransactioninfobyid`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            value: hash,
+          }),
+        }
+      );
+
+      if (!infoResponse.ok) {
+        throw new Error(
+          `TRON transaction information request failed with status ${infoResponse.status}`
+        );
+      }
+
+      const transactionInfo =
+        await infoResponse.json();
+
+      console.log(
+        "TRON transaction info:",
+        transactionInfo
+      );
+
+      /*
+       * If transaction information is not available yet,
+       * keep the payment in a pending state.
+       */
+      if (
+        !transactionInfo ||
+        Object.keys(transactionInfo).length === 0
+      ) {
+        setQueryStatus(
+          "Transaction is pending confirmation on the TRON network. Please wait and try again."
+        );
+
+        setTransactionData({
+          ...data,
+          transactionInfo,
+          paymentReference,
+          status: "pending",
+        });
+
+        return;
+      }
+
+      /*
+       * A block number indicates that the transaction
+       * has been included in a TRON block.
+       */
+      if (
+        transactionInfo.blockNumber === undefined ||
+        transactionInfo.blockNumber === null
+      ) {
+        setQueryStatus(
+          "Transaction is pending confirmation on the TRON network. Please wait and try again."
+        );
+
+        setTransactionData({
+          ...data,
+          transactionInfo,
+          paymentReference,
+          status: "pending",
+        });
+
+        return;
+      }
+
+      // Step 120: Verify blockchain transaction execution
+      if (
+        transactionInfo.receipt &&
+        transactionInfo.receipt.result
+      ) {
+        const executionResult =
+          transactionInfo.receipt.result;
+
+        if (executionResult !== "SUCCESS") {
           setQueryStatus(
-            `Transaction found, but blockchain execution status is: ${
-              contractResult || "UNKNOWN"
-            }`
+            `Transaction found, but blockchain execution status is: ${executionResult}`
           );
+
+          setTransactionData({
+            ...data,
+            transactionInfo,
+            paymentReference,
+            status: "failed",
+          });
+
           return;
         }
       }
 
-      // Step 121: Verify transaction amount
+      /*
+       * Step 121: Verify transaction amount
+       *
+       * NOTE:
+       * The existing TRC-20 amount verification remains
+       * unchanged here and will be corrected in the
+       * dedicated token-verification step.
+       */
       const transferAmount =
         data?.raw_data?.contract?.[0]?.parameter?.value?.amount;
 
@@ -309,7 +404,9 @@ export default function CryptoPayment() {
 
       setTransactionData({
         ...data,
+        transactionInfo,
         paymentReference,
+        status: "verified",
       });
 
       setQueryStatus(
@@ -386,7 +483,6 @@ export default function CryptoPayment() {
                 </span>
               </div>
 
-              {/* Step 124: Payment Reference */}
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">
                   Payment Reference
@@ -427,7 +523,6 @@ export default function CryptoPayment() {
                 </p>
 
                 <div className="flex items-center gap-2">
-
                   <div className="flex-1 p-3 bg-gray-100 rounded-lg break-all font-mono text-sm text-gray-800">
                     {walletAddress}
                   </div>
@@ -449,12 +544,10 @@ export default function CryptoPayment() {
                       </>
                     )}
                   </button>
-
                 </div>
               </>
             ) : (
               <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-
                 <AlertTriangle
                   className="text-red-600"
                   size={22}
@@ -463,14 +556,12 @@ export default function CryptoPayment() {
                 <p className="text-red-600">
                   Payment wallet is not configured.
                 </p>
-
               </div>
             )}
           </div>
 
           {/* How to Pay */}
           <div className="border rounded-xl p-6 mb-6">
-
             <h2 className="text-xl font-semibold text-gray-900 mb-5">
               How to Pay
             </h2>
@@ -534,14 +625,12 @@ export default function CryptoPayment() {
 
           {/* Warning */}
           <div className="flex gap-3 p-5 bg-yellow-50 border border-yellow-200 rounded-xl mb-6">
-
             <AlertTriangle
               className="text-yellow-600 flex-shrink-0"
               size={22}
             />
 
             <div>
-
               <h3 className="font-semibold text-yellow-900 mb-1">
                 Important
               </h3>
@@ -558,7 +647,6 @@ export default function CryptoPayment() {
                 wrong network may result in the payment
                 not being credited.
               </p>
-
             </div>
           </div>
 
@@ -648,17 +736,43 @@ export default function CryptoPayment() {
 
             {/* Retrieved Transaction Data */}
             {transactionData && (
-              <div className="mt-5 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div
+                className={`mt-5 p-4 rounded-lg ${
+                  transactionData.status === "pending"
+                    ? "bg-yellow-50 border border-yellow-200"
+                    : transactionData.status === "failed"
+                    ? "bg-red-50 border border-red-200"
+                    : "bg-green-50 border border-green-200"
+                }`}
+              >
 
                 <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle
-                    size={20}
-                    className="text-green-600"
-                  />
 
-                  <h3 className="font-semibold text-green-900">
-                    Transaction Verified
+                  {transactionData.status === "pending" ? (
+                    <AlertTriangle
+                      size={20}
+                      className="text-yellow-600"
+                    />
+                  ) : transactionData.status === "failed" ? (
+                    <AlertTriangle
+                      size={20}
+                      className="text-red-600"
+                    />
+                  ) : (
+                    <CheckCircle
+                      size={20}
+                      className="text-green-600"
+                    />
+                  )}
+
+                  <h3 className="font-semibold">
+                    {transactionData.status === "pending"
+                      ? "Transaction Pending"
+                      : transactionData.status === "failed"
+                      ? "Transaction Failed"
+                      : "Transaction Verified"}
                   </h3>
+
                 </div>
 
                 <p className="text-sm text-gray-700 break-all mb-2">
