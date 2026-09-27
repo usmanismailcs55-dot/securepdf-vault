@@ -8,6 +8,7 @@ import {
   History,
 } from "lucide-react";
 import { Routes, Route } from "react-router-dom";
+
 import Navbar from "./components/Navbar";
 import Card from "./components/Card";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -16,13 +17,17 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Subscription from "./pages/Subscription";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 import PdfUpload from "./components/PdfUpload";
+
 import {
   getDocuments,
   getAccessHistory,
   downloadDocument,
 } from "./services/documentService";
+
 
 function Home() {
   return (
@@ -39,6 +44,7 @@ function Home() {
     </main>
   );
 }
+
 
 function Dashboard() {
   const [documents, setDocuments] = useState([]);
@@ -121,7 +127,6 @@ function Dashboard() {
     0
   );
 
-  // Search + Status Filter
   const filteredDocuments = documents.filter((document) => {
     const matchesSearch = document.originalFilename
       .toLowerCase()
@@ -176,6 +181,7 @@ function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+
         {/* Dashboard Header */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
@@ -187,8 +193,10 @@ function Dashboard() {
           </p>
         </div>
 
+
         {/* Statistics */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
           <Card>
             <p className="text-sm font-medium text-slate-500">
               Total Documents
@@ -198,6 +206,7 @@ function Dashboard() {
               {documents.length}
             </p>
           </Card>
+
 
           <Card>
             <p className="text-sm font-medium text-slate-500">
@@ -209,6 +218,7 @@ function Dashboard() {
             </p>
           </Card>
 
+
           <Card>
             <p className="text-sm font-medium text-slate-500">
               Secure Links
@@ -219,6 +229,7 @@ function Dashboard() {
             </p>
           </Card>
 
+
           <Card>
             <p className="text-sm font-medium text-slate-500">
               Downloads
@@ -228,11 +239,14 @@ function Dashboard() {
               {totalDownloads}
             </p>
           </Card>
+
         </div>
+
 
         {/* Upload Section */}
         <Card>
           <div className="mb-6">
+
             <h2 className="text-xl font-semibold text-slate-900">
               Protect a PDF
             </h2>
@@ -240,14 +254,18 @@ function Dashboard() {
             <p className="mt-1 text-sm text-slate-600">
               Upload a PDF to securely password-protect it.
             </p>
+
           </div>
 
           <PdfUpload />
         </Card>
 
+
         {/* Documents Section */}
         <Card>
+
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+
             <div>
               <h2 className="text-xl font-semibold text-slate-900">
                 Your Documents
@@ -258,10 +276,13 @@ function Dashboard() {
               </p>
             </div>
 
+
             {/* Search and Filter */}
             <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+
               {/* Search */}
               <div className="w-full sm:w-64">
+
                 <label
                   htmlFor="document-search"
                   className="mb-1 block text-sm font-medium text-slate-700"
@@ -279,10 +300,13 @@ function Dashboard() {
                   placeholder="Search by filename..."
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
+
               </div>
+
 
               {/* Status Filter */}
               <div className="w-full sm:w-48">
+
                 <label
                   htmlFor="status-filter"
                   className="mb-1 block text-sm font-medium text-slate-700"
@@ -298,15 +322,33 @@ function Dashboard() {
                   }
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 >
-                  <option value="all">All Documents</option>
-                  <option value="protected">Protected</option>
-                  <option value="processing">Processing</option>
-                  <option value="pending">Pending</option>
-                  <option value="failed">Failed</option>
+                  <option value="all">
+                    All Documents
+                  </option>
+
+                  <option value="protected">
+                    Protected
+                  </option>
+
+                  <option value="processing">
+                    Processing
+                  </option>
+
+                  <option value="pending">
+                    Pending
+                  </option>
+
+                  <option value="failed">
+                    Failed
+                  </option>
                 </select>
+
               </div>
+
             </div>
+
           </div>
+
 
           {/* Loading */}
           {isLoading && (
@@ -317,6 +359,7 @@ function Dashboard() {
             </div>
           )}
 
+
           {/* Error */}
           {!isLoading && error && (
             <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4">
@@ -326,11 +369,13 @@ function Dashboard() {
             </div>
           )}
 
+
           {/* Empty State */}
           {!isLoading &&
             !error &&
             documents.length === 0 && (
               <div className="mt-6 rounded-lg border border-dashed border-slate-300 p-8 text-center">
+
                 <p className="font-medium text-slate-700">
                   No documents yet
                 </p>
@@ -338,8 +383,10 @@ function Dashboard() {
                 <p className="mt-1 text-sm text-slate-500">
                   Upload your first PDF to get started.
                 </p>
+
               </div>
             )}
+
 
           {/* No Search/Filter Results */}
           {!isLoading &&
@@ -347,6 +394,7 @@ function Dashboard() {
             documents.length > 0 &&
             filteredDocuments.length === 0 && (
               <div className="mt-6 rounded-lg border border-dashed border-slate-300 p-8 text-center">
+
                 <p className="font-medium text-slate-700">
                   No matching documents
                 </p>
@@ -354,16 +402,20 @@ function Dashboard() {
                 <p className="mt-1 text-sm text-slate-500">
                   Try changing your search or status filter.
                 </p>
+
               </div>
             )}
+
 
           {/* Document List */}
           {!isLoading &&
             !error &&
             filteredDocuments.length > 0 && (
               <div className="mt-6 overflow-hidden rounded-lg border border-slate-200">
+
                 {/* Header */}
                 <div className="hidden grid-cols-7 gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid">
+
                   <span>Document</span>
                   <span>Size</span>
                   <span>Status</span>
@@ -371,11 +423,15 @@ function Dashboard() {
                   <span>Downloads</span>
                   <span>Expiration</span>
                   <span>Action</span>
+
                 </div>
+
 
                 {/* Documents */}
                 <div className="divide-y divide-slate-200">
+
                   {filteredDocuments.map((document) => {
+
                     const status = getProtectionStatus(
                       document.protectionStatus
                     );
@@ -387,27 +443,38 @@ function Dashboard() {
                         key={document._id}
                         className="grid gap-3 px-5 py-4 sm:grid-cols-7 sm:items-center sm:gap-4"
                       >
+
                         {/* Filename */}
                         <div className="min-w-0">
+
                           <p className="truncate font-medium text-slate-900">
                             {document.originalFilename}
                           </p>
 
                           <p className="mt-1 text-xs text-slate-500 sm:hidden">
-                            {formatFileSize(document.fileSize)}
+                            {formatFileSize(
+                              document.fileSize
+                            )}
                           </p>
+
                         </div>
+
 
                         {/* Size */}
                         <p className="hidden text-sm text-slate-600 sm:block">
-                          {formatFileSize(document.fileSize)}
+                          {formatFileSize(
+                            document.fileSize
+                          )}
                         </p>
+
 
                         {/* Protection Status */}
                         <div>
+
                           <span
                             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${status.className}`}
                           >
+
                             <StatusIcon
                               size={14}
                               strokeWidth={2}
@@ -415,16 +482,21 @@ function Dashboard() {
                             />
 
                             {status.label}
+
                           </span>
+
                         </div>
+
 
                         {/* Uploaded Date */}
                         <p className="text-sm text-slate-600">
                           {formatDate(document.createdAt)}
                         </p>
 
+
                         {/* Downloads */}
                         <div>
+
                           <p className="text-sm font-medium text-slate-700">
                             {document.downloadCount || 0}
                           </p>
@@ -437,7 +509,9 @@ function Dashboard() {
                               )}
                             </p>
                           )}
+
                         </div>
+
 
                         {/* Expiration Status */}
                         <div>
@@ -446,10 +520,13 @@ function Dashboard() {
                           />
                         </div>
 
+
                         {/* Download Action */}
                         <div>
+
                           {document.protectionStatus ===
                             "protected" && (
+
                             <button
                               type="button"
                               onClick={() =>
@@ -461,6 +538,7 @@ function Dashboard() {
                               }
                               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                             >
+
                               <Download
                                 size={14}
                                 aria-hidden="true"
@@ -470,28 +548,41 @@ function Dashboard() {
                               document._id
                                 ? "Downloading..."
                                 : "Download"}
+
                             </button>
+
                           )}
+
                         </div>
+
                       </div>
                     );
                   })}
+
                 </div>
+
               </div>
             )}
+
         </Card>
+
 
         {/* Access History */}
         <Card>
+
           <div className="flex items-center gap-3">
+
             <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
+
               <History
                 size={20}
                 aria-hidden="true"
               />
+
             </div>
 
             <div>
+
               <h2 className="text-xl font-semibold text-slate-900">
                 Access History
               </h2>
@@ -499,11 +590,16 @@ function Dashboard() {
               <p className="mt-1 text-sm text-slate-600">
                 Recent activity on your protected documents.
               </p>
+
             </div>
+
           </div>
 
+
           {accessHistory.length === 0 ? (
+
             <div className="mt-6 rounded-lg border border-dashed border-slate-300 p-8 text-center">
+
               <p className="font-medium text-slate-700">
                 No access history yet
               </p>
@@ -511,41 +607,58 @@ function Dashboard() {
               <p className="mt-1 text-sm text-slate-500">
                 Download activity will appear here.
               </p>
+
             </div>
+
           ) : (
+
             <div className="mt-6 overflow-hidden rounded-lg border border-slate-200">
+
               {/* History Header */}
               <div className="hidden grid-cols-4 gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid">
+
                 <span>Document</span>
                 <span>Action</span>
                 <span>Status</span>
                 <span>Date</span>
+
               </div>
+
 
               {/* History Items */}
               <div className="divide-y divide-slate-200">
+
                 {accessHistory.map((log) => (
+
                   <div
                     key={log._id}
                     className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center sm:gap-4"
                   >
+
                     {/* Document */}
                     <div className="min-w-0">
+
                       <p className="truncate font-medium text-slate-900">
                         {log.document?.originalFilename ||
                           "Unknown document"}
                       </p>
+
                     </div>
+
 
                     {/* Action */}
                     <div>
+
                       <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold capitalize text-slate-700">
                         {log.action}
                       </span>
+
                     </div>
+
 
                     {/* Status */}
                     <div>
+
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
                           log.success
@@ -557,7 +670,9 @@ function Dashboard() {
                           ? "Successful"
                           : "Failed"}
                       </span>
+
                     </div>
+
 
                     {/* Date */}
                     <p className="text-sm text-slate-600">
@@ -565,38 +680,68 @@ function Dashboard() {
                         log.createdAt
                       ).toLocaleString()}
                     </p>
+
                   </div>
+
                 ))}
+
               </div>
+
             </div>
+
           )}
+
         </Card>
+
       </div>
     </DashboardLayout>
   );
 }
 
+
 function App() {
   return (
     <div className="min-h-screen bg-slate-50">
+
       <Navbar />
 
       <Routes>
+
         {/* Public route */}
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={<Home />}
+        />
+
+
+        {/* Subscription route */}
+        <Route
+          path="/subscription"
+          element={<Subscription />}
+        />
+
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
+
           <Route
             path="/dashboard"
             element={<Dashboard />}
           />
+
         </Route>
 
-        {/* Authentication routes */}
-        <Route path="/register" element={<Register />} />
 
-        <Route path="/login" element={<Login />} />
+        {/* Authentication routes */}
+        <Route
+          path="/register"
+          element={<Register />}
+        />
+
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
         <Route
           path="/forgot-password"
@@ -607,9 +752,12 @@ function App() {
           path="/reset-password/:token"
           element={<ResetPassword />}
         />
+
       </Routes>
+
     </div>
   );
 }
+
 
 export default App;
