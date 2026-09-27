@@ -1,8 +1,11 @@
-
 require("dotenv").config();
 
 const config = {
   jwtSecret: process.env.JWT_SECRET,
+
+  subscriptionPrice: 500,
+  cryptocurrency: "USDT",
+  network: "TRC20",
 };
 
 if (!config.jwtSecret) {
@@ -10,4 +13,3 @@ if (!config.jwtSecret) {
 }
 
 module.exports = config;
-
