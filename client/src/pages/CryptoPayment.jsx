@@ -39,11 +39,19 @@ export default function CryptoPayment() {
   const [paymentError, setPaymentError] =
     useState("");
 
+  const [paymentStatus, setPaymentStatus] =
+    useState("");
+
+  const [paymentStatusType, setPaymentStatusType] =
+    useState("");
+
   useEffect(() => {
     const createPayment = async () => {
       try {
         setPaymentLoading(true);
         setPaymentError("");
+        setPaymentStatus("");
+        setPaymentStatusType("");
 
         const accessToken =
           localStorage.getItem("accessToken");
@@ -81,6 +89,12 @@ export default function CryptoPayment() {
         setPaymentReference(
           data.paymentReference
         );
+
+        // Step 134: Payment status notification
+        setPaymentStatus(
+          "Payment created. Waiting for your transaction."
+        );
+        setPaymentStatusType("pending");
       } catch (error) {
         console.error(
           "Create payment error:",
@@ -91,6 +105,12 @@ export default function CryptoPayment() {
           error.message ||
             "Unable to create payment."
         );
+
+        // Step 134: Payment status notification
+        setPaymentStatus(
+          "Unable to create the payment."
+        );
+        setPaymentStatusType("failed");
       } finally {
         setPaymentLoading(false);
       }
@@ -126,6 +146,10 @@ export default function CryptoPayment() {
     setSubmitted(false);
     setQueryStatus("");
     setTransactionData(null);
+
+    // Step 134: Reset status while editing
+    setPaymentStatus("");
+    setPaymentStatusType("");
   };
 
   const handleSubmitTransaction = async (event) => {
@@ -138,10 +162,20 @@ export default function CryptoPayment() {
     setQueryStatus("");
     setTransactionData(null);
 
+    // Step 134: Clear previous status
+    setPaymentStatus("");
+    setPaymentStatusType("");
+
     if (!paymentReference) {
       setQueryStatus(
         "Payment reference is not available yet."
       );
+
+      setPaymentStatus(
+        "Payment is still being prepared."
+      );
+      setPaymentStatusType("pending");
+
       return;
     }
 
@@ -153,6 +187,13 @@ export default function CryptoPayment() {
       setHashError(
         "Please enter your transaction hash."
       );
+
+      // Step 134: Payment status notification
+      setPaymentStatus(
+        "Please enter your transaction hash."
+      );
+      setPaymentStatusType("failed");
+
       return;
     }
 
@@ -160,6 +201,13 @@ export default function CryptoPayment() {
       setHashError(
         "Invalid TRON transaction hash. The transaction hash must contain exactly 64 hexadecimal characters."
       );
+
+      // Step 134: Payment status notification
+      setPaymentStatus(
+        "Payment could not be verified because the transaction hash is invalid."
+      );
+      setPaymentStatusType("failed");
+
       return;
     }
 
@@ -167,6 +215,12 @@ export default function CryptoPayment() {
     setQueryStatus(
       "Querying the TRON blockchain..."
     );
+
+    // Step 134: Payment status notification
+    setPaymentStatus(
+      "Your payment is being verified..."
+    );
+    setPaymentStatusType("pending");
 
     try {
       // Step 119: Query TRON blockchain
@@ -200,6 +254,12 @@ export default function CryptoPayment() {
         setQueryStatus(
           `TRON API error: ${data.Error}`
         );
+
+        setPaymentStatus(
+          "Payment verification failed."
+        );
+        setPaymentStatusType("failed");
+
         return;
       }
 
@@ -207,6 +267,12 @@ export default function CryptoPayment() {
         setQueryStatus(
           "Transaction was not found on the TRON network."
         );
+
+        setPaymentStatus(
+          "Transaction not found. Your payment is not verified yet."
+        );
+        setPaymentStatusType("failed");
+
         return;
       }
 
@@ -214,13 +280,15 @@ export default function CryptoPayment() {
        * Step 126:
        * A transaction can exist on TRON before its
        * execution information is available.
-       *
-       * Query transaction info separately to determine
-       * whether the transaction has been confirmed.
        */
       setQueryStatus(
         "Transaction found. Checking confirmation status..."
       );
+
+      setPaymentStatus(
+        "Transaction found. Waiting for blockchain confirmation..."
+      );
+      setPaymentStatusType("pending");
 
       const infoResponse = await fetch(
         `${tronApiUrl}/wallet/gettransactioninfobyid`,
@@ -250,8 +318,7 @@ export default function CryptoPayment() {
       );
 
       /*
-       * If transaction information is not available yet,
-       * keep the payment in a pending state.
+       * Pending transaction
        */
       if (
         !transactionInfo ||
@@ -260,6 +327,11 @@ export default function CryptoPayment() {
         setQueryStatus(
           "Transaction is pending confirmation on the TRON network. Please wait and try again."
         );
+
+        setPaymentStatus(
+          "Payment is pending confirmation."
+        );
+        setPaymentStatusType("pending");
 
         setTransactionData({
           ...data,
@@ -282,6 +354,11 @@ export default function CryptoPayment() {
         setQueryStatus(
           "Transaction is pending confirmation on the TRON network. Please wait and try again."
         );
+
+        setPaymentStatus(
+          "Payment is pending confirmation."
+        );
+        setPaymentStatusType("pending");
 
         setTransactionData({
           ...data,
@@ -306,6 +383,11 @@ export default function CryptoPayment() {
             `Transaction found, but blockchain execution status is: ${executionResult}`
           );
 
+          setPaymentStatus(
+            "Payment failed because the blockchain transaction failed."
+          );
+          setPaymentStatusType("failed");
+
           setTransactionData({
             ...data,
             transactionInfo,
@@ -319,11 +401,6 @@ export default function CryptoPayment() {
 
       /*
        * Step 121: Verify transaction amount
-       *
-       * NOTE:
-       * The existing TRC-20 amount verification remains
-       * unchanged here and will be corrected in the
-       * dedicated token-verification step.
        */
       const transferAmount =
         data?.raw_data?.contract?.[0]?.parameter?.value?.amount;
@@ -332,6 +409,12 @@ export default function CryptoPayment() {
         setQueryStatus(
           "Transaction was found, but the transfer amount could not be determined."
         );
+
+        setPaymentStatus(
+          "Payment amount could not be verified."
+        );
+        setPaymentStatusType("failed");
+
         return;
       }
 
@@ -342,6 +425,12 @@ export default function CryptoPayment() {
         setQueryStatus(
           `Transaction amount does not match the required ${paymentAmount} ${paymentAsset}.`
         );
+
+        setPaymentStatus(
+          `Payment amount does not match the required ${paymentAmount} ${paymentAsset}.`
+        );
+        setPaymentStatusType("failed");
+
         return;
       }
 
@@ -353,6 +442,12 @@ export default function CryptoPayment() {
         setQueryStatus(
           "Transaction is not a TRC-20 token transfer."
         );
+
+        setPaymentStatus(
+          "Payment failed because the transaction is not a valid TRC-20 token transfer."
+        );
+        setPaymentStatusType("failed");
+
         return;
       }
 
@@ -370,6 +465,12 @@ export default function CryptoPayment() {
         setQueryStatus(
           "Transaction was not sent to the configured receiving wallet."
         );
+
+        setPaymentStatus(
+          "Payment failed because it was sent to the wrong wallet."
+        );
+        setPaymentStatusType("failed");
+
         return;
       }
 
@@ -395,18 +496,73 @@ export default function CryptoPayment() {
         await paymentResponse.json();
 
       if (!paymentResponse.ok) {
+        const resultStatus =
+          paymentResult.status;
+
+        if (resultStatus === "underpaid") {
+          setPaymentStatus(
+            `Underpayment: you paid ${paymentResult.receivedAmount} ${paymentAsset}, but ${paymentResult.requiredAmount} ${paymentAsset} is required.`
+          );
+        } else {
+          setPaymentStatus(
+            paymentResult.message ||
+              "This payment could not be verified."
+          );
+        }
+
+        setPaymentStatusType("failed");
+
         setQueryStatus(
           paymentResult.message ||
             "This transaction could not be associated with the payment."
         );
+
+        setTransactionData({
+          ...data,
+          transactionInfo,
+          paymentReference,
+          status:
+            resultStatus === "underpaid"
+              ? "underpaid"
+              : "failed",
+        });
+
         return;
+      }
+
+      /*
+       * Step 133:
+       * Overpayment is accepted.
+       */
+      const receivedAmount =
+        Number(paymentResult.receivedAmount);
+
+      const requiredAmount =
+        Number(paymentResult.requiredAmount);
+
+      const overpaymentAmount =
+        Number(paymentResult.overpaymentAmount || 0);
+
+      if (
+        receivedAmount >
+        requiredAmount
+      ) {
+        setPaymentStatus(
+          `Payment successful. You paid ${receivedAmount} ${paymentAsset}, which is ${overpaymentAmount} ${paymentAsset} over the required amount. Your overpayment was accepted.`
+        );
+        setPaymentStatusType("success");
+      } else {
+        setPaymentStatus(
+          `Payment successful. ${requiredAmount} ${paymentAsset} received.`
+        );
+        setPaymentStatusType("success");
       }
 
       setTransactionData({
         ...data,
         transactionInfo,
         paymentReference,
-        status: "verified",
+        status: "paid",
       });
 
       setQueryStatus(
@@ -421,7 +577,46 @@ export default function CryptoPayment() {
       setQueryStatus(
         "Unable to query the TRON blockchain. Please try again."
       );
+
+      setPaymentStatus(
+        "Payment verification could not be completed. Please try again."
+      );
+      setPaymentStatusType("failed");
     }
+  };
+
+  const getPaymentStatusClasses = () => {
+    if (paymentStatusType === "success") {
+      return "bg-green-50 border-green-200 text-green-800";
+    }
+
+    if (paymentStatusType === "failed") {
+      return "bg-red-50 border-red-200 text-red-800";
+    }
+
+    return "bg-yellow-50 border-yellow-200 text-yellow-800";
+  };
+
+  const getPaymentStatusIcon = () => {
+    if (paymentStatusType === "success") {
+      return (
+        <CheckCircle
+          size={22}
+          className="text-green-600 flex-shrink-0"
+        />
+      );
+    }
+
+    return (
+      <AlertTriangle
+        size={22}
+        className={
+          paymentStatusType === "failed"
+            ? "text-red-600 flex-shrink-0"
+            : "text-yellow-600 flex-shrink-0"
+        }
+      />
+    );
   };
 
   return (
@@ -452,6 +647,25 @@ export default function CryptoPayment() {
               <p className="text-red-700">
                 {paymentError}
               </p>
+            </div>
+          )}
+
+          {/* Step 134: Payment Status Notification */}
+          {paymentStatus && (
+            <div
+              className={`flex items-start gap-3 p-4 mb-6 border rounded-lg ${getPaymentStatusClasses()}`}
+            >
+              {getPaymentStatusIcon()}
+
+              <div>
+                <p className="font-semibold">
+                  Payment Status
+                </p>
+
+                <p className="text-sm mt-1">
+                  {paymentStatus}
+                </p>
+              </div>
             </div>
           )}
 
@@ -740,7 +954,8 @@ export default function CryptoPayment() {
                 className={`mt-5 p-4 rounded-lg ${
                   transactionData.status === "pending"
                     ? "bg-yellow-50 border border-yellow-200"
-                    : transactionData.status === "failed"
+                    : transactionData.status === "failed" ||
+                      transactionData.status === "underpaid"
                     ? "bg-red-50 border border-red-200"
                     : "bg-green-50 border border-green-200"
                 }`}
@@ -753,7 +968,8 @@ export default function CryptoPayment() {
                       size={20}
                       className="text-yellow-600"
                     />
-                  ) : transactionData.status === "failed" ? (
+                  ) : transactionData.status === "failed" ||
+                    transactionData.status === "underpaid" ? (
                     <AlertTriangle
                       size={20}
                       className="text-red-600"
@@ -770,7 +986,9 @@ export default function CryptoPayment() {
                       ? "Transaction Pending"
                       : transactionData.status === "failed"
                       ? "Transaction Failed"
-                      : "Transaction Verified"}
+                      : transactionData.status === "underpaid"
+                      ? "Payment Underpaid"
+                      : "Payment Successful"}
                   </h3>
 
                 </div>
