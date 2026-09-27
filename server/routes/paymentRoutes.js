@@ -3,7 +3,9 @@ const crypto = require("crypto");
 
 const Payment = require("../models/Payment");
 const Subscription = require("../models/Subscription");
+const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware");
+const transporter = require("../utils/sendEmail");
 
 const router = express.Router();
 
@@ -28,8 +30,7 @@ const decodeBase58Address = (address) => {
       throw new Error("Invalid TRON address");
     }
 
-    value =
-      value * 58n + BigInt(index);
+    value = value * 58n + BigInt(index);
   }
 
   let hex = value.toString(16);
@@ -63,13 +64,9 @@ const getTransactionData = async (transactionHash) => {
     );
   }
 
-  const transaction =
-    await transactionResponse.json();
+  const transaction = await transactionResponse.json();
 
-  if (
-    !transaction ||
-    !transaction.txID
-  ) {
+  if (!transaction || !transaction.txID) {
     return null;
   }
 
@@ -92,8 +89,7 @@ const getTransactionData = async (transactionHash) => {
     );
   }
 
-  const transactionInfo =
-    await infoResponse.json();
+  const transactionInfo = await infoResponse.json();
 
   return {
     transaction,
@@ -293,7 +289,7 @@ router.post(
 );
 
 /*
- * Steps 125, 132, 133:
+ * Steps 125, 132, 133, 135:
  * Associate transaction hash and verify
  * the actual TRC-20 USDT payment.
  */
@@ -552,9 +548,6 @@ router.post(
       /*
        * Step 133:
        * Accept overpayment.
-       *
-       * Any amount greater than the required
-       * amount is accepted as a successful payment.
        */
       const isOverpayment =
         receivedAmount >
@@ -573,6 +566,56 @@ router.post(
         null;
 
       await payment.save();
+
+      /*
+       * Step 135:
+       * Send payment confirmation email.
+       */
+      try {
+        const user =
+          await User.findById(
+            req.user.userId
+          ).select(
+            "name email"
+          );
+
+        if (
+          user &&
+          user.email
+        ) {
+          await transporter.sendMail({
+            from:
+              process.env.EMAIL_USER,
+
+            to:
+              user.email,
+
+            subject:
+              "SecurePDF Vault - Payment Confirmation",
+
+            text:
+              `Hello ${user.name},\n\n` +
+              `Your crypto payment has been successfully verified.\n\n` +
+              `Payment Reference: ${payment.paymentReference}\n` +
+              `Amount Received: ${receivedAmount} ${payment.asset}\n` +
+              `Required Amount: ${requiredAmount} ${payment.asset}\n` +
+              `Transaction Hash: ${payment.transactionHash}\n` +
+              `Network: ${process.env.PAYMENT_NETWORK}\n\n` +
+              (
+                isOverpayment
+                  ? `Overpayment Accepted: ${receivedAmount - requiredAmount} ${payment.asset}\n\n`
+                  : ""
+              ) +
+              `Your payment has been recorded successfully. Your subscription can now be activated.\n\n` +
+              `Thank you for using SecurePDF Vault.`,
+          });
+        }
+      } catch (emailError) {
+        console.error(
+          "Payment confirmation email error:",
+          emailError
+        );
+      }
 
       return res.status(200).json({
         message:
