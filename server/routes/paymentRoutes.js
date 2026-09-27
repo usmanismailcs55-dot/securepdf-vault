@@ -190,4 +190,101 @@ router.post(
   }
 );
 
+/*
+ * Step 131:
+ * Activate a subscription only after the payment
+ * has already been successfully verified and marked paid.
+ *
+ * Subscription duration: 30 days.
+ */
+router.post(
+  "/activate-subscription",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { paymentReference } = req.body;
+
+      if (!paymentReference) {
+        return res.status(400).json({
+          message: "Payment reference is required",
+        });
+      }
+
+      const payment = await Payment.findOne({
+        paymentReference,
+        user: req.user.userId,
+      });
+
+      if (!payment) {
+        return res.status(404).json({
+          message: "Payment not found",
+        });
+      }
+
+      /*
+       * Security requirement:
+       * A subscription can only be activated when the
+       * payment has already been marked as paid by the
+       * payment-verification process.
+       */
+      if (payment.status !== "paid") {
+        return res.status(400).json({
+          message:
+            "Subscription cannot be activated until the payment is successfully verified.",
+        });
+      }
+
+      if (!payment.paidAt) {
+        payment.paidAt = new Date();
+        await payment.save();
+      }
+
+      const startedAt = payment.paidAt;
+
+      const expiresAt = new Date(startedAt);
+      expiresAt.setDate(expiresAt.getDate() + 30);
+
+      const subscription =
+        await Subscription.findOneAndUpdate(
+          {
+            user: req.user.userId,
+          },
+          {
+            $set: {
+              status: "active",
+              payment: payment._id,
+              startedAt,
+              expiresAt,
+            },
+          },
+          {
+            new: true,
+            upsert: true,
+            setDefaultsOnInsert: true,
+          }
+        );
+
+      return res.status(200).json({
+        message:
+          "Subscription activated successfully.",
+        subscription: {
+          status: subscription.status,
+          startedAt: subscription.startedAt,
+          expiresAt: subscription.expiresAt,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Activate subscription error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to activate subscription.",
+      });
+    }
+  }
+);
+
 module.exports = router;
