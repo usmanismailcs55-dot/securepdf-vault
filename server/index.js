@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const https = require("https");
 const fs = require("fs");
 
@@ -17,6 +18,8 @@ const paymentRoutes = require("./routes/paymentRoutes");
 require("./utils/sendEmail");
 
 const app = express();
+
+app.use(helmet());
 
 connectDB();
 
@@ -58,3 +61,6 @@ const httpsOptions = {
 https.createServer(httpsOptions, app).listen(PORT, () => {
   console.log(`HTTPS server running on https://localhost:${PORT}`);
 });
+
+
+
