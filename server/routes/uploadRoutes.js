@@ -76,7 +76,7 @@ router.post(
         },
       });
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("PDF upload request failed.");
 
       return res.status(500).json({
         success: false,
@@ -87,6 +87,7 @@ router.post(
 );
 
 module.exports = router;
+
 
 
 

@@ -1,5 +1,5 @@
 const errorHandler = (err, req, res, next) => {
-  console.error(err.stack);
+  console.error("Unhandled server error.");
 
   res.status(err.statusCode || 500).json({
     success: false,

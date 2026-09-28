@@ -30,7 +30,7 @@ router.get("/verify-email/:token", async (req, res) => {
       message: "Email verified successfully",
     });
   } catch (error) {
-    console.error("Email verification error:", error);
+    console.error("Email verification request failed.");
 
     return res.status(500).json({
       success: false,

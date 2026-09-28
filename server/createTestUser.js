@@ -29,7 +29,6 @@ const createTestUser = async () => {
 
     console.log("Test user created successfully.");
     console.log(`Email: ${email}`);
-    console.log("Password: CorrectPassword123");
 
     await mongoose.disconnect();
     process.exit(0);

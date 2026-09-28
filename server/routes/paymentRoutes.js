@@ -199,8 +199,7 @@ router.get(
       });
     } catch (error) {
       console.error(
-        "Get payment history error:",
-        error
+        "Get payment history request failed."
       );
 
       return res.status(500).json({
@@ -315,8 +314,7 @@ router.post(
       });
     } catch (error) {
       console.error(
-        "Create crypto payment error:",
-        error
+        "Create crypto payment request failed."
       );
 
       res.status(500).json({
@@ -352,8 +350,7 @@ const logPaymentVerificationEvent = async ({
     });
   } catch (logError) {
     console.error(
-      "Payment verification logging error:",
-      logError
+      "Payment verification logging failed."
     );
   }
 };
@@ -814,8 +811,7 @@ router.post(
         }
       } catch (emailError) {
         console.error(
-          "Payment confirmation email error:",
-          emailError
+          "Payment confirmation email failed."
         );
       }
 
@@ -860,7 +856,6 @@ router.post(
           transactionHash:
             normalizedHashForLogging,
           details:
-            error.message ||
             "Unexpected payment verification error.",
         });
       }
@@ -875,8 +870,7 @@ router.post(
       }
 
       console.error(
-        "Submit transaction error:",
-        error
+        "Submit transaction request failed."
       );
 
       return res.status(500).json({
@@ -993,8 +987,7 @@ router.post(
       });
     } catch (error) {
       console.error(
-        "Activate subscription error:",
-        error
+        "Activate subscription request failed."
       );
 
       return res.status(500).json({

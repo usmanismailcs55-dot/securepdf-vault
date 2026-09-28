@@ -21,10 +21,7 @@ const subscriptionMiddleware = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error(
-      "Subscription middleware error:",
-      error
-    );
+    console.error("Subscription middleware request failed.");
 
     return res.status(500).json({
       success: false,
@@ -34,3 +31,4 @@ const subscriptionMiddleware = async (req, res, next) => {
 };
 
 module.exports = subscriptionMiddleware;
+
