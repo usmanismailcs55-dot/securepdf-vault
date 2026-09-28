@@ -6,6 +6,7 @@ const upload = require("../middleware/uploadMiddleware");
 const validatePdfSignature = require("../utils/validatePdf");
 const generateStorageName = require("../utils/generateStorageName");
 const { encryptBuffer } = require("../utils/fileEncryption");
+const { securityLog } = require("../utils/securityLogger");
 
 const Document = require("../models/Document");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -21,6 +22,11 @@ router.post(
   async (req, res) => {
     try {
       if (!req.file) {
+        securityLog("PDF_UPLOAD_REJECTED", {
+          userId: req.user?.userId,
+          reason: "No PDF file provided",
+        });
+
         return res.status(400).json({
           success: false,
           message: "Please upload a PDF file.",
@@ -29,6 +35,12 @@ router.post(
 
       // Verify the actual PDF signature
       if (!validatePdfSignature(req.file.buffer)) {
+        securityLog("PDF_UPLOAD_REJECTED", {
+          userId: req.user?.userId,
+          filename: req.file.originalname,
+          reason: "Invalid PDF signature",
+        });
+
         return res.status(400).json({
           success: false,
           message: "Invalid PDF file.",
@@ -49,7 +61,10 @@ router.post(
       );
 
       // Store the PDF
-      fs.writeFileSync(filePath, encryptBuffer(req.file.buffer));
+      fs.writeFileSync(
+        filePath,
+        encryptBuffer(req.file.buffer)
+      );
 
       // Create document record
       const document = await Document.create({
@@ -61,6 +76,13 @@ router.post(
         fileSize: req.file.size,
         protectionStatus: "pending",
         isPasswordProtected: false,
+      });
+
+      securityLog("PDF_UPLOAD_SUCCESS", {
+        userId: req.user?.userId,
+        documentId: document._id,
+        filename: req.file.originalname,
+        fileSize: req.file.size,
       });
 
       return res.status(201).json({
@@ -76,7 +98,11 @@ router.post(
         },
       });
     } catch (error) {
-      console.error("PDF upload request failed.");
+      securityLog("PDF_UPLOAD_FAILED", {
+        userId: req.user?.userId,
+        reason: "Unexpected upload error",
+        error: error.message,
+      });
 
       return res.status(500).json({
         success: false,
@@ -87,7 +113,3 @@ router.post(
 );
 
 module.exports = router;
-
-
-
-
