@@ -71,3 +71,8 @@ coverage/
 # ==============================
 *.tmp
 *.temp
+# Local HTTPS certificates
+server/certs/
+
+# Local backup files
+server/index.js.backup
