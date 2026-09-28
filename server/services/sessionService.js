@@ -15,6 +15,7 @@ const createSession = async (userId) => {
     config.jwtSecret,
     {
       expiresIn: "7d",
+      algorithm: "HS256",
     }
   );
 
@@ -74,3 +75,5 @@ module.exports = {
   findSessionByToken,
   revokeSession,
 };
+
+
