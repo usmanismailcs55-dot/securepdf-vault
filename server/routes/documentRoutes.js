@@ -4,6 +4,7 @@ const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
 const subscriptionMiddleware = require("../middleware/subscriptionMiddleware");
+const { validate, schemas } = require("../middleware/validateInput");
 
 const {
   getDocuments,
@@ -42,6 +43,7 @@ router.get(
 // Protect PDF
 router.post(
   "/:documentId/protect",
+  validate(schemas.documentId, "params"),
   authMiddleware,
   subscriptionMiddleware,
   protectDocument
@@ -50,6 +52,7 @@ router.post(
 // Download protected PDF
 router.get(
   "/:documentId/download",
+  validate(schemas.documentId, "params"),
   authMiddleware,
   subscriptionMiddleware,
   downloadDocument
@@ -58,6 +61,7 @@ router.get(
 // Delete document
 router.delete(
   "/:documentId",
+  validate(schemas.documentId, "params"),
   authMiddleware,
   subscriptionMiddleware,
   deleteDocument

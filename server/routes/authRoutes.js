@@ -7,6 +7,7 @@ const { createSession } = require("../services/sessionService");
 const generateVerificationToken = require("../utils/generateVerificationToken");
 const generatePasswordResetToken = require("../utils/generatePasswordResetToken");
 const transporter = require("../utils/sendEmail");
+const { validate, schemas } = require("../middleware/validateInput");
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const PASSWORD_RESET_DURATION_MS = 15 * 60 * 1000;
 // =========================
 // REGISTER
 // =========================
-router.post("/register", async (req, res, next) => {
+router.post("/register", validate(schemas.register), async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
@@ -87,7 +88,7 @@ If you did not create this account, you can ignore this email.`,
 // =========================
 // LOGIN
 // =========================
-router.post("/login", async (req, res, next) => {
+router.post("/login", validate(schemas.login), async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -186,7 +187,7 @@ router.post("/login", async (req, res, next) => {
 // =========================
 // FORGOT PASSWORD
 // =========================
-router.post("/forgot-password", async (req, res, next) => {
+router.post("/forgot-password", validate(schemas.forgotPassword), async (req, res, next) => {
   try {
     const { email } = req.body;
 
@@ -255,7 +256,7 @@ If you did not request a password reset, you can safely ignore this email.`,
 // =========================
 // RESET PASSWORD
 // =========================
-router.post("/reset-password/:token", async (req, res, next) => {
+router.post("/reset-password/:token", validate(schemas.resetPassword), validate(schemas.token, "params"), async (req, res, next) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
