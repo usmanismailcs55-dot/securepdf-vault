@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 
 const express = require("express");
 const cors = require("cors");
@@ -15,6 +15,7 @@ const emailVerificationRoutes = require("./routes/emailVerificationRoutes");
 const documentRoutes = require("./routes/documentRoutes");
 const secureLinkRoutes = require("./routes/secureLinkRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const cleanupExpiredDocuments = require("./utils/cleanupExpiredDocuments");
 
 require("./utils/sendEmail");
 
@@ -31,7 +32,23 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 
-connectDB();
+connectDB().then(async () => {
+  try {
+    const cleanedCount = await cleanupExpiredDocuments();
+    console.log(`Expired document cleanup completed: ${cleanedCount} document(s) cleaned.`);
+  } catch (error) {
+    console.error("Expired document cleanup failed:", error.message);
+  }
+
+  setInterval(async () => {
+    try {
+      const cleanedCount = await cleanupExpiredDocuments();
+      console.log(`Expired document cleanup completed: ${cleanedCount} document(s) cleaned.`);
+    } catch (error) {
+      console.error("Expired document cleanup failed:", error.message);
+    }
+  }, 60 * 60 * 1000);
+});
 
 app.use(
   cors({
@@ -64,13 +81,17 @@ console.log(
 const PORT = process.env.PORT || 5000;
 
 const httpsOptions = {
-  key: fs.readFileSync("./certs/localhost-key.pem"),
-  cert: fs.readFileSync("./certs/localhost-cert.pem"),
+  key: fs.readFileSync(require("path").join(__dirname, "certs", "localhost-key.pem")),
+  cert: fs.readFileSync(require("path").join(__dirname, "certs", "localhost-cert.pem")),
 };
 
 https.createServer(httpsOptions, app).listen(PORT, () => {
   console.log(`HTTPS server running on https://localhost:${PORT}`);
 });
+
+
+
+
 
 
 
