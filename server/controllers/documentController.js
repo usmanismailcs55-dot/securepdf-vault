@@ -8,6 +8,8 @@ const protectPdf = require("../utils/protectPdf");
 const generatePdfPassword = require("../utils/generatePdfPassword");
 const verifyPdfProtection = require("../utils/verifyPdfProtection");
 const { decryptFile } = require("../utils/fileEncryption");
+const { detectSuspiciousAccess } = require("../utils/suspiciousAccess");
+const { securityLog } = require("../utils/securityLogger");
 
 const getDocuments = async (req, res, next) => {
   try {
@@ -171,7 +173,30 @@ const downloadDocument = async (req, res, next) => {
       isDeleted: false,
     });
 
+    // Detect attempts to access another user's document
     if (!document) {
+      const existingDocument = await Document.findOne({
+        _id: documentId,
+        isDeleted: false,
+      });
+
+      if (existingDocument) {
+        const suspicious = await detectSuspiciousAccess({
+          documentId: existingDocument._id,
+          owner: existingDocument.owner,
+          ipAddress: req.ip || null,
+          userAgent: req.get("user-agent") || null,
+          failureReason: "Unauthorized document access attempt",
+        });
+
+        if (suspicious) {
+          securityLog("SUSPICIOUS_DOCUMENT_ACCESS", {
+            documentId,
+            ipAddress: req.ip || null,
+          });
+        }
+      }
+
       return res.status(404).json({
         success: false,
         message: "Document not found",
@@ -280,8 +305,3 @@ module.exports = {
   downloadDocument,
   deleteDocument,
 };
-
-
-
-
-
