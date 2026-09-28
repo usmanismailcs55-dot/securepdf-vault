@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const https = require("https");
 const fs = require("fs");
 
@@ -20,6 +21,15 @@ require("./utils/sendEmail");
 const app = express();
 
 app.use(helmet());
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+});
+
+app.use("/api", apiLimiter);
 
 connectDB();
 
@@ -61,6 +71,7 @@ const httpsOptions = {
 https.createServer(httpsOptions, app).listen(PORT, () => {
   console.log(`HTTPS server running on https://localhost:${PORT}`);
 });
+
 
 
 
