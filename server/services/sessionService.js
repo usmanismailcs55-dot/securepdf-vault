@@ -1,16 +1,27 @@
 const crypto = require("crypto");
+
 const jwt = require("jsonwebtoken");
 
 const Session = require("../models/session");
+
+const User = require("../models/User");
+
 const config = require("../config");
 
 const createSession = async (userId) => {
   const sessionId = crypto.randomUUID();
 
+  const user = await User.findById(userId).select("sessionVersion");
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   const token = jwt.sign(
     {
       userId,
       sessionId,
+      sessionVersion: user.sessionVersion,
     },
     config.jwtSecret,
     {
@@ -69,11 +80,22 @@ const revokeSession = async (token) => {
   );
 };
 
+const revokeAllUserSessions = async (userId) => {
+  return Session.updateMany(
+    {
+      user: userId,
+      revokedAt: null,
+    },
+    {
+      revokedAt: new Date(),
+    }
+  );
+};
+
 module.exports = {
   createSession,
   hashToken,
   findSessionByToken,
   revokeSession,
+  revokeAllUserSessions,
 };
-
-

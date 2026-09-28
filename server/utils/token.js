@@ -1,10 +1,13 @@
-
 const jwt = require("jsonwebtoken");
+
 const config = require("../config");
 
-function generateAccessToken(userId) {
+function generateAccessToken(userId, sessionVersion) {
   return jwt.sign(
-    { userId },
+    {
+      userId,
+      sessionVersion,
+    },
     config.jwtSecret,
     {
       expiresIn: "15m",
@@ -15,4 +18,3 @@ function generateAccessToken(userId) {
 module.exports = {
   generateAccessToken,
 };
-

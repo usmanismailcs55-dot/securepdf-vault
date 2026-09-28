@@ -73,6 +73,12 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // Session invalidation
+    sessionVersion: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
