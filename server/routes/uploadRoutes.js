@@ -5,6 +5,7 @@ const path = require("path");
 const upload = require("../middleware/uploadMiddleware");
 const validatePdfSignature = require("../utils/validatePdf");
 const generateStorageName = require("../utils/generateStorageName");
+const { encryptBuffer } = require("../utils/fileEncryption");
 
 const Document = require("../models/Document");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -48,7 +49,7 @@ router.post(
       );
 
       // Store the PDF
-      fs.writeFileSync(filePath, req.file.buffer);
+      fs.writeFileSync(filePath, encryptBuffer(req.file.buffer));
 
       // Create document record
       const document = await Document.create({
@@ -86,4 +87,6 @@ router.post(
 );
 
 module.exports = router;
+
+
 

@@ -7,6 +7,7 @@ const AccessLog = require("../models/AccessLog");
 const protectPdf = require("../utils/protectPdf");
 const generatePdfPassword = require("../utils/generatePdfPassword");
 const verifyPdfProtection = require("../utils/verifyPdfProtection");
+const { decryptFile } = require("../utils/fileEncryption");
 
 const getDocuments = async (req, res, next) => {
   try {
@@ -96,8 +97,10 @@ const protectDocument = async (req, res, next) => {
       protectedFilename
     );
 
+    const decryptedOriginal = decryptFile(document.originalPath);
+
     await protectPdf(
-      document.originalPath,
+      decryptedOriginal,
       protectedPath,
       password
     );
@@ -277,4 +280,8 @@ module.exports = {
   downloadDocument,
   deleteDocument,
 };
+
+
+
+
 

@@ -1,8 +1,10 @@
 const fs = require("fs");
 const { encryptPDF } = require("@pdfsmaller/pdf-encrypt");
 
-async function protectPdf(inputPath, outputPath, password) {
-  const pdfBytes = fs.readFileSync(inputPath);
+async function protectPdf(input, outputPath, password) {
+  const pdfBytes = Buffer.isBuffer(input)
+    ? input
+    : fs.readFileSync(input);
 
   const encryptedPdf = await encryptPDF(
     new Uint8Array(pdfBytes),
