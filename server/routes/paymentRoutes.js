@@ -659,7 +659,7 @@ router.post(
           "failed";
 
         payment.failureReason =
-          "Transaction was not sent to the configured receiving wallet.";
+          "Receiving wallet mismatch: transaction was not sent to the configured receiving wallet.";
 
         await payment.save();
 
@@ -677,6 +677,8 @@ router.post(
         });
 
         return res.status(400).json({
+          success: false,
+
           message:
             "Transaction was not sent to the configured receiving wallet.",
 
