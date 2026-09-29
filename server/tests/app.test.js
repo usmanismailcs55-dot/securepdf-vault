@@ -1,5 +1,81 @@
-describe("SecurePDF Vault", () => {
-  test("Jest is configured correctly", () => {
-    expect(true).toBe(true);
+const request = require("supertest");
+const bcrypt = require("bcryptjs");
+
+jest.mock("../models/User", () => ({
+  findOne: jest.fn(),
+}));
+
+jest.mock("../services/sessionService", () => ({
+  createSession: jest.fn(),
+}));
+
+const User = require("../models/User");
+const { createSession } = require("../services/sessionService");
+const app = require("../app");
+
+describe("Authentication", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("rejects login when email and password are missing", async () => {
+    const response = await request(app)
+      .post("/api/auth/login")
+      .send({});
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe("Invalid input.");
+  });
+
+  test("rejects login with an unknown email", async () => {
+    User.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(null),
+    });
+
+    const response = await request(app)
+      .post("/api/auth/login")
+      .send({
+        email: "unknown@example.com",
+        password: "Password123!",
+      });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body.message).toBe("Invalid email or password.");
+  });
+
+  test("logs in successfully with valid credentials", async () => {
+    const password = "Password123!";
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const mockUser = {
+      _id: "507f1f77bcf86cd799439011",
+      name: "Test User",
+      email: "test@example.com",
+      password: hashedPassword,
+      accountStatus: "active",
+      failedLoginAttempts: 0,
+      lockUntil: null,
+      sessionVersion: 0,
+      save: jest.fn().mockResolvedValue(true),
+    };
+
+    User.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(mockUser),
+    });
+
+    createSession.mockResolvedValue("test-access-token");
+
+    const response = await request(app)
+      .post("/api/auth/login")
+      .send({
+        email: "test@example.com",
+        password,
+      });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.message).toBe("Login successful.");
+    expect(response.body.accessToken).toBe("test-access-token");
+    expect(response.body.user.email).toBe("test@example.com");
+    expect(createSession).toHaveBeenCalledWith(mockUser._id);
   });
 });
