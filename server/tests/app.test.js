@@ -3,10 +3,15 @@ const bcrypt = require("bcryptjs");
 
 jest.mock("../models/User", () => ({
   findOne: jest.fn(),
+  create: jest.fn(),
 }));
 
 jest.mock("../services/sessionService", () => ({
   createSession: jest.fn(),
+}));
+
+jest.mock("../utils/sendEmail", () => ({
+  sendMail: jest.fn(),
 }));
 
 const User = require("../models/User");
@@ -77,5 +82,40 @@ describe("Authentication", () => {
     expect(response.body.accessToken).toBe("test-access-token");
     expect(response.body.user.email).toBe("test@example.com");
     expect(createSession).toHaveBeenCalledWith(mockUser._id);
+  });
+
+  test("registers a new user successfully", async () => {
+    User.findOne.mockResolvedValue(null);
+
+    const mockUser = {
+      _id: "507f1f77bcf86cd799439012",
+      name: "New Test User",
+      email: "newuser@example.com",
+      password: "Password123!",
+      isEmailVerified: false,
+    };
+
+    User.create.mockResolvedValue(mockUser);
+
+    const response = await request(app)
+      .post("/api/auth/register")
+      .send({
+        name: "New Test User",
+        email: "newuser@example.com",
+        password: "Password123!",
+      });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.message).toBe(
+      "Registration successful. Please check your email to verify your account."
+    );
+    expect(User.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "New Test User",
+        email: "newuser@example.com",
+        password: "Password123!",
+        isEmailVerified: false,
+      })
+    );
   });
 });
