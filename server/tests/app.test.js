@@ -135,6 +135,7 @@ describe("Authentication", () => {
       });
 
     expect(response.statusCode).toBe(401);
+
     expect(response.body.message).toBe(
       "Invalid email or password."
     );
@@ -1214,6 +1215,131 @@ describe("Trust Wallet Payment Verification", () => {
     ).toHaveBeenCalled();
   });
 
+  test("rejects a failed blockchain transaction", async () => {
+    const paymentReference =
+      "SPV-failed-transaction-test";
+
+    const transactionHash =
+      "f".repeat(64);
+
+    const mockPayment = {
+      _id:
+        "507f1f77bcf86cd799439019",
+
+      user:
+        "507f1f77bcf86cd799439011",
+
+      paymentReference,
+
+      amount: 500,
+
+      currency: "USD",
+
+      asset: "USDT",
+
+      status: "pending",
+
+      transactionHash: null,
+
+      paidAt: null,
+
+      failureReason: null,
+
+      save:
+        jest.fn().mockResolvedValue(true),
+    };
+
+    const mockTransaction = {
+      txID: transactionHash,
+
+      raw_data: {
+        contract: [
+          {
+            type:
+              "TriggerSmartContract",
+
+            parameter: {
+              value: {
+                contract_address:
+                  "41a614f803b6fd780986a42c78ec9c7f77e6ded13c",
+
+                data:
+                  "a9059cbb" +
+                  "0000000000000000000000000000000000000000000000000000000000000001" +
+                  "0000000000000000000000000000000000000000000000000000000000000000",
+              },
+            },
+          },
+        ],
+      },
+    };
+
+    const mockTransactionInfo = {
+      blockNumber: 123459,
+
+      receipt: {
+        result: "FAILED",
+      },
+
+      log: [],
+    };
+
+    Payment.findOne.mockResolvedValue(
+      mockPayment
+    );
+
+    PaymentVerificationLog.create.mockResolvedValue(
+      {}
+    );
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+
+        json: async () =>
+          mockTransaction,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+
+        json: async () =>
+          mockTransactionInfo,
+      });
+
+    const response = await request(app)
+      .post(
+        "/api/payments/submit-transaction"
+      )
+      .send({
+        paymentReference,
+        transactionHash,
+      });
+
+    expect(response.statusCode).toBe(400);
+
+    expect(response.body.status).toBe(
+      "failed"
+    );
+
+    expect(mockPayment.status).toBe(
+      "failed"
+    );
+
+    expect(mockPayment.failureReason).toBe(
+      "Blockchain execution failed: FAILED"
+    );
+
+    expect(mockPayment.save).toHaveBeenCalled();
+
+    expect(
+      PaymentVerificationLog.create
+    ).toHaveBeenCalled();
+
+    expect(
+      global.fetch
+    ).toHaveBeenCalledTimes(2);
+  });
+
   test("rejects a transaction sent to the wrong receiving wallet", async () => {
     const paymentReference =
       "SPV-wallet-mismatch-test";
@@ -1435,19 +1561,10 @@ describe("Trust Wallet Payment Verification", () => {
 
       failureReason: null,
 
-      save: jest
-        .fn()
-        .mockResolvedValue(true),
+      save:
+        jest.fn().mockResolvedValue(true),
     };
 
-    /*
-     * First findOne:
-     * Find the payment being verified.
-     *
-     * Second findOne:
-     * Find whether the transaction hash
-     * already belongs to another payment.
-     */
     Payment.findOne
       .mockResolvedValueOnce(
         mockPayment
@@ -1493,10 +1610,6 @@ describe("Trust Wallet Payment Verification", () => {
       PaymentVerificationLog.create
     ).toHaveBeenCalled();
 
-    /*
-     * Blockchain verification must not happen
-     * because the transaction was already used.
-     */
     expect(
       global.fetch
     ).not.toHaveBeenCalled();
