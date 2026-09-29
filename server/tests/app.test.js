@@ -1724,3 +1724,19 @@ describe("Trust Wallet Payment Verification", () => {
     );
   });
 });
+
+describe("Rate Limiting", () => {
+  test("blocks requests after the rate limit is exceeded", async () => {
+    const responses = [];
+
+    for (let i = 0; i < 101; i++) {
+      responses.push(
+        await request(app).get("/api/test")
+      );
+    }
+
+    const lastResponse = responses[100];
+
+    expect(lastResponse.statusCode).toBe(429);
+  });
+});

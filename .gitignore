@@ -76,3 +76,6 @@ server/certs/
 
 # Local backup files
 server/index.js.backup
+
+# Playwright test artifacts
+test-results/
