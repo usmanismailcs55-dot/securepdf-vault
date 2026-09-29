@@ -1373,4 +1373,132 @@ describe("Trust Wallet Payment Verification", () => {
       global.fetch
     ).toHaveBeenCalledTimes(2);
   });
+
+  test("rejects a transaction hash that was already used for another payment", async () => {
+    const paymentReference =
+      "SPV-duplicate-test";
+
+    const transactionHash =
+      "e".repeat(64);
+
+    const existingPayment = {
+      _id:
+        "507f1f77bcf86cd799439016",
+
+      user:
+        "507f1f77bcf86cd799439011",
+
+      paymentReference:
+        "SPV-original-payment",
+
+      amount: 500,
+
+      currency: "USD",
+
+      asset: "USDT",
+
+      receivingWallet:
+        "T9yD14Nj9j7xAB4dbGeiX9h8unkKLxmGkn",
+
+      status: "paid",
+
+      transactionHash,
+
+      paidAt: new Date(),
+
+      failureReason: null,
+    };
+
+    const mockPayment = {
+      _id:
+        "507f1f77bcf86cd799439017",
+
+      user:
+        "507f1f77bcf86cd799439011",
+
+      paymentReference,
+
+      amount: 500,
+
+      currency: "USD",
+
+      asset: "USDT",
+
+      receivingWallet:
+        "T9yD14Nj9j7xAB4dbGeiX9h8unkKLxmGkn",
+
+      status: "pending",
+
+      transactionHash: null,
+
+      paidAt: null,
+
+      failureReason: null,
+
+      save: jest
+        .fn()
+        .mockResolvedValue(true),
+    };
+
+    /*
+     * First findOne:
+     * Find the payment being verified.
+     *
+     * Second findOne:
+     * Find whether the transaction hash
+     * already belongs to another payment.
+     */
+    Payment.findOne
+      .mockResolvedValueOnce(
+        mockPayment
+      )
+      .mockResolvedValueOnce(
+        existingPayment
+      );
+
+    PaymentVerificationLog.create.mockResolvedValue(
+      {}
+    );
+
+    const response = await request(app)
+      .post(
+        "/api/payments/submit-transaction"
+      )
+      .send({
+        paymentReference,
+        transactionHash,
+      });
+
+    expect(response.statusCode).toBe(
+      409
+    );
+
+    expect(response.body.message).toBe(
+      "This transaction has already been used for another payment."
+    );
+
+    expect(
+      mockPayment.status
+    ).toBe("pending");
+
+    expect(
+      mockPayment.transactionHash
+    ).toBe(null);
+
+    expect(
+      mockPayment.save
+    ).not.toHaveBeenCalled();
+
+    expect(
+      PaymentVerificationLog.create
+    ).toHaveBeenCalled();
+
+    /*
+     * Blockchain verification must not happen
+     * because the transaction was already used.
+     */
+    expect(
+      global.fetch
+    ).not.toHaveBeenCalled();
+  });
 });
