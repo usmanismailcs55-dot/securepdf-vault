@@ -48,6 +48,40 @@ describe("Authentication", () => {
     expect(response.body.message).toBe("Invalid email or password.");
   });
 
+  test("rejects login with an incorrect password", async () => {
+    const correctPassword = "Password123!";
+    const hashedPassword = await bcrypt.hash(correctPassword, 12);
+
+    const mockUser = {
+      _id: "507f1f77bcf86cd799439011",
+      name: "Test User",
+      email: "test@example.com",
+      password: hashedPassword,
+      accountStatus: "active",
+      failedLoginAttempts: 0,
+      lockUntil: null,
+      sessionVersion: 0,
+      save: jest.fn().mockResolvedValue(true),
+    };
+
+    User.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(mockUser),
+    });
+
+    const response = await request(app)
+      .post("/api/auth/login")
+      .send({
+        email: "test@example.com",
+        password: "WrongPassword123!",
+      });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body.message).toBe("Invalid email or password.");
+    expect(mockUser.failedLoginAttempts).toBe(1);
+    expect(mockUser.save).toHaveBeenCalled();
+    expect(createSession).not.toHaveBeenCalled();
+  });
+
   test("logs in successfully with valid credentials", async () => {
     const password = "Password123!";
     const hashedPassword = await bcrypt.hash(password, 12);
