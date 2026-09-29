@@ -397,8 +397,10 @@ router.post(
         )
       ) {
         return res.status(400).json({
+          success: false,
+
           message:
-            "Invalid TRON transaction hash.",
+            "Invalid transaction hash.",
         });
       }
 
@@ -445,7 +447,8 @@ router.post(
           userId: req.user.userId,
           event:
             "verification_failed",
-          status: "failed",
+          status:
+            "failed",
           transactionHash:
             normalizedHash,
           details:
@@ -468,7 +471,8 @@ router.post(
           userId: req.user.userId,
           event:
             "verification_failed",
-          status: "failed",
+          status:
+            "failed",
           transactionHash:
             normalizedHash,
           details:
@@ -492,7 +496,8 @@ router.post(
           userId: req.user.userId,
           event:
             "verification_failed",
-          status: "failed",
+          status:
+            "failed",
           transactionHash:
             normalizedHash,
           details:
@@ -510,8 +515,17 @@ router.post(
         transactionInfo,
       } = blockchainData;
 
+      /*
+       * Step 173:
+       * A transaction without a confirmed block
+       * is still pending on the blockchain.
+       *
+       * Treat both null and undefined as pending.
+       */
       if (
         !transactionInfo ||
+        transactionInfo.blockNumber ===
+          null ||
         transactionInfo.blockNumber ===
           undefined
       ) {
@@ -520,7 +534,8 @@ router.post(
           userId: req.user.userId,
           event:
             "transaction_pending",
-          status: "pending",
+          status:
+            "pending",
           transactionHash:
             normalizedHash,
           details:
@@ -528,6 +543,8 @@ router.post(
         });
 
         return res.status(202).json({
+          success: false,
+
           message:
             "Transaction is still pending confirmation.",
 
@@ -558,7 +575,8 @@ router.post(
           },
           {
             $set: {
-              status: "inactive",
+              status:
+                "inactive",
             },
           }
         );
@@ -568,7 +586,8 @@ router.post(
           userId: req.user.userId,
           event:
             "verification_failed",
-          status: "failed",
+          status:
+            "failed",
           transactionHash:
             normalizedHash,
           details:
@@ -607,7 +626,8 @@ router.post(
           userId: req.user.userId,
           event:
             "verification_failed",
-          status: "failed",
+          status:
+            "failed",
           transactionHash:
             normalizedHash,
           details:
@@ -648,7 +668,8 @@ router.post(
           userId: req.user.userId,
           event:
             "verification_failed",
-          status: "failed",
+          status:
+            "failed",
           transactionHash:
             normalizedHash,
           details:
@@ -695,10 +716,14 @@ router.post(
           },
           {
             $set: {
-              status: "inactive",
-              payment: payment._id,
-              startedAt: null,
-              expiresAt: null,
+              status:
+                "inactive",
+              payment:
+                payment._id,
+              startedAt:
+                null,
+              expiresAt:
+                null,
             },
           }
         );
@@ -708,7 +733,8 @@ router.post(
           userId: req.user.userId,
           event:
             "underpayment",
-          status: "failed",
+          status:
+            "failed",
           transactionHash:
             normalizedHash,
           details:
@@ -757,7 +783,8 @@ router.post(
           isOverpayment
             ? "overpayment"
             : "verification_success",
-        status: "paid",
+        status:
+          "paid",
         transactionHash:
           normalizedHash,
         details:

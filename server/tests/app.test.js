@@ -924,4 +924,132 @@ describe("Trust Wallet Payment Verification", () => {
       PaymentVerificationLog.create
     ).toHaveBeenCalled();
   });
+
+  test("rejects an invalid transaction hash format", async () => {
+    const response = await request(app)
+      .post("/api/payments/submit-transaction")
+      .send({
+        paymentReference: "SPV-test-payment",
+        transactionHash: "invalid-hash",
+      });
+
+    expect(response.statusCode).toBe(400);
+
+    expect(response.body.success).toBe(false);
+
+    expect(response.body.message).toBe(
+      "Invalid transaction hash."
+    );
+
+    expect(Payment.findOne).not.toHaveBeenCalled();
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("rejects a transaction that is not yet confirmed on the blockchain", async () => {
+    const paymentReference =
+      "SPV-test-payment";
+
+    const transactionHash =
+      "b".repeat(64);
+
+    const mockPayment = {
+      _id:
+        "507f1f77bcf86cd799439013",
+
+      user:
+        "507f1f77bcf86cd799439011",
+
+      paymentReference,
+
+      amount: 500,
+
+      currency: "USD",
+
+      asset: "USDT",
+
+      status: "pending",
+
+      transactionHash: null,
+
+      save: jest
+        .fn()
+        .mockResolvedValue(true),
+    };
+
+    Payment.findOne.mockResolvedValue(
+      mockPayment
+    );
+
+    PaymentVerificationLog.create.mockResolvedValue(
+      {}
+    );
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+
+        json: async () => ({
+          txID: transactionHash,
+
+          raw_data: {
+            contract: [
+              {
+                type: "TriggerSmartContract",
+
+                parameter: {
+                  value: {
+                    contract_address:
+                      "41a614f803b6fd780986a42c78ec9c7f77e6ded13c",
+
+                    data:
+                      "a9059cbb" +
+                      "0000000000000000000000000000000000000000000000000000000000000001" +
+                      "0000000000000000000000000000000000000000000000000000000000000000",
+                  },
+                },
+              },
+            ],
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+
+        json: async () => ({
+          blockNumber: null,
+        }),
+      });
+
+    const response = await request(app)
+      .post(
+        "/api/payments/submit-transaction"
+      )
+      .send({
+        paymentReference,
+        transactionHash,
+      });
+
+    expect(response.statusCode).toBe(202);
+
+    expect(response.body.success).toBe(
+      false
+    );
+
+    expect(response.body.status).toBe(
+      "pending"
+    );
+
+    expect(
+      mockPayment.status
+    ).toBe("pending");
+
+    expect(
+      mockPayment.save
+    ).not.toHaveBeenCalled();
+
+    expect(
+      global.fetch
+    ).toHaveBeenCalledTimes(2);
+  });
 });
