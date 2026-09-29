@@ -706,7 +706,7 @@ router.post(
           "failed";
 
         payment.failureReason =
-          `Underpayment: received ${receivedAmount} ${payment.asset}; required ${requiredAmount} ${payment.asset}.`;
+          "Underpayment received.";
 
         await payment.save();
 
@@ -742,6 +742,8 @@ router.post(
         });
 
         return res.status(400).json({
+          success: false,
+
           message:
             `Underpayment detected. Received ${receivedAmount} ${payment.asset}; required ${requiredAmount} ${payment.asset}.`,
 

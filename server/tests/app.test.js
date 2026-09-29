@@ -1052,4 +1052,165 @@ describe("Trust Wallet Payment Verification", () => {
       global.fetch
     ).toHaveBeenCalledTimes(2);
   });
+
+  test("rejects an underpayment when received amount is below required amount", async () => {
+    const paymentReference =
+      "SPV-underpayment-test";
+
+    const transactionHash =
+      "c".repeat(64);
+
+    const recipientHex =
+      "410000000000000000000000000000000000000001";
+
+    const receivingWallet =
+      "T9yD14Nj9j7xAB4dbGeiX9h8unkKLxmGkn";
+
+    const recipientBody =
+      recipientHex.slice(2);
+
+    const recipientEncoded =
+      recipientBody.padStart(
+        64,
+        "0"
+      );
+
+    const amountRaw =
+      BigInt(499 * 1_000_000);
+
+    const amountEncoded =
+      amountRaw
+        .toString(16)
+        .padStart(
+          64,
+          "0"
+        );
+
+    const transferData =
+      `a9059cbb${recipientEncoded}${amountEncoded}`;
+
+    const mockTransaction = {
+      txID: transactionHash,
+
+      raw_data: {
+        contract: [
+          {
+            type: "TriggerSmartContract",
+
+            parameter: {
+              value: {
+                contract_address:
+                  "41a614f803b6fd780986a42c78ec9c7f77e6ded13c",
+
+                data: transferData,
+              },
+            },
+          },
+        ],
+      },
+    };
+
+    const mockTransactionInfo = {
+      blockNumber: 123457,
+
+      receipt: {
+        result: "SUCCESS",
+      },
+
+      log: [],
+    };
+
+    const mockPayment = {
+      _id:
+        "507f1f77bcf86cd799439014",
+
+      user:
+        "507f1f77bcf86cd799439011",
+
+      paymentReference,
+
+      amount: 500,
+
+      currency: "USD",
+
+      asset: "USDT",
+
+      receivingWallet,
+
+      status: "pending",
+
+      transactionHash: null,
+
+      paidAt: null,
+
+      failureReason: null,
+
+      save: jest
+        .fn()
+        .mockResolvedValue(true),
+    };
+
+    Payment.findOne.mockResolvedValue(
+      mockPayment
+    );
+
+    PaymentVerificationLog.create.mockResolvedValue(
+      {}
+    );
+
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+
+        json: async () =>
+          mockTransaction,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+
+        json: async () =>
+          mockTransactionInfo,
+      });
+
+    const response = await request(app)
+      .post(
+        "/api/payments/submit-transaction"
+      )
+      .send({
+        paymentReference,
+        transactionHash,
+      });
+
+    expect(response.statusCode).toBe(400);
+
+    expect(response.body.success).toBe(
+      false
+    );
+
+    expect(response.body.status).toBe(
+      "underpaid"
+    );
+
+    expect(response.body.receivedAmount).toBe(
+      499
+    );
+
+    expect(response.body.requiredAmount).toBe(
+      500
+    );
+
+    expect(mockPayment.status).toBe(
+      "failed"
+    );
+
+    expect(mockPayment.failureReason).toBe(
+      "Underpayment received."
+    );
+
+    expect(mockPayment.save).toHaveBeenCalled();
+
+    expect(
+      PaymentVerificationLog.create
+    ).toHaveBeenCalled();
+  });
 });
