@@ -1501,4 +1501,113 @@ describe("Trust Wallet Payment Verification", () => {
       global.fetch
     ).not.toHaveBeenCalled();
   });
+
+  test("activates subscription after a successfully paid payment", async () => {
+    const paymentReference =
+      "SPV-subscription-activation-test";
+
+    const paidAt =
+      new Date("2026-01-01T00:00:00.000Z");
+
+    const expiresAt =
+      new Date("2026-01-31T00:00:00.000Z");
+
+    const mockPayment = {
+      _id:
+        "507f1f77bcf86cd799439018",
+
+      user:
+        "507f1f77bcf86cd799439011",
+
+      paymentReference,
+
+      amount: 500,
+
+      currency: "USDT",
+
+      asset: "USDT",
+
+      status: "paid",
+
+      paidAt,
+
+      save:
+        jest.fn().mockResolvedValue(true),
+    };
+
+    const mockSubscription = {
+      status: "active",
+
+      payment:
+        mockPayment._id,
+
+      startedAt:
+        paidAt,
+
+      expiresAt,
+    };
+
+    Payment.findOne.mockResolvedValue(
+      mockPayment
+    );
+
+    Subscription.findOneAndUpdate.mockResolvedValue(
+      mockSubscription
+    );
+
+    const response = await request(app)
+      .post(
+        "/api/payments/activate-subscription"
+      )
+      .send({
+        paymentReference,
+      });
+
+    expect(response.statusCode).toBe(
+      200
+    );
+
+    expect(response.body.message).toBe(
+      "Subscription activated successfully."
+    );
+
+    expect(
+      response.body.subscription.status
+    ).toBe("active");
+
+    expect(
+      response.body.subscription.startedAt
+    ).toBe(
+      paidAt.toISOString()
+    );
+
+    expect(
+      response.body.subscription.expiresAt
+    ).toBe(
+      expiresAt.toISOString()
+    );
+
+    expect(
+      Subscription.findOneAndUpdate
+    ).toHaveBeenCalledWith(
+      {
+        user:
+          "507f1f77bcf86cd799439011",
+      },
+      {
+        $set: {
+          status: "active",
+          payment:
+            mockPayment._id,
+          startedAt: paidAt,
+          expiresAt,
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      }
+    );
+  });
 });
