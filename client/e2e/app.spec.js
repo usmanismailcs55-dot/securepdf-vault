@@ -1,3 +1,4 @@
+
 import { test, expect } from "@playwright/test";
 
 test("home page loads", async ({ page }) => {
@@ -34,4 +35,38 @@ test("login shows email validation when submitted empty", async ({ page }) => {
   await expect(
     page.getByRole("alert")
   ).toHaveText("Please enter your email address.");
+});
+
+test("rejects a fake PDF with an invalid PDF signature", async ({ page }) => {
+  const email = process.env.E2E_EMAIL;
+  const password = process.env.E2E_PASSWORD;
+
+  if (!email || !password) {
+    throw new Error(
+      "E2E_EMAIL and E2E_PASSWORD must be set in client/.env.test"
+    );
+  }
+
+  await page.goto("/login");
+
+  await page.getByLabel("Email").fill(email);
+  await page.locator('input[name="password"]').fill(password);
+
+  await page.getByRole("button", { name: "Sign In" }).click();
+
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  const fakePdf = {
+    name: "fake-invalid.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("This is not a real PDF file."),
+  };
+
+  await page.locator("#pdf-file").setInputFiles(fakePdf);
+
+  await page.getByRole("button", { name: "Upload PDF" }).click();
+
+  await expect(
+    page.getByText("Invalid PDF file.")
+  ).toBeVisible();
 });
