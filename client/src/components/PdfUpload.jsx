@@ -40,7 +40,7 @@ export default function PdfUpload() {
       formData.append("pdf", file);
 
       const uploadResponse = await fetch(
-        "http://localhost:5000/api/documents/upload",
+        "https://localhost:5000/api/documents/upload",
         {
           method: "POST",
           headers: {
@@ -68,7 +68,7 @@ export default function PdfUpload() {
       setMessage("PDF uploaded. Protecting your PDF...");
 
       const protectResponse = await fetch(
-        `http://localhost:5000/api/documents/${documentId}/protect`,
+        `https://localhost:5000/api/documents/${documentId}/protect`,
         {
           method: "POST",
           headers: {
@@ -181,4 +181,3 @@ export default function PdfUpload() {
     </div>
   );
 }
-
