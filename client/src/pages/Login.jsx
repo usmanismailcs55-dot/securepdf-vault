@@ -52,7 +52,7 @@ export default function Login() {
       setIsLoading(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+        "https://localhost:5000/api/auth/login",
         {
           method: "POST",
           headers: {
@@ -342,4 +342,3 @@ function Feature({ icon, title, description }) {
     </div>
   );
 }
-

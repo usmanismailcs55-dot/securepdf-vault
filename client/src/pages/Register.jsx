@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   ShieldCheck,
@@ -22,6 +21,8 @@ export default function Register() {
   });
 
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,10 +33,14 @@ export default function Register() {
     }));
 
     setError("");
+    setSuccess("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setError("");
+    setSuccess("");
 
     if (!formData.name.trim()) {
       setError("Please enter your full name.");
@@ -57,7 +62,52 @@ export default function Register() {
       return;
     }
 
-    console.log("Registration:", formData);
+    try {
+      setIsLoading(true);
+
+      const response = await fetch(
+        "https://localhost:5000/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            password: formData.password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.message ||
+            "Unable to create your account. Please try again."
+        );
+        return;
+      }
+
+      setSuccess(
+        data.message ||
+          "Registration successful. Please verify your email address."
+      );
+
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      setError(
+        "Unable to connect to the server. Please make sure the backend is running."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const passwordRequirements = [
@@ -81,7 +131,6 @@ export default function Register() {
 
         {/* LEFT SIDE */}
         <div className="relative hidden overflow-hidden bg-[#0b1220] lg:flex">
-          {/* Decorative background */}
           <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
           <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
 
@@ -205,6 +254,15 @@ export default function Register() {
                 </div>
               )}
 
+              {success && (
+                <div
+                  role="status"
+                  className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700"
+                >
+                  {success}
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-5">
 
                 {/* Name */}
@@ -224,7 +282,8 @@ export default function Register() {
                     onChange={handleChange}
                     placeholder="John Doe"
                     autoComplete="name"
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                    disabled={isLoading}
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </div>
 
@@ -245,7 +304,8 @@ export default function Register() {
                     onChange={handleChange}
                     placeholder="you@example.com"
                     autoComplete="email"
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                    disabled={isLoading}
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </div>
 
@@ -267,13 +327,15 @@ export default function Register() {
                       onChange={handleChange}
                       placeholder="Create a strong password"
                       autoComplete="new-password"
-                      className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                      disabled={isLoading}
+                      className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                     />
 
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      disabled={isLoading}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
                       aria-label={
                         showPassword
                           ? "Hide password"
@@ -328,7 +390,8 @@ export default function Register() {
                       onChange={handleChange}
                       placeholder="Repeat your password"
                       autoComplete="new-password"
-                      className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                      disabled={isLoading}
+                      className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                     />
 
                     <button
@@ -338,7 +401,8 @@ export default function Register() {
                           !showConfirmPassword
                         )
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      disabled={isLoading}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
                       aria-label={
                         showConfirmPassword
                           ? "Hide password"
@@ -385,14 +449,19 @@ export default function Register() {
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 hover:shadow-blue-600/30 active:scale-[0.99]"
+                  disabled={isLoading}
+                  className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 hover:shadow-blue-600/30 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Create Secure Account
+                  {isLoading
+                    ? "Creating Account..."
+                    : "Create Secure Account"}
 
-                  <ArrowRight
-                    size={17}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
+                  {!isLoading && (
+                    <ArrowRight
+                      size={17}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
+                  )}
                 </button>
               </form>
 
@@ -441,4 +510,3 @@ function Feature({ icon, title, description }) {
     </div>
   );
 }
-

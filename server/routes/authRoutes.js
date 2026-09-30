@@ -62,7 +62,7 @@ router.post(
         ),
       });
 
-      const verificationUrl = `http://localhost:5000/api/verify-email/${verificationToken}`;
+      const verificationUrl = `https://localhost:5000/api/verify-email/${verificationToken}`;
 
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
