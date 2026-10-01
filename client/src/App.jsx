@@ -6,6 +6,9 @@ import {
   Circle,
   Download,
   History,
+  Eye,
+  X,
+  Trash2,
 } from "lucide-react";
 import { Routes, Route } from "react-router-dom";
 
@@ -25,7 +28,9 @@ import PdfUpload from "./components/PdfUpload";
 import {
   getDocuments,
   getAccessHistory,
+  getDocumentDetails,
   downloadDocument,
+  deleteDocument,
 } from "./services/documentService";
 
 
@@ -55,6 +60,15 @@ function Dashboard() {
   const [error, setError] = useState("");
   const [downloadingId, setDownloadingId] = useState(null);
 
+  const [selectedDocument, setSelectedDocument] =
+    useState(null);
+
+  const [isDetailsLoading, setIsDetailsLoading] =
+    useState(false);
+
+  const [detailsError, setDetailsError] = useState("");
+
+
   const loadDocuments = async () => {
     try {
       setIsLoading(true);
@@ -72,9 +86,11 @@ function Dashboard() {
     }
   };
 
+
   useEffect(() => {
     loadDocuments();
   }, []);
+
 
   const handleDownload = async (document) => {
     try {
@@ -96,6 +112,64 @@ function Dashboard() {
     }
   };
 
+
+  const handleDelete = async (documentId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this document?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setError("");
+
+      await deleteDocument(documentId);
+
+      if (
+        selectedDocument &&
+        selectedDocument._id === documentId
+      ) {
+        setSelectedDocument(null);
+      }
+
+      await loadDocuments();
+    } catch (error) {
+      setError(
+        error.message || "Failed to delete document."
+      );
+    }
+  };
+
+
+  const handleViewDetails = async (documentId) => {
+    try {
+      setIsDetailsLoading(true);
+      setDetailsError("");
+      setSelectedDocument(null);
+
+      const document =
+        await getDocumentDetails(documentId);
+
+      setSelectedDocument(document);
+    } catch (error) {
+      setDetailsError(
+        error.message || "Failed to load document details."
+      );
+    } finally {
+      setIsDetailsLoading(false);
+    }
+  };
+
+
+  const closeDetails = () => {
+    setSelectedDocument(null);
+    setDetailsError("");
+    setIsDetailsLoading(false);
+  };
+
+
   const formatFileSize = (bytes) => {
     if (!bytes) {
       return "0 Bytes";
@@ -112,20 +186,29 @@ function Dashboard() {
     }`;
   };
 
+
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString();
   };
+
+
+  const formatDateTime = (date) => {
+    return new Date(date).toLocaleString();
+  };
+
 
   const protectedDocuments = documents.filter(
     (document) =>
       document.protectionStatus === "protected"
   );
 
+
   const totalDownloads = documents.reduce(
     (total, document) =>
       total + (document.downloadCount || 0),
     0
   );
+
 
   const filteredDocuments = documents.filter((document) => {
     const matchesSearch = document.originalFilename
@@ -138,6 +221,7 @@ function Dashboard() {
 
     return matchesSearch && matchesStatus;
   });
+
 
   const getProtectionStatus = (status) => {
     switch (status) {
@@ -177,6 +261,7 @@ function Dashboard() {
         };
     }
   };
+
 
   return (
     <DashboardLayout>
@@ -521,8 +606,29 @@ function Dashboard() {
                         </div>
 
 
-                        {/* Download Action */}
-                        <div>
+                        {/* Actions */}
+                        <div className="flex flex-wrap items-center gap-2">
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleViewDetails(
+                                document._id
+                              )
+                            }
+                            disabled={isDetailsLoading}
+                            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100"
+                          >
+
+                            <Eye
+                              size={14}
+                              aria-hidden="true"
+                            />
+
+                            Details
+
+                          </button>
+
 
                           {document.protectionStatus ===
                             "protected" && (
@@ -553,6 +659,24 @@ function Dashboard() {
 
                           )}
 
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDelete(document._id)
+                            }
+                            className="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                          >
+
+                            <Trash2
+                              size={14}
+                              aria-hidden="true"
+                            />
+
+                            Delete
+
+                          </button>
+
                         </div>
 
                       </div>
@@ -566,6 +690,225 @@ function Dashboard() {
 
 
         </Card>
+
+
+        {/* Document Details */}
+        {(isDetailsLoading ||
+          detailsError ||
+          selectedDocument) && (
+
+          <Card>
+
+            <div className="flex items-start justify-between gap-4">
+
+              <div>
+
+                <h2 className="text-xl font-semibold text-slate-900">
+                  Document Details
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-600">
+                  Detailed information about the selected document.
+                </p>
+
+              </div>
+
+
+              <button
+                type="button"
+                onClick={closeDetails}
+                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close document details"
+              >
+
+                <X
+                  size={20}
+                  aria-hidden="true"
+                />
+
+              </button>
+
+            </div>
+
+
+            {isDetailsLoading && (
+              <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
+
+                <p className="text-sm text-slate-500">
+                  Loading document details...
+                </p>
+
+              </div>
+            )}
+
+
+            {!isDetailsLoading && detailsError && (
+              <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4">
+
+                <p className="text-sm font-medium text-red-700">
+                  {detailsError}
+                </p>
+
+              </div>
+            )}
+
+
+            {!isDetailsLoading &&
+              !detailsError &&
+              selectedDocument && (
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Filename
+                    </p>
+
+                    <p className="mt-1 break-words font-medium text-slate-900">
+                      {selectedDocument.originalFilename}
+                    </p>
+
+                  </div>
+
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      File Size
+                    </p>
+
+                    <p className="mt-1 font-medium text-slate-900">
+                      {formatFileSize(
+                        selectedDocument.fileSize
+                      )}
+                    </p>
+
+                  </div>
+
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      MIME Type
+                    </p>
+
+                    <p className="mt-1 font-medium text-slate-900">
+                      {selectedDocument.mimeType}
+                    </p>
+
+                  </div>
+
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Protection Status
+                    </p>
+
+                    <p className="mt-1 font-medium capitalize text-slate-900">
+                      {selectedDocument.protectionStatus}
+                    </p>
+
+                  </div>
+
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Password Protected
+                    </p>
+
+                    <p className="mt-1 font-medium text-slate-900">
+                      {selectedDocument.isPasswordProtected
+                        ? "Yes"
+                        : "No"}
+                    </p>
+
+                  </div>
+
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Download Count
+                    </p>
+
+                    <p className="mt-1 font-medium text-slate-900">
+                      {selectedDocument.downloadCount || 0}
+                    </p>
+
+                  </div>
+
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Uploaded
+                    </p>
+
+                    <p className="mt-1 font-medium text-slate-900">
+                      {formatDateTime(
+                        selectedDocument.createdAt
+                      )}
+                    </p>
+
+                  </div>
+
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Last Updated
+                    </p>
+
+                    <p className="mt-1 font-medium text-slate-900">
+                      {formatDateTime(
+                        selectedDocument.updatedAt
+                      )}
+                    </p>
+
+                  </div>
+
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Last Downloaded
+                    </p>
+
+                    <p className="mt-1 font-medium text-slate-900">
+                      {selectedDocument.lastDownloadedAt
+                        ? formatDateTime(
+                            selectedDocument.lastDownloadedAt
+                          )
+                        : "Never"}
+                    </p>
+
+                  </div>
+
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Expiration
+                    </p>
+
+                    <p className="mt-1 font-medium text-slate-900">
+                      {selectedDocument.expiresAt
+                        ? formatDateTime(
+                            selectedDocument.expiresAt
+                          )
+                        : "No expiration"}
+                    </p>
+
+                  </div>
+
+                </div>
+              )}
+
+          </Card>
+        )}
 
 
         {/* Access History */}

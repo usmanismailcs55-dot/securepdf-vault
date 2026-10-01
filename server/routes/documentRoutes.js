@@ -3,12 +3,15 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
+
 const subscriptionMiddleware = require("../middleware/subscriptionMiddleware");
+
 const { validate, schemas } = require("../middleware/validateInput");
 
 const {
   getDocuments,
   getAccessHistory,
+  getDocumentDetails,
   protectDocument,
   downloadDocument,
   deleteDocument,
@@ -17,6 +20,7 @@ const {
 const uploadRouter = require("./uploadRoutes");
 
 // Upload PDF
+
 router.use(
   "/upload",
   authMiddleware,
@@ -25,6 +29,7 @@ router.use(
 );
 
 // Get current user's documents
+
 router.get(
   "/",
   authMiddleware,
@@ -33,6 +38,7 @@ router.get(
 );
 
 // Get current user's access history
+
 router.get(
   "/access-history",
   authMiddleware,
@@ -40,7 +46,18 @@ router.get(
   getAccessHistory
 );
 
+// Get current user's document details
+
+router.get(
+  "/:documentId",
+  validate(schemas.documentId, "params"),
+  authMiddleware,
+  subscriptionMiddleware,
+  getDocumentDetails
+);
+
 // Protect PDF
+
 router.post(
   "/:documentId/protect",
   validate(schemas.documentId, "params"),
@@ -50,6 +67,7 @@ router.post(
 );
 
 // Download protected PDF
+
 router.get(
   "/:documentId/download",
   validate(schemas.documentId, "params"),
@@ -59,6 +77,7 @@ router.get(
 );
 
 // Delete document
+
 router.delete(
   "/:documentId",
   validate(schemas.documentId, "params"),

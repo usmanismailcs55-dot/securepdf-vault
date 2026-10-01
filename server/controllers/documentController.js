@@ -56,6 +56,38 @@ const getAccessHistory = async (req, res, next) => {
 
 
 
+const getDocumentDetails = async (req, res, next) => {
+  try {
+    const { documentId } = req.params;
+
+    const document = await Document.findOne({
+      _id: documentId,
+      owner: req.user.userId,
+      isDeleted: false,
+    }).select(
+      "_id originalFilename mimeType fileSize protectionStatus isPasswordProtected downloadCount lastDownloadedAt expiresAt createdAt updatedAt"
+    );
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      document,
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
 const protectDocument = async (req, res, next) => {
 
   let document = null;
@@ -453,6 +485,7 @@ const deleteDocument = async (req, res, next) => {
 module.exports = {
   getDocuments,
   getAccessHistory,
+  getDocumentDetails,
   protectDocument,
   downloadDocument,
   deleteDocument,

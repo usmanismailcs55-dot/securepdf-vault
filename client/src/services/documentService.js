@@ -7,10 +7,13 @@ export const getDocuments = async () => {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     },
   });
 
   const data = await response.json();
+
+  console.log("Documents response:", data);
 
   if (!response.ok) {
     throw new Error(
@@ -21,6 +24,7 @@ export const getDocuments = async () => {
   return data.documents;
 };
 
+
 export const getAccessHistory = async () => {
   const accessToken = localStorage.getItem("accessToken");
 
@@ -30,11 +34,14 @@ export const getAccessHistory = async () => {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
     }
   );
 
   const data = await response.json();
+
+  console.log("Access history response:", data);
 
   if (!response.ok) {
     throw new Error(
@@ -44,6 +51,35 @@ export const getAccessHistory = async () => {
 
   return data.accessLogs;
 };
+
+
+export const getDocumentDetails = async (documentId) => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const response = await fetch(
+    `${API_URL}/documents/${documentId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  console.log("Document details response:", data);
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Failed to fetch document details."
+    );
+  }
+
+  return data.document;
+};
+
 
 export const downloadDocument = async (
   documentId,
@@ -62,29 +98,61 @@ export const downloadDocument = async (
   );
 
   if (!response.ok) {
-    let message = "Failed to download document.";
+    let data = {};
 
     try {
-      const data = await response.json();
-      message = data.message || message;
+      data = await response.json();
     } catch {
-      // Response was not JSON
+      // Ignore JSON parsing failure.
     }
 
-    throw new Error(message);
+    throw new Error(
+      data.message || "Failed to download document."
+    );
   }
 
   const blob = await response.blob();
 
-  const downloadUrl = window.URL.createObjectURL(blob);
+  const url = window.URL.createObjectURL(blob);
 
   const link = document.createElement("a");
-  link.href = downloadUrl;
-  link.download = filename || "protected-document.pdf";
+
+  link.href = url;
+  link.download = filename;
 
   document.body.appendChild(link);
+
   link.click();
+
   link.remove();
 
-  window.URL.revokeObjectURL(downloadUrl);
+  window.URL.revokeObjectURL(url);
+};
+
+
+export const deleteDocument = async (documentId) => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const response = await fetch(
+    `${API_URL}/documents/${documentId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  console.log("Delete document response:", data);
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Failed to delete document."
+    );
+  }
+
+  return data;
 };
