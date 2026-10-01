@@ -36,7 +36,7 @@ function ResetPassword() {
       setIsLoading(true);
 
       const response = await fetch(
-        `http://localhost:5000/api/auth/reset-password/${token}`,
+        `https://localhost:5000/api/auth/reset-password/${token}`,
         {
           method: "POST",
           headers: {

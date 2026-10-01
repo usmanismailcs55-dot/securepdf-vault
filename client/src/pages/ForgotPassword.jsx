@@ -3,18 +3,57 @@ import { useState } from "react";
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email) {
-      setMessage("Please enter your email address.");
+    setMessage("");
+    setError("");
+
+    if (!email.trim()) {
+      setError("Please enter your email address.");
       return;
     }
 
-    setMessage(
-      "If an account exists with this email, password reset instructions will be sent."
-    );
+    try {
+      setIsLoading(true);
+
+      const response = await fetch(
+        "https://localhost:5000/api/auth/forgot-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.message ||
+            "Unable to send password reset instructions. Please try again."
+        );
+        return;
+      }
+
+      setMessage(
+        data.message ||
+          "If an account exists with this email, password reset instructions will be sent."
+      );
+    } catch (error) {
+      setError(
+        "Unable to connect to the server. Please make sure the backend is running."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -44,17 +83,29 @@ function ForgotPassword() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none focus:border-slate-500"
+              autoComplete="email"
+              disabled={isLoading}
+              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none focus:border-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-slate-900 px-4 py-2.5 font-medium text-white hover:bg-slate-800"
+            disabled={isLoading}
+            className="w-full rounded-lg bg-slate-900 px-4 py-2.5 font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Send Reset Instructions
+            {isLoading ? "Sending..." : "Send Reset Instructions"}
           </button>
         </form>
+
+        {error && (
+          <p
+            role="alert"
+            className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700"
+          >
+            {error}
+          </p>
+        )}
 
         {message && (
           <p className="mt-4 rounded-lg bg-slate-100 p-3 text-sm text-slate-700">
@@ -67,4 +118,3 @@ function ForgotPassword() {
 }
 
 export default ForgotPassword;
-
