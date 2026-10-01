@@ -69,6 +69,21 @@ const schemas = {
     ),
   }).strict(),
 
+  secureLink: z.object({
+    recipientEmail: z.string().trim().toLowerCase().email().max(254),
+    password: z.string().min(1).max(128),
+  }).strict(),
+
+  secureLinkAccess: z.object({
+    token: z.string().min(32).max(512),
+    password: z.string().min(1).max(128),
+  }).strict(),
+
+  secureLinkDownload: z.object({
+    token: z.string().min(32).max(512),
+    accessToken: z.string().min(32).max(512),
+  }).strict(),
+
   token: z.object({
     token: z.string().min(32).max(512),
   }).strict(),
@@ -78,4 +93,3 @@ module.exports = {
   validate,
   schemas,
 };
-

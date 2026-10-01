@@ -36,6 +36,18 @@ const secureLinkSchema = new mongoose.Schema(
       select: false,
     },
 
+    accessTokenHash: {
+      type: String,
+      default: null,
+      index: true,
+    },
+
+    accessTokenExpiresAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
+
     expiresAt: {
       type: Date,
       required: true,
