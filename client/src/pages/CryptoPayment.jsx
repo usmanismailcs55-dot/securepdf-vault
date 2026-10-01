@@ -4,6 +4,9 @@ import {
   Copy,
   CheckCircle,
   AlertTriangle,
+  ShieldCheck,
+  WalletCards,
+  ArrowRight,
 } from "lucide-react";
 
 export default function CryptoPayment() {
@@ -605,9 +608,6 @@ export default function CryptoPayment() {
         `Transaction verified and associated with payment reference ${paymentReference}.`
       );
 
-      /*
-       * Refresh payment history after successful verification.
-       */
       try {
         const accessToken =
           localStorage.getItem("accessToken");
@@ -657,33 +657,33 @@ export default function CryptoPayment() {
 
   const getPaymentStatusClasses = () => {
     if (paymentStatusType === "success") {
-      return "bg-green-50 border-green-200 text-green-800";
+      return "border-[#66502f] bg-[#211b13] text-[#d8c49d]";
     }
 
     if (paymentStatusType === "failed") {
-      return "bg-red-50 border-red-200 text-red-800";
+      return "border-[#693d35] bg-[#211312] text-[#d7aaa0]";
     }
 
-    return "bg-yellow-50 border-yellow-200 text-yellow-800";
+    return "border-[#66502f] bg-[#1d1913] text-[#cdbb92]";
   };
 
   const getPaymentStatusIcon = () => {
     if (paymentStatusType === "success") {
       return (
         <CheckCircle
-          size={22}
-          className="text-green-600 flex-shrink-0"
+          size={20}
+          className="shrink-0 text-[#c6a15b]"
         />
       );
     }
 
     return (
       <AlertTriangle
-        size={22}
+        size={20}
         className={
           paymentStatusType === "failed"
-            ? "text-red-600 flex-shrink-0"
-            : "text-yellow-600 flex-shrink-0"
+            ? "shrink-0 text-[#bd7769]"
+            : "shrink-0 text-[#c6a15b]"
         }
       />
     );
@@ -699,7 +699,7 @@ export default function CryptoPayment() {
 
   const getHistoryStatusClasses = (status) => {
     if (status === "paid") {
-      return "bg-green-100 text-green-800";
+      return "border-[#66502f] bg-[#211b13] text-[#d6c397]";
     }
 
     if (
@@ -707,516 +707,595 @@ export default function CryptoPayment() {
       status === "expired" ||
       status === "refunded"
     ) {
-      return "bg-red-100 text-red-800";
+      return "border-[#693d35] bg-[#211312] text-[#d7aaa0]";
     }
 
-    return "bg-yellow-100 text-yellow-800";
+    return "border-[#66502f] bg-[#1d1913] text-[#cdbb92]";
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
+    <main className="min-h-screen bg-[#090806] text-[#e8dfcf]">
 
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Complete Payment
-            </h1>
+      {/* =====================================================
+          STANDALONE CORE VISUAL
+          No text. No logo. No controls. No overlay.
+      ====================================================== */}
+      <section className="w-full bg-[#090806]">
+        <div className="w-full overflow-hidden">
+          <img
+            src="/images/noir-vault-hero.jpg"
+            alt="Noir eyes"
+            className="block h-[55vh] min-h-[420px] w-full object-cover object-center sm:h-[65vh] lg:h-[72vh]"
+          />
+        </div>
+      </section>
 
-            <p className="text-gray-600 mt-2">
-              Pay securely using cryptocurrency to activate
-              your subscription.
+      {/* =====================================================
+          PAYMENT INTERFACE
+      ====================================================== */}
+      <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+
+        {/* Payment Error */}
+        {paymentError && (
+          <div className="mb-6 flex items-start gap-3 border border-[#693d35] bg-[#211312] p-4 text-[#d7aaa0]">
+            <AlertTriangle
+              className="mt-0.5 shrink-0 text-[#bd7769]"
+              size={20}
+            />
+
+            <p className="text-sm leading-6">
+              {paymentError}
             </p>
           </div>
+        )}
 
-          {/* Payment Error */}
-          {paymentError && (
-            <div className="flex items-start gap-3 p-4 mb-6 bg-red-50 border border-red-200 rounded-lg">
-              <AlertTriangle
-                className="text-red-600 flex-shrink-0"
-                size={22}
-              />
+        {/* Payment Status */}
+        {paymentStatus && (
+          <div
+            className={`mb-6 flex items-start gap-3 border p-4 ${getPaymentStatusClasses()}`}
+          >
+            {getPaymentStatusIcon()}
 
-              <p className="text-red-700">
-                {paymentError}
+            <div>
+              <p className="text-sm font-semibold tracking-wide">
+                Payment status
+              </p>
+
+              <p className="mt-1 text-sm leading-6">
+                {paymentStatus}
               </p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Step 134: Payment Status Notification */}
-          {paymentStatus && (
-            <div
-              className={`flex items-start gap-3 p-4 mb-6 border rounded-lg ${getPaymentStatusClasses()}`}
-            >
-              {getPaymentStatusIcon()}
+        {/* ===================================================
+            PAYMENT SUMMARY
+        ==================================================== */}
+        <section className="border-y border-[#3f3020] py-6">
 
-              <div>
-                <p className="font-semibold">
-                  Payment Status
-                </p>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 
-                <p className="text-sm mt-1">
-                  {paymentStatus}
-                </p>
-              </div>
+            <div>
+              <p className="text-[10px] tracking-[0.25em] text-[#80633d] uppercase">
+                Payment
+              </p>
+
+              <p className="mt-2 text-3xl text-[#e2cf9e]">
+                {paymentAmount} {paymentAsset}
+              </p>
             </div>
-          )}
 
-          {/* Payment Details */}
-          <div className="border rounded-xl p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-5">
-              Payment Details
-            </h2>
+            <div className="text-left sm:text-right">
+              <p className="text-[10px] tracking-[0.2em] text-[#71695d] uppercase">
+                Network
+              </p>
 
-            <div className="space-y-4">
-
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-600">
-                  Amount
-                </span>
-
-                <span className="font-semibold text-gray-900">
-                  {paymentAmount} {paymentAsset}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-600">
-                  Network
-                </span>
-
-                <span className="font-semibold text-gray-900">
-                  {paymentNetwork}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">
-                  Payment Reference
-                </span>
-
-                <span className="font-semibold text-gray-900 font-mono text-sm">
-                  {paymentLoading
-                    ? "Creating..."
-                    : paymentReference ||
-                      "Unavailable"}
-                </span>
-              </div>
-
+              <p className="mt-2 text-sm text-[#c7bca9]">
+                {paymentNetwork}
+              </p>
             </div>
+
           </div>
 
-          {/* Wallet + QR Code */}
-          <div className="border rounded-xl p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-5">
-              Send Payment To
-            </h2>
+          <div className="mt-5 border-t border-[#302519] pt-5">
 
-            {walletAddress ? (
-              <>
-                <div className="flex justify-center mb-6">
-                  <div className="p-4 border rounded-xl bg-white">
-                    <QRCodeSVG
-                      value={walletAddress}
-                      size={220}
-                      level="H"
-                      includeMargin
-                    />
-                  </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
+              <span className="text-[10px] tracking-[0.18em] text-[#71695d] uppercase">
+                Reference
+              </span>
+
+              <span className="break-all font-mono text-xs text-[#cbb88f] sm:max-w-lg sm:text-right">
+                {paymentLoading
+                  ? "Creating..."
+                  : paymentReference ||
+                    "Unavailable"}
+              </span>
+
+            </div>
+
+          </div>
+        </section>
+
+        {/* ===================================================
+            WALLET / QR
+        ==================================================== */}
+        <section className="border-b border-[#3f3020] py-8">
+
+          <div className="grid gap-8 lg:grid-cols-[280px_1fr] lg:items-center">
+
+            <div className="flex justify-center lg:justify-start">
+
+              {walletAddress ? (
+                <div className="border border-[#66502f] bg-[#f4eee2] p-4">
+                  <QRCodeSVG
+                    value={walletAddress}
+                    size={230}
+                    level="H"
+                    includeMargin
+                  />
                 </div>
+              ) : (
+                <div className="flex min-h-[230px] w-[230px] items-center justify-center border border-[#693d35] bg-[#211312] p-6 text-center text-sm text-[#d7aaa0]">
+                  Payment wallet is not configured.
+                </div>
+              )}
 
-                <p className="text-sm text-gray-600 mb-2">
-                  Receiving wallet address:
+            </div>
+
+            <div>
+
+              <div className="mb-4 flex items-center gap-3">
+                <WalletCards
+                  size={19}
+                  strokeWidth={1.5}
+                  className="text-[#c6a15b]"
+                />
+
+                <p className="text-sm text-[#d7c7aa]">
+                  Send payment
                 </p>
+              </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 p-3 bg-gray-100 rounded-lg break-all font-mono text-sm text-gray-800">
+              {walletAddress && (
+                <>
+                  <div className="border border-[#493925] bg-[#0b0907] p-4 font-mono text-xs leading-6 break-all text-[#cfc2ad]">
                     {walletAddress}
                   </div>
 
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="flex items-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
+                    className="mt-3 flex items-center justify-center gap-2 border border-[#765b32] bg-[#b18b4d] px-5 py-3 text-sm font-semibold text-[#120e09] transition hover:bg-[#c6a15b]"
                   >
                     {copied ? (
                       <>
-                        <CheckCircle size={18} />
+                        <CheckCircle size={17} />
                         Copied
                       </>
                     ) : (
                       <>
-                        <Copy size={18} />
-                        Copy
+                        <Copy size={17} />
+                        Copy address
                       </>
                     )}
                   </button>
-                </div>
-              </>
-            ) : (
-              <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <AlertTriangle
-                  className="text-red-600"
-                  size={22}
-                />
+                </>
+              )}
 
-                <p className="text-red-600">
-                  Payment wallet is not configured.
-                </p>
-              </div>
-            )}
+            </div>
+
           </div>
+        </section>
 
-          {/* How to Pay */}
-          <div className="border rounded-xl p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-5">
-              How to Pay
-            </h2>
+        {/* ===================================================
+            HOW TO PAY
+        ==================================================== */}
+        <section className="border-b border-[#3f3020] py-8">
 
-            <ol className="space-y-4 text-gray-700">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
-              <li className="flex gap-3">
-                <span className="font-bold">1.</span>
-                <span>
-                  Open your{" "}
-                  <strong>Trust Wallet</strong>.
-                </span>
-              </li>
+            <div className="border-l border-[#66502f] pl-4">
+              <span className="font-serif text-lg text-[#c6a15b]">
+                01
+              </span>
 
-              <li className="flex gap-3">
-                <span className="font-bold">2.</span>
-                <span>
-                  Select{" "}
-                  <strong>{paymentAsset}</strong>.
-                </span>
-              </li>
-
-              <li className="flex gap-3">
-                <span className="font-bold">3.</span>
-                <span>
-                  Make sure you are using the{" "}
-                  <strong>{paymentNetwork}</strong>{" "}
-                  network.
-                </span>
-              </li>
-
-              <li className="flex gap-3">
-                <span className="font-bold">4.</span>
-                <span>
-                  Send exactly{" "}
-                  <strong>
-                    {paymentAmount} {paymentAsset}
-                  </strong>
-                  .
-                </span>
-              </li>
-
-              <li className="flex gap-3">
-                <span className="font-bold">5.</span>
-                <span>
-                  Send the payment to the receiving
-                  wallet address shown above.
-                </span>
-              </li>
-
-              <li className="flex gap-3">
-                <span className="font-bold">6.</span>
-                <span>
-                  After sending the payment, copy your{" "}
-                  <strong>transaction hash</strong>.
-                </span>
-              </li>
-
-            </ol>
-          </div>
-
-          {/* Warning */}
-          <div className="flex gap-3 p-5 bg-yellow-50 border border-yellow-200 rounded-xl mb-6">
-            <AlertTriangle
-              className="text-yellow-600 flex-shrink-0"
-              size={22}
-            />
-
-            <div>
-              <h3 className="font-semibold text-yellow-900 mb-1">
-                Important
-              </h3>
-
-              <p className="text-sm text-yellow-800">
-                Send only{" "}
-                <strong>
-                  {paymentAmount} {paymentAsset}
-                </strong>{" "}
-                using the{" "}
-                <strong>{paymentNetwork}</strong>{" "}
-                network.
-                Sending a different asset or using the
-                wrong network may result in the payment
-                not being credited.
+              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+                Open Trust Wallet and select{" "}
+                <strong className="font-medium text-[#d8c9b0]">
+                  {paymentAsset}
+                </strong>
+                .
               </p>
             </div>
+
+            <div className="border-l border-[#66502f] pl-4">
+              <span className="font-serif text-lg text-[#c6a15b]">
+                02
+              </span>
+
+              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+                Use the{" "}
+                <strong className="font-medium text-[#d8c9b0]">
+                  {paymentNetwork}
+                </strong>{" "}
+                network.
+              </p>
+            </div>
+
+            <div className="border-l border-[#66502f] pl-4">
+              <span className="font-serif text-lg text-[#c6a15b]">
+                03
+              </span>
+
+              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+                Send{" "}
+                <strong className="font-medium text-[#d8c9b0]">
+                  {paymentAmount} {paymentAsset}
+                </strong>
+                .
+              </p>
+            </div>
+
+            <div className="border-l border-[#66502f] pl-4">
+              <span className="font-serif text-lg text-[#c6a15b]">
+                04
+              </span>
+
+              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+                Confirm the receiving wallet before sending.
+              </p>
+            </div>
+
+            <div className="border-l border-[#66502f] pl-4">
+              <span className="font-serif text-lg text-[#c6a15b]">
+                05
+              </span>
+
+              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+                Copy your transaction hash after payment.
+              </p>
+            </div>
+
           </div>
 
-          {/* Transaction Hash */}
-          <div className="border rounded-xl p-6">
+        </section>
 
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Transaction Hash
-            </h2>
+        {/* ===================================================
+            IMPORTANT
+        ==================================================== */}
+        <section className="border-b border-[#3f3020] py-6">
 
-            <p className="text-sm text-gray-600 mb-4">
-              After sending your payment, paste the
-              transaction hash below.
+          <div className="flex items-start gap-3">
+
+            <AlertTriangle
+              className="mt-0.5 shrink-0 text-[#c6a15b]"
+              size={19}
+            />
+
+            <p className="text-sm leading-6 text-[#a99d89]">
+              Send only{" "}
+              <strong className="text-[#d9c08b]">
+                {paymentAmount} {paymentAsset}
+              </strong>{" "}
+              using{" "}
+              <strong className="text-[#d9c08b]">
+                {paymentNetwork}
+              </strong>
+              . Using another asset or network may prevent
+              the payment from being credited.
             </p>
 
-            <form onSubmit={handleSubmitTransaction}>
-
-              <label
-                htmlFor="transactionHash"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Transaction Hash
-              </label>
-
-              <input
-                id="transactionHash"
-                type="text"
-                value={transactionHash}
-                onChange={handleTransactionHashChange}
-                placeholder="Paste your TRON transaction hash"
-                autoComplete="off"
-                spellCheck="false"
-                maxLength={64}
-                className={`w-full px-4 py-3 border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:border-blue-500 ${
-                  hashError
-                    ? "border-red-500 focus:ring-red-500"
-                    : "border-gray-300 focus:ring-blue-500"
-                }`}
-              />
-
-              {hashError && (
-                <div className="flex items-start gap-2 mt-3 text-sm text-red-600">
-                  <AlertTriangle
-                    size={18}
-                    className="flex-shrink-0 mt-0.5"
-                  />
-
-                  <p>{hashError}</p>
-                </div>
-              )}
-
-              {submitted && !hashError && (
-                <div className="flex items-start gap-2 mt-3 text-sm text-green-600">
-                  <CheckCircle
-                    size={18}
-                    className="flex-shrink-0"
-                  />
-
-                  <p>
-                    Transaction hash format is valid.
-                  </p>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={
-                  !transactionHash.trim() ||
-                  !paymentReference ||
-                  paymentLoading
-                }
-                className="w-full mt-4 py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit Transaction
-              </button>
-
-            </form>
-
-            {/* Blockchain Query Status */}
-            {queryStatus && (
-              <div className="mt-5 p-4 bg-gray-50 border rounded-lg">
-                <p className="text-sm text-gray-700">
-                  {queryStatus}
-                </p>
-              </div>
-            )}
-
-            {/* Retrieved Transaction Data */}
-            {transactionData && (
-              <div
-                className={`mt-5 p-4 rounded-lg ${
-                  transactionData.status === "pending"
-                    ? "bg-yellow-50 border border-yellow-200"
-                    : transactionData.status === "failed" ||
-                      transactionData.status === "underpaid"
-                    ? "bg-red-50 border border-red-200"
-                    : "bg-green-50 border border-green-200"
-                }`}
-              >
-
-                <div className="flex items-center gap-2 mb-3">
-
-                  {transactionData.status === "pending" ? (
-                    <AlertTriangle
-                      size={20}
-                      className="text-yellow-600"
-                    />
-                  ) : transactionData.status === "failed" ||
-                    transactionData.status === "underpaid" ? (
-                    <AlertTriangle
-                      size={20}
-                      className="text-red-600"
-                    />
-                  ) : (
-                    <CheckCircle
-                      size={20}
-                      className="text-green-600"
-                    />
-                  )}
-
-                  <h3 className="font-semibold">
-                    {transactionData.status === "pending"
-                      ? "Transaction Pending"
-                      : transactionData.status === "failed"
-                      ? "Transaction Failed"
-                      : transactionData.status === "underpaid"
-                      ? "Payment Underpaid"
-                      : "Payment Successful"}
-                  </h3>
-
-                </div>
-
-                <p className="text-sm text-gray-700 break-all mb-2">
-                  <strong>Transaction ID:</strong>{" "}
-                  {transactionData.txID}
-                </p>
-
-                <p className="text-sm text-gray-700 break-all">
-                  <strong>Payment Reference:</strong>{" "}
-                  {transactionData.paymentReference}
-                </p>
-
-              </div>
-            )}
-
           </div>
 
-          {/* Step 136: Payment History */}
-          <div className="border rounded-xl p-6 mt-6">
+        </section>
 
-            <h2 className="text-xl font-semibold text-gray-900 mb-5">
-              Payment History
-            </h2>
+        {/* ===================================================
+            TRANSACTION VERIFICATION
+        ==================================================== */}
+        <section className="border-b border-[#3f3020] py-8">
 
-            {historyLoading ? (
-              <p className="text-sm text-gray-600">
-                Loading payment history...
-              </p>
-            ) : historyError ? (
-              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-5 flex items-center gap-3">
+            <ShieldCheck
+              size={19}
+              strokeWidth={1.5}
+              className="text-[#c6a15b]"
+            />
+
+            <p className="text-sm text-[#d7c8ae]">
+              Verify transaction
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmitTransaction}>
+
+            <label
+              htmlFor="transactionHash"
+              className="mb-2 block text-[10px] tracking-[0.18em] text-[#71695d] uppercase"
+            >
+              Transaction hash
+            </label>
+
+            <input
+              id="transactionHash"
+              type="text"
+              value={transactionHash}
+              onChange={handleTransactionHashChange}
+              placeholder="Paste your TRON transaction hash"
+              autoComplete="off"
+              spellCheck="false"
+              maxLength={64}
+              className={`w-full border bg-[#0b0907] px-4 py-3 font-mono text-xs text-[#e1d6c4] outline-none transition placeholder:text-[#665d51] ${
+                hashError
+                  ? "border-[#8b4b40] focus:border-[#bd7769]"
+                  : "border-[#493925] focus:border-[#765b32]"
+              }`}
+            />
+
+            {hashError && (
+              <div className="mt-3 flex items-start gap-2 text-sm text-[#d7aaa0]">
                 <AlertTriangle
-                  className="text-red-600 flex-shrink-0"
-                  size={20}
+                  size={17}
+                  className="mt-0.5 shrink-0 text-[#bd7769]"
                 />
 
-                <p className="text-sm text-red-700">
-                  {historyError}
-                </p>
-              </div>
-            ) : paymentHistory.length === 0 ? (
-              <p className="text-sm text-gray-600">
-                No payment history found.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {paymentHistory.map((payment) => (
-                  <div
-                    key={payment._id}
-                    className="border rounded-lg p-4"
-                  >
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
-
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          {payment.paymentReference}
-                        </p>
-
-                        <p className="text-xs text-gray-500 mt-1">
-                          {formatPaymentDate(
-                            payment.createdAt
-                          )}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`inline-flex w-fit px-3 py-1 rounded-full text-xs font-semibold uppercase ${getHistoryStatusClasses(
-                          payment.status
-                        )}`}
-                      >
-                        {payment.status}
-                      </span>
-
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-
-                      <div>
-                        <span className="text-gray-500">
-                          Amount
-                        </span>
-
-                        <p className="font-medium text-gray-900">
-                          {payment.amount}{" "}
-                          {payment.asset}
-                        </p>
-                      </div>
-
-                      <div>
-                        <span className="text-gray-500">
-                          Paid At
-                        </span>
-
-                        <p className="font-medium text-gray-900">
-                          {formatPaymentDate(
-                            payment.paidAt
-                          )}
-                        </p>
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <span className="text-gray-500">
-                          Transaction Hash
-                        </span>
-
-                        <p className="font-mono text-xs text-gray-900 break-all mt-1">
-                          {payment.transactionHash ||
-                            "Not submitted"}
-                        </p>
-                      </div>
-
-                      {payment.failureReason && (
-                        <div className="md:col-span-2">
-                          <span className="text-gray-500">
-                            Failure Reason
-                          </span>
-
-                          <p className="text-sm text-red-700 mt-1">
-                            {payment.failureReason}
-                          </p>
-                        </div>
-                      )}
-
-                    </div>
-                  </div>
-                ))}
+                <p>{hashError}</p>
               </div>
             )}
 
+            {submitted && !hashError && (
+              <div className="mt-3 flex items-start gap-2 text-sm text-[#cbb88f]">
+                <CheckCircle
+                  size={17}
+                  className="mt-0.5 shrink-0 text-[#c6a15b]"
+                />
+
+                <p>
+                  Transaction hash format is valid.
+                </p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={
+                !transactionHash.trim() ||
+                !paymentReference ||
+                paymentLoading
+              }
+              className="mt-4 flex w-full items-center justify-center gap-2 border border-[#765b32] bg-[#b18b4d] px-4 py-3 text-sm font-semibold text-[#120e09] transition hover:bg-[#c6a15b] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Submit transaction
+              <ArrowRight size={17} />
+            </button>
+
+          </form>
+
+          {queryStatus && (
+            <div className="mt-5 border border-[#3f3020] bg-[#0b0907] p-4">
+              <p className="text-sm leading-6 text-[#aaa08f]">
+                {queryStatus}
+              </p>
+            </div>
+          )}
+
+          {transactionData && (
+            <div
+              className={`mt-5 border p-5 ${
+                transactionData.status === "pending"
+                  ? "border-[#66502f] bg-[#1d1913]"
+                  : transactionData.status === "failed" ||
+                    transactionData.status === "underpaid"
+                  ? "border-[#693d35] bg-[#211312]"
+                  : "border-[#66502f] bg-[#211b13]"
+              }`}
+            >
+
+              <div className="mb-4 flex items-center gap-2">
+
+                {transactionData.status === "pending" ? (
+                  <AlertTriangle
+                    size={19}
+                    className="text-[#c6a15b]"
+                  />
+                ) : transactionData.status === "failed" ||
+                  transactionData.status === "underpaid" ? (
+                  <AlertTriangle
+                    size={19}
+                    className="text-[#bd7769]"
+                  />
+                ) : (
+                  <CheckCircle
+                    size={19}
+                    className="text-[#c6a15b]"
+                  />
+                )}
+
+                <h3 className="text-sm font-semibold tracking-wide text-[#e3d8c6]">
+                  {transactionData.status === "pending"
+                    ? "Transaction Pending"
+                    : transactionData.status === "failed"
+                    ? "Transaction Failed"
+                    : transactionData.status === "underpaid"
+                    ? "Payment Underpaid"
+                    : "Payment Successful"}
+                </h3>
+
+              </div>
+
+              <div className="space-y-3 border-t border-[#493925] pt-4">
+
+                <p className="break-all text-xs leading-6 text-[#aaa08f]">
+                  <span className="text-[#7f7566]">
+                    Transaction ID:
+                  </span>{" "}
+                  <span className="font-mono text-[#d1c3ad]">
+                    {transactionData.txID}
+                  </span>
+                </p>
+
+                <p className="break-all text-xs leading-6 text-[#aaa08f]">
+                  <span className="text-[#7f7566]">
+                    Payment Reference:
+                  </span>{" "}
+                  <span className="font-mono text-[#d1c3ad]">
+                    {transactionData.paymentReference}
+                  </span>
+                </p>
+
+              </div>
+
+            </div>
+          )}
+
+        </section>
+
+        {/* ===================================================
+            PAYMENT HISTORY
+        ==================================================== */}
+        <section className="py-8">
+
+          <div className="mb-5 flex items-center gap-3">
+            <WalletCards
+              size={19}
+              strokeWidth={1.5}
+              className="text-[#c6a15b]"
+            />
+
+            <p className="text-sm text-[#d7c8ae]">
+              Payment history
+            </p>
           </div>
 
+          {historyLoading ? (
+            <div className="border border-[#302519] bg-[#0b0907] p-5">
+              <p className="text-sm text-[#9f9482]">
+                Loading payment history...
+              </p>
+            </div>
+          ) : historyError ? (
+            <div className="flex items-start gap-3 border border-[#693d35] bg-[#211312] p-4">
+              <AlertTriangle
+                className="mt-0.5 shrink-0 text-[#bd7769]"
+                size={19}
+              />
+
+              <p className="text-sm leading-6 text-[#d7aaa0]">
+                {historyError}
+              </p>
+            </div>
+          ) : paymentHistory.length === 0 ? (
+            <div className="border border-[#302519] bg-[#0b0907] p-5">
+              <p className="text-sm text-[#9f9482]">
+                No payment history found.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+
+              {paymentHistory.map((payment) => (
+                <div
+                  key={payment._id}
+                  className="border border-[#493925] bg-[#0b0907] p-5"
+                >
+
+                  <div className="mb-5 flex flex-col gap-3 border-b border-[#302519] pb-4 md:flex-row md:items-center md:justify-between">
+
+                    <div className="min-w-0">
+
+                      <p className="break-all font-mono text-xs text-[#d4c4a6]">
+                        {payment.paymentReference}
+                      </p>
+
+                      <p className="mt-2 text-[11px] text-[#71695d]">
+                        {formatPaymentDate(
+                          payment.createdAt
+                        )}
+                      </p>
+
+                    </div>
+
+                    <span
+                      className={`inline-flex w-fit border px-3 py-1 text-[10px] font-semibold tracking-[0.12em] uppercase ${getHistoryStatusClasses(
+                        payment.status
+                      )}`}
+                    >
+                      {payment.status}
+                    </span>
+
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-5 text-sm md:grid-cols-2">
+
+                    <div>
+                      <span className="text-[10px] tracking-[0.16em] text-[#71695d] uppercase">
+                        Amount
+                      </span>
+
+                      <p className="mt-1 text-[#d1c3ad]">
+                        {payment.amount}{" "}
+                        {payment.asset}
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] tracking-[0.16em] text-[#71695d] uppercase">
+                        Paid at
+                      </span>
+
+                      <p className="mt-1 text-[#d1c3ad]">
+                        {formatPaymentDate(
+                          payment.paidAt
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="md:col-span-2">
+
+                      <span className="text-[10px] tracking-[0.16em] text-[#71695d] uppercase">
+                        Transaction hash
+                      </span>
+
+                      <p className="mt-1 break-all font-mono text-xs leading-6 text-[#aaa08f]">
+                        {payment.transactionHash ||
+                          "Not submitted"}
+                      </p>
+
+                    </div>
+
+                    {payment.failureReason && (
+                      <div className="md:col-span-2">
+
+                        <span className="text-[10px] tracking-[0.16em] text-[#71695d] uppercase">
+                          Failure reason
+                        </span>
+
+                        <p className="mt-1 text-sm leading-6 text-[#c99388]">
+                          {payment.failureReason}
+                        </p>
+
+                      </div>
+                    )}
+
+                  </div>
+
+                </div>
+              ))}
+
+            </div>
+          )}
+
+        </section>
+
+        <div className="flex items-center justify-center gap-2 border-t border-[#302519] pt-6 text-center text-[10px] tracking-[0.2em] text-[#665d51] uppercase">
+          <ShieldCheck
+            size={14}
+            className="text-[#8c7044]"
+          />
+          Secure cryptocurrency payment
         </div>
-      </div>
-    </div>
+
+      </section>
+    </main>
   );
 }

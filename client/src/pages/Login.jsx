@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
   LockKeyhole,
-  FileText,
   Eye,
   EyeOff,
   ArrowRight,
@@ -68,7 +67,9 @@ export default function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || "Unable to sign in. Please try again.");
+        setError(
+          data.message || "Unable to sign in. Please try again."
+        );
         return;
       }
 
@@ -89,256 +90,371 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f9fc] text-slate-900">
-      <div className="grid min-h-screen lg:grid-cols-2">
-        {/* Left side */}
-        <div className="relative hidden overflow-hidden bg-[#0b1220] lg:flex">
-          <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
-          <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
+    <main className="relative min-h-[calc(100vh-73px)] overflow-hidden bg-[#080706] text-[#e8dfcf]">
 
-          <div className="relative flex w-full flex-col justify-between p-12 xl:p-16">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-600/30">
-                <ShieldCheck
-                  size={25}
-                  strokeWidth={2.3}
-                  className="text-white"
-                />
-              </div>
+      {/* =========================================================
+          FULL PAGE BACKGROUND
+      ========================================================== */}
 
-              <div>
-                <h1 className="text-lg font-bold tracking-tight text-white">
-                  SecurePDF
-                </h1>
-                <p className="text-xs text-slate-400">Vault</p>
-              </div>
-            </div>
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(126,96,57,0.14),transparent_48%)]" />
 
-            <div className="max-w-lg">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">
-                <LockKeyhole size={15} className="text-blue-400" />
-                Secure document protection
-              </div>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,4,3,0.72),rgba(5,4,3,0.18),rgba(5,4,3,0.78))]" />
 
-              <h2 className="text-4xl font-bold leading-tight tracking-tight text-white xl:text-5xl">
-                Welcome back.
-                <span className="block text-blue-400">
-                  Your documents are waiting.
-                </span>
-              </h2>
+        <div className="absolute inset-0 opacity-[0.035] bg-[radial-gradient(circle_at_20%_30%,#fff_0.5px,transparent_0.7px)] bg-[length:6px_6px]" />
+      </div>
 
-              <p className="mt-6 max-w-md text-base leading-7 text-slate-400">
-                Sign in to access your protected PDF documents, secure links,
-                and document activity.
-              </p>
+      {/* =========================================================
+          MAIN LAYOUT
+      ========================================================== */}
 
-              <div className="mt-10 space-y-5">
-                <Feature
-                  icon={<LockKeyhole size={18} />}
-                  title="Private & protected"
-                  description="Keep sensitive documents protected."
-                />
+      <div className="relative mx-auto flex min-h-[calc(100vh-73px)] max-w-[1500px] items-center px-4 py-8 sm:px-6 lg:px-10">
 
-                <Feature
-                  icon={<FileText size={18} />}
-                  title="Manage your documents"
-                  description="Access your PDF vault from one place."
-                />
+        <div className="relative grid w-full overflow-hidden border border-[#4b3823] bg-[#0b0907] shadow-[0_30px_100px_rgba(0,0,0,0.65)] lg:min-h-[700px] lg:grid-cols-[1.35fr_0.65fr]">
 
-                <Feature
-                  icon={<ShieldCheck size={18} />}
-                  title="Secure sharing"
-                  description="Control access to documents you share."
-                />
-              </div>
-            </div>
+          {/* =====================================================
+              EYE / PHOTOGRAPHIC VISUAL
+          ====================================================== */}
 
-            <p className="text-xs text-slate-500">
-              © 2026 SecurePDF Vault. Your documents, your control.
-            </p>
-          </div>
-        </div>
+          <section className="relative min-h-[420px] overflow-hidden lg:min-h-[700px]">
 
-        {/* Right side */}
-        <div className="flex items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
-          <div className="w-full max-w-md">
-            {/* Mobile logo */}
-            <div className="mb-10 flex items-center justify-center gap-3 lg:hidden">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600">
-                <ShieldCheck size={25} className="text-white" />
-              </div>
+            <img
+              src="/images/noir-vault-hero.jpg"
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover object-center"
+            />
 
-              <div>
-                <h1 className="text-lg font-bold">SecurePDF</h1>
-                <p className="text-xs text-slate-500">Vault</p>
-              </div>
-            </div>
+            {/* Dark cinematic overlay */}
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,5,4,0.18)_0%,rgba(7,5,4,0.02)_38%,rgba(7,5,4,0.5)_100%)]" />
 
-            {/* Heading */}
-            <div className="mb-8">
-              <p className="mb-3 text-sm font-semibold text-blue-600">
-                WELCOME BACK
-              </p>
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,5,4,0.3)_0%,transparent_35%,rgba(7,5,4,0.82)_100%)]" />
 
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-                Sign in to your account
-              </h2>
+            {/* Subtle warm tint */}
+            <div className="absolute inset-0 bg-[#8d6b3f]/[0.06] mix-blend-screen" />
 
-              <p className="mt-3 text-sm leading-6 text-slate-500">
-                Access your secure PDF workspace and manage your protected
-                documents.
-              </p>
-            </div>
+            {/* =================================================
+                TOP BRAND
+            ================================================== */}
 
-            {/* Login card */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
-              {error && (
-                <div
-                  role="alert"
-                  className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
-                >
-                  {error}
-                </div>
-              )}
+            <div className="absolute left-6 top-6 z-10 sm:left-8 sm:top-8">
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Email */}
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-2 block text-sm font-semibold text-slate-700"
-                  >
-                    Email address
-                  </label>
-
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    disabled={isLoading}
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+              <Link
+                to="/"
+                className="group flex items-center gap-3"
+              >
+                <div className="relative flex h-11 w-11 items-center justify-center border border-[#9b7749]/70 bg-[#090705]/70 backdrop-blur-sm">
+                  <ShieldCheck
+                    size={23}
+                    strokeWidth={1.5}
+                    className="text-[#d0aa70]"
                   />
+
+                  <span className="absolute bottom-0 left-0 h-px w-full bg-[#a17b4b]" />
                 </div>
 
-                {/* Password */}
                 <div>
-                  <div className="mb-2 flex items-center justify-between">
+                  <div className="font-serif text-lg tracking-[0.12em] text-[#f0e5d3]">
+                    SecurePDF
+                  </div>
+
+                  <div className="mt-1 text-[9px] uppercase tracking-[0.4em] text-[#c09a61]">
+                    Vault
+                  </div>
+                </div>
+              </Link>
+
+            </div>
+
+            {/* =================================================
+                SMALL CASE LABEL
+            ================================================== */}
+
+            <div className="absolute right-6 top-7 z-10 sm:right-8 sm:top-8">
+              <div className="border border-[#a17b4b]/40 bg-[#090705]/55 px-3 py-2 backdrop-blur-sm">
+                <span className="text-[8px] uppercase tracking-[0.3em] text-[#c09a61]">
+                  Secure access
+                </span>
+              </div>
+            </div>
+
+            {/* =================================================
+                BOTTOM VISUAL CAPTION
+            ================================================== */}
+
+            <div className="absolute bottom-7 left-6 z-10 sm:bottom-9 sm:left-8">
+
+              <div className="flex items-center gap-3">
+                <span className="h-px w-10 bg-[#b18b58]" />
+
+                <span className="text-[9px] uppercase tracking-[0.35em] text-[#d0b27f]">
+                  The Vault
+                </span>
+              </div>
+
+              <p className="mt-3 max-w-xs font-serif text-xl text-[#eee2cf] sm:text-2xl">
+                Your documents.
+                <br />
+                Under your control.
+              </p>
+
+            </div>
+
+          </section>
+
+          {/* =====================================================
+              LOGIN PANEL
+          ====================================================== */}
+
+          <section className="relative flex items-center border-t border-[#4b3823] bg-[#0c0907] px-6 py-10 sm:px-10 lg:border-l lg:border-t-0 lg:px-12">
+
+            {/* Decorative vertical line */}
+            <div className="pointer-events-none absolute left-0 top-12 hidden h-32 w-px bg-gradient-to-b from-transparent via-[#987345] to-transparent lg:block" />
+
+            <div className="w-full max-w-md">
+
+              {/* Mobile logo */}
+              <div className="mb-9 flex justify-center lg:hidden">
+                <Link
+                  to="/"
+                  className="flex items-center gap-3"
+                >
+                  <div className="relative flex h-11 w-11 items-center justify-center border border-[#765a37] bg-[#15100b]">
+                    <ShieldCheck
+                      size={23}
+                      strokeWidth={1.5}
+                      className="text-[#c7a36a]"
+                    />
+
+                    <span className="absolute bottom-0 left-0 h-px w-full bg-[#9a7447]" />
+                  </div>
+
+                  <div>
+                    <div className="font-serif text-lg tracking-[0.1em] text-[#eee4d3]">
+                      SecurePDF
+                    </div>
+
+                    <div className="mt-1 text-[9px] uppercase tracking-[0.4em] text-[#98784d]">
+                      Vault
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {/* =================================================
+                  MINIMAL HEADING
+              ================================================== */}
+
+              <div className="mb-8">
+
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="h-px w-9 bg-[#987345]" />
+
+                  <span className="text-[9px] uppercase tracking-[0.35em] text-[#a9895b]">
+                    Vault access
+                  </span>
+                </div>
+
+                <h1 className="font-serif text-3xl leading-tight text-[#eee4d3] sm:text-4xl">
+                  Sign in
+                </h1>
+
+                <p className="mt-3 text-sm leading-6 text-[#827565]">
+                  Enter your credentials to continue.
+                </p>
+
+              </div>
+
+              {/* =================================================
+                  LOGIN FORM
+              ================================================== */}
+
+              <div className="relative border border-[#4b3823] bg-[#100c09] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.4)] sm:p-7">
+
+                {/* Corner details */}
+                <span className="absolute left-0 top-0 h-7 w-px bg-[#b08a57]" />
+                <span className="absolute left-0 top-0 h-px w-7 bg-[#b08a57]" />
+
+                <span className="absolute bottom-0 right-0 h-7 w-px bg-[#765a37]" />
+                <span className="absolute bottom-0 right-0 h-px w-7 bg-[#765a37]" />
+
+                {error && (
+                  <div
+                    role="alert"
+                    className="mb-6 border border-[#70402f] bg-[#28150f] px-4 py-3 text-sm leading-6 text-[#dca78f]"
+                  >
+                    {error}
+                  </div>
+                )}
+
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-6"
+                >
+
+                  {/* Email */}
+                  <div>
                     <label
-                      htmlFor="password"
-                      className="block text-sm font-semibold text-slate-700"
+                      htmlFor="email"
+                      className="mb-2 block text-[9px] uppercase tracking-[0.28em] text-[#9b8b76]"
                     >
-                      Password
+                      Email address
                     </label>
 
-                    <a
-                      href="/forgot-password"
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                    >
-                      Forgot password?
-                    </a>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      disabled={isLoading}
+                      className="h-12 w-full border border-[#4a3927] bg-[#090705] px-4 text-sm text-[#e8dfcf] outline-none transition placeholder:text-[#554b40] focus:border-[#b08a57] focus:ring-1 focus:ring-[#765a37] disabled:cursor-not-allowed disabled:opacity-50"
+                    />
                   </div>
 
-                  <div className="relative">
+                  {/* Password */}
+                  <div>
+                    <div className="mb-2 flex items-center justify-between">
+
+                      <label
+                        htmlFor="password"
+                        className="block text-[9px] uppercase tracking-[0.28em] text-[#9b8b76]"
+                      >
+                        Password
+                      </label>
+
+                      <Link
+                        to="/forgot-password"
+                        className="text-[9px] uppercase tracking-[0.18em] text-[#a9895b] transition hover:text-[#d2ae72]"
+                      >
+                        Forgot password?
+                      </Link>
+
+                    </div>
+
+                    <div className="relative">
+
+                      <input
+                        id="password"
+                        name="password"
+                        type={
+                          showPassword
+                            ? "text"
+                            : "password"
+                        }
+                        value={formData.password}
+                        onChange={handleChange}
+                        autoComplete="current-password"
+                        placeholder="Enter your password"
+                        disabled={isLoading}
+                        className="h-12 w-full border border-[#4a3927] bg-[#090705] px-4 pr-12 text-sm text-[#e8dfcf] outline-none transition placeholder:text-[#554b40] focus:border-[#b08a57] focus:ring-1 focus:ring-[#765a37] disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowPassword(
+                            (prev) => !prev
+                          )
+                        }
+                        disabled={isLoading}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[#6f6252] transition hover:text-[#c8a46c] disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-label={
+                          showPassword
+                            ? "Hide password"
+                            : "Show password"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff
+                            size={18}
+                            strokeWidth={1.5}
+                          />
+                        ) : (
+                          <Eye
+                            size={18}
+                            strokeWidth={1.5}
+                          />
+                        )}
+                      </button>
+
+                    </div>
+                  </div>
+
+                  {/* Remember me */}
+                  <label className="flex cursor-pointer items-center gap-3">
+
                     <input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      value={formData.password}
-                      onChange={handleChange}
-                      autoComplete="current-password"
-                      placeholder="Enter your password"
-                      disabled={isLoading}
-                      className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                      type="checkbox"
+                      className="h-4 w-4 rounded-none border-[#59452d] bg-[#090705] text-[#a17b4b] focus:ring-[#765a37]"
                     />
 
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      disabled={isLoading}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
+                    <span className="text-xs text-[#776b5b]">
+                      Remember me
+                    </span>
+
+                  </label>
+
+                  {/* Submit */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="group flex h-12 w-full items-center justify-center gap-3 border border-[#987345] bg-[#87653d] px-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#fff3dc] shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition duration-300 hover:border-[#c09a61] hover:bg-[#9a7548] hover:shadow-[0_14px_35px_rgba(0,0,0,0.45)] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isLoading ? (
+                      "Signing In..."
+                    ) : (
+                      <>
+                        Enter Vault
+
+                        <ArrowRight
+                          size={16}
+                          strokeWidth={1.6}
+                          className="transition-transform duration-300 group-hover:translate-x-1"
+                        />
+                      </>
+                    )}
+                  </button>
+
+                </form>
+
+                {/* Register */}
+                <div className="mt-7 border-t border-[#302419] pt-6 text-center">
+
+                  <p className="text-xs text-[#716557]">
+                    Don't have an account?{" "}
+
+                    <Link
+                      to="/register"
+                      className="font-medium text-[#b8945d] transition hover:text-[#d2ae72]"
                     >
-                      {showPassword ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
-                    </button>
-                  </div>
+                      Create an account
+                    </Link>
+                  </p>
+
                 </div>
 
-                {/* Remember me */}
-                <label className="flex cursor-pointer items-center gap-3">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-
-                  <span className="text-sm text-slate-500">
-                    Remember me
-                  </span>
-                </label>
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isLoading ? "Signing In..." : "Sign In"}
-
-                  {!isLoading && (
-                    <ArrowRight
-                      size={17}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
-                  )}
-                </button>
-              </form>
-
-              {/* Register */}
-              <div className="mt-7 border-t border-slate-100 pt-6 text-center">
-                <p className="text-sm text-slate-500">
-                  Don't have an account?{" "}
-                  <a
-                    href="/register"
-                    className="font-semibold text-blue-600 hover:text-blue-700"
-                  >
-                    Create an account
-                  </a>
-                </p>
               </div>
+
+              {/* Security line */}
+              <div className="mt-6 flex items-center justify-center gap-2 text-[9px] uppercase tracking-[0.22em] text-[#5f5447]">
+
+                <LockKeyhole
+                  size={13}
+                  strokeWidth={1.5}
+                />
+
+                Secure authentication
+
+              </div>
+
             </div>
 
-            <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-400">
-              <LockKeyhole size={14} />
-              Secure authentication for your document vault.
-            </div>
-          </div>
+          </section>
+
         </div>
       </div>
-    </div>
-  );
-}
-
-function Feature({ icon, title, description }) {
-  return (
-    <div className="flex items-start gap-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-blue-400">
-        {icon}
-      </div>
-
-      <div>
-        <h3 className="text-sm font-semibold text-white">{title}</h3>
-
-        <p className="mt-1 text-sm text-slate-500">{description}</p>
-      </div>
-    </div>
+    </main>
   );
 }
