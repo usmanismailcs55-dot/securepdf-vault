@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   CheckCircle,
   CheckCircle2,
@@ -300,6 +304,12 @@ function Dashboard() {
   const [secureLinkPassword, setSecureLinkPassword] =
     useState("");
 
+  const detailsSectionRef = useRef(null);
+  const secureLinkSectionRef = useRef(null);
+
+  const [scrollTarget, setScrollTarget] =
+    useState(null);
+
 
   const loadDocuments = async () => {
     try {
@@ -324,6 +334,27 @@ function Dashboard() {
   useEffect(() => {
     loadDocuments();
   }, []);
+
+
+  useEffect(() => {
+    if (!selectedDocument || !scrollTarget) {
+      return;
+    }
+
+    const targetRef =
+      scrollTarget === "secure-link"
+        ? secureLinkSectionRef
+        : detailsSectionRef;
+
+    requestAnimationFrame(() => {
+      targetRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+
+      setScrollTarget(null);
+    });
+  }, [selectedDocument, scrollTarget]);
 
 
   const handleDownload = async (document) => {
@@ -379,7 +410,10 @@ function Dashboard() {
   };
 
 
-  const handleViewDetails = async (documentId) => {
+  const handleViewDetails = async (
+    documentId,
+    target = "details"
+  ) => {
     try {
       setIsDetailsLoading(true);
       setDetailsError("");
@@ -390,6 +424,7 @@ function Dashboard() {
       setRecipientEmail("");
       setSecureLinkPassword("");
 
+      setScrollTarget(target);
       setSelectedDocument(null);
 
       const document =
@@ -400,6 +435,7 @@ function Dashboard() {
       setDetailsError(
         error.message || "Failed to load document details."
       );
+      setScrollTarget(null);
     } finally {
       setIsDetailsLoading(false);
     }
@@ -416,6 +452,7 @@ function Dashboard() {
 
     setRecipientEmail("");
     setSecureLinkPassword("");
+    setScrollTarget(null);
   };
 
 
@@ -942,7 +979,8 @@ function Dashboard() {
                               type="button"
                               onClick={() =>
                                 handleViewDetails(
-                                  document._id
+                                  document._id,
+                                  "details"
                                 )
                               }
                               disabled={
@@ -1000,7 +1038,8 @@ function Dashboard() {
                                 type="button"
                                 onClick={() =>
                                   handleViewDetails(
-                                    document._id
+                                    document._id,
+                                    "secure-link"
                                   )
                                 }
                                 disabled={
@@ -1060,7 +1099,10 @@ function Dashboard() {
           detailsError ||
           selectedDocument) && (
 
-          <Card>
+          <Card
+            ref={detailsSectionRef}
+            className="scroll-mt-24"
+          >
 
             <div className="flex items-start justify-between gap-4">
 
@@ -1291,7 +1333,10 @@ function Dashboard() {
                   {selectedDocument.protectionStatus ===
                     "protected" && (
 
-                    <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-5">
+                    <div
+                      ref={secureLinkSectionRef}
+                      className="mt-6 scroll-mt-24 rounded-xl border border-blue-200 bg-blue-50 p-5"
+                    >
 
                       <div className="flex items-start gap-3">
 
