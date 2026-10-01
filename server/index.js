@@ -1,5 +1,9 @@
+const path = require("path");
+const fs = require("fs");
+const https = require("https");
+
 require("dotenv").config({
-  path: require("path").join(__dirname, ".env"),
+  path: path.join(__dirname, ".env"),
 });
 
 const express = require("express");
@@ -23,7 +27,6 @@ require("./utils/sendEmail");
 
 const app = express();
 
-
 // Debug
 app.use((req, res, next) => {
   console.log("REQUEST:", req.method, req.originalUrl);
@@ -33,7 +36,6 @@ app.use((req, res, next) => {
   );
   next();
 });
-
 
 // Security
 app.use(helmet());
@@ -47,7 +49,6 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 
-
 // CORS
 app.use(
   cors({
@@ -57,15 +58,14 @@ app.use(
   })
 );
 
-
 // Body
 app.use(express.json());
+
 app.use(
   express.urlencoded({
     extended: true,
   })
 );
-
 
 // Routes
 app.use("/api/test", testRoutes);
@@ -75,34 +75,24 @@ app.use("/api/documents", documentRoutes);
 app.use("/api/secure-links", secureLinkRoutes);
 app.use("/api/payments", paymentRoutes);
 
-
 // Error handler
 app.use(errorHandler);
 
-
 // Database
 connectDB().then(async () => {
-
   try {
-
-    const cleanedCount =
-      await cleanupExpiredDocuments();
+    const cleanedCount = await cleanupExpiredDocuments();
 
     console.log(
       `Expired document cleanup completed: ${cleanedCount} document(s) cleaned.`
     );
-
   } catch (error) {
-
     console.error(
       "Expired document cleanup failed:",
       error.message
     );
-
   }
-
 });
-
 
 // Payment check
 console.log(
@@ -114,12 +104,22 @@ console.log(
     : "wallet missing"
 );
 
-
-// TEMPORARY HTTP SERVER
+// HTTPS server
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const certPath = path.join(__dirname, "certs");
+
+const httpsOptions = {
+  key: fs.readFileSync(
+    path.join(certPath, "localhost-key.pem")
+  ),
+  cert: fs.readFileSync(
+    path.join(certPath, "localhost-cert.pem")
+  ),
+};
+
+https.createServer(httpsOptions, app).listen(PORT, () => {
   console.log(
-    `HTTP server running on http://localhost:${PORT}`
+    `HTTPS server running on https://localhost:${PORT}`
   );
 });
