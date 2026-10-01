@@ -60,131 +60,142 @@ import {
 
 function Home() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black">
+    <main className="min-h-screen bg-black">
 
-      <div className="absolute inset-0">
+      {/* ==================================================
+          CORE VISUAL
+          STANDALONE PHOTOGRAPH — NO TEXT / NO OVERLAY
+          ================================================== */}
 
-        <img
-          src="/images/noir-vault-hero.jpg"
-          alt="Noir eyes"
-          className="h-full w-full object-cover object-center"
-        />
+      <section className="w-full bg-black">
 
-        <div className="absolute inset-0 bg-black/55" />
+        <div className="w-full overflow-hidden">
 
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(0,0,0,0.72)_100%)]" />
+          <img
+            src="/images/noir-vault-hero.jpg"
+            alt="Noir eyes"
+            className="block h-[60vh] min-h-[420px] w-full object-cover object-center sm:h-[70vh] lg:h-[78vh]"
+          />
 
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.72),transparent_45%,rgba(0,0,0,0.55))]" />
+        </div>
 
-      </div>
-
-
-      <div className="pointer-events-none absolute inset-4 border border-white/10 sm:inset-6 lg:inset-8" />
+      </section>
 
 
-      <div className="relative z-10 flex min-h-screen flex-col justify-between p-7 sm:p-10 lg:p-14">
+      {/* ==================================================
+          HOMEPAGE CONTENT
+          COMPLETELY SEPARATE FROM THE PHOTOGRAPH
+          ================================================== */}
 
-        <div className="flex items-start justify-between gap-6">
+      <section className="w-full border-t border-white/20 bg-black">
 
-          <div>
+        <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:px-8 lg:py-24">
 
-            <div className="flex items-center gap-3">
+          <div className="max-w-3xl">
 
-              <ShieldCheck className="h-6 w-6 text-white" />
+            <p className="text-[10px] uppercase tracking-[0.3em] text-white">
+              SecurePDF Vault
+            </p>
 
-              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-white">
-                SecurePDF Vault
-              </span>
+            <h1 className="mt-4 text-4xl font-medium leading-tight tracking-[-0.03em] text-white sm:text-5xl lg:text-6xl">
+              Protect what must remain private.
+            </h1>
+
+            <p className="mt-6 max-w-2xl text-sm leading-7 text-white">
+              SecurePDF Vault protects sensitive PDF documents with controlled
+              access, password protection, and private document distribution.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+
+              <a
+                href="/register"
+                className="inline-flex items-center gap-2 border border-white bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-black transition hover:bg-black hover:text-white"
+              >
+                Open Vault
+                <ArrowRight className="h-4 w-4" />
+              </a>
+
+              <a
+                href="/login"
+                className="inline-flex items-center gap-2 border border-white bg-black px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white hover:text-black"
+              >
+                Login
+              </a>
 
             </div>
 
-            <p className="mt-2 text-[10px] uppercase tracking-[0.28em] text-white">
-              Private document security
-            </p>
-
           </div>
 
 
-          <div className="text-right">
+          <div className="mt-16 grid gap-px border border-white/20 bg-white/20 sm:grid-cols-3">
 
-            <p className="text-[9px] uppercase tracking-[0.35em] text-white">
-              Case
-            </p>
+            <div className="bg-black p-6">
 
-            <p className="mt-1 font-mono text-sm text-white">
-              212
-            </p>
+              <ShieldCheck className="h-5 w-5 text-white" />
 
-          </div>
+              <p className="mt-5 text-sm font-medium text-white">
+                Private document security
+              </p>
 
-        </div>
+              <p className="mt-2 text-xs leading-6 text-white">
+                Keep sensitive PDF documents protected and controlled.
+              </p>
 
-
-        <div className="max-w-xl">
-
-          <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-white">
-            Confidential Archive
-          </p>
-
-          <h1 className="max-w-lg text-5xl font-medium leading-[0.95] tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">
-            Protect what
-            <br />
-            must remain private.
-          </h1>
-
-          <p className="mt-7 max-w-md text-sm leading-7 text-white">
-            SecurePDF Vault protects sensitive PDF documents with controlled
-            access, password protection, and private document distribution.
-          </p>
+            </div>
 
 
-          <div className="mt-9 flex flex-wrap gap-3">
+            <div className="bg-black p-6">
 
-            <a
-              href="/register"
-              className="inline-flex items-center gap-2 border border-white bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-black transition hover:bg-black hover:text-white"
-            >
-              Open Vault
-              <ArrowRight className="h-4 w-4" />
-            </a>
+              <LockKeyhole className="h-5 w-5 text-white" />
+
+              <p className="mt-5 text-sm font-medium text-white">
+                Password protection
+              </p>
+
+              <p className="mt-2 text-xs leading-6 text-white">
+                Protect documents before they are distributed.
+              </p>
+
+            </div>
 
 
-            <a
-              href="/login"
-              className="inline-flex items-center gap-2 border border-white bg-black/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition hover:bg-white hover:text-black"
-            >
-              Login
-            </a>
+            <div className="bg-black p-6">
+
+              <Link className="h-5 w-5 text-white" />
+
+              <p className="mt-5 text-sm font-medium text-white">
+                Controlled sharing
+              </p>
+
+              <p className="mt-2 text-xs leading-6 text-white">
+                Share protected documents through secure access links.
+              </p>
+
+            </div>
 
           </div>
 
         </div>
 
-
-        <div className="flex items-end justify-between gap-6">
-
-          <div className="flex items-center gap-3 text-[9px] uppercase tracking-[0.25em] text-white">
-
-            <Fingerprint className="h-4 w-4 text-white" />
-
-            Authorized private archive
-
-          </div>
+      </section>
 
 
-          <div className="hidden text-right text-[9px] uppercase tracking-[0.22em] text-white sm:block">
+      <footer className="border-t border-white/20 bg-black">
 
-            <p>Confidential</p>
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 py-7 text-[9px] uppercase tracking-[0.2em] text-white sm:flex-row sm:items-center sm:justify-between sm:px-8">
 
-            <p className="mt-1">
-              Private access only
-            </p>
+          <span>
+            SecurePDF Vault
+          </span>
 
-          </div>
+          <span>
+            Private document security
+          </span>
 
         </div>
 
-      </div>
+      </footer>
 
     </main>
   );
