@@ -40,21 +40,24 @@ app.use((req, res, next) => {
 // Security
 app.use(helmet());
 
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 100,
-  standardHeaders: "draft-8",
-  legacyHeaders: false,
-});
-
-app.use("/api", apiLimiter);
-
 // CORS
 app.use(
   cors({
     origin:
       process.env.CLIENT_URL ||
       "http://localhost:5173",
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
   })
 );
 
@@ -66,6 +69,16 @@ app.use(
     extended: true,
   })
 );
+
+// Rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+});
+
+app.use("/api", apiLimiter);
 
 // Routes
 app.use("/api/test", testRoutes);

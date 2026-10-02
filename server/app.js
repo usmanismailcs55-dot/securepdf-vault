@@ -21,6 +21,36 @@ const app = express();
 
 app.use(helmet());
 
+// CORS
+app.use(
+  cors({
+    origin:
+      process.env.CLIENT_URL ||
+      "http://localhost:5173",
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
+  })
+);
+
+app.use(express.json());
+
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
+
+// Rate limiting
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 100,
@@ -29,15 +59,6 @@ const apiLimiter = rateLimit({
 });
 
 app.use("/api", apiLimiter);
-
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-  })
-);
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/test", testRoutes);
 app.use("/api/auth", authRoutes);
