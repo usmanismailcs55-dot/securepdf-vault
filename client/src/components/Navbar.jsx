@@ -1,4 +1,3 @@
-
 import { Link, useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
@@ -21,7 +20,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-[#b08a57]/20 bg-[#090806]/96 shadow-[0_12px_40px_rgba(0,0,0,0.55)] backdrop-blur-md">
+    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/95 shadow-[0_12px_40px_rgba(0,0,0,0.55)] backdrop-blur-md">
       <div className="mx-auto flex min-h-[68px] max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-8 lg:px-12">
 
         {/* Brand */}
@@ -29,23 +28,23 @@ function Navbar() {
           to="/"
           className="group flex shrink-0 items-center gap-3 outline-none"
         >
-          <div className="relative flex h-9 w-9 items-center justify-center border border-[#765b38] bg-[#110e0b] transition duration-300 group-hover:border-[#b08a57]">
+          <div className="relative flex h-9 w-9 items-center justify-center border border-white/30 bg-black transition duration-300 group-hover:border-white/70">
             <ShieldCheck
               size={19}
               strokeWidth={1.5}
-              className="text-[#c7a36a] transition duration-300 group-hover:text-[#e0bd80]"
+              className="text-white transition duration-300 group-hover:text-white"
               aria-hidden="true"
             />
 
-            <span className="absolute bottom-0 left-0 h-px w-full bg-[#b08a57]/60" />
+            <span className="absolute bottom-0 left-0 h-px w-full bg-white/50" />
           </div>
 
           <div className="leading-none">
-            <span className="block font-serif text-[15px] font-semibold tracking-[0.12em] text-[#e8dfcf] sm:text-base">
+            <span className="block font-serif text-[15px] font-semibold tracking-[0.12em] text-white sm:text-base">
               SecurePDF
             </span>
 
-            <span className="mt-1 block text-[8px] font-semibold uppercase tracking-[0.38em] text-[#92734a]">
+            <span className="mt-1 block text-[8px] font-semibold uppercase tracking-[0.38em] text-white/50">
               Vault
             </span>
           </div>
@@ -57,11 +56,11 @@ function Navbar() {
           {/* Home */}
           <Link
             to="/"
-            className="group relative hidden px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-[#9f9381] outline-none transition duration-200 hover:text-[#e0bd80] focus-visible:ring-1 focus-visible:ring-[#b08a57] sm:block"
+            className="group relative hidden px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-white/55 outline-none transition duration-200 hover:text-white focus-visible:ring-1 focus-visible:ring-white sm:block"
           >
             Home
 
-            <span className="absolute bottom-0 left-3 right-3 h-px origin-left scale-x-0 bg-[#b08a57] transition-transform duration-200 group-hover:scale-x-100" />
+            <span className="absolute bottom-0 left-3 right-3 h-px origin-left scale-x-0 bg-white transition-transform duration-200 group-hover:scale-x-100" />
           </Link>
 
           {isLoggedIn ? (
@@ -69,22 +68,22 @@ function Navbar() {
               {/* Dashboard */}
               <Link
                 to="/dashboard"
-                className="group relative px-2.5 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-[#9f9381] outline-none transition duration-200 hover:text-[#e0bd80] focus-visible:ring-1 focus-visible:ring-[#b08a57] sm:px-3"
+                className="group relative px-2.5 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-white/55 outline-none transition duration-200 hover:text-white focus-visible:ring-1 focus-visible:ring-white sm:px-3"
               >
                 Dashboard
 
-                <span className="absolute bottom-0 left-3 right-3 h-px origin-left scale-x-0 bg-[#b08a57] transition-transform duration-200 group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-3 right-3 h-px origin-left scale-x-0 bg-white transition-transform duration-200 group-hover:scale-x-100" />
               </Link>
 
               {/* Crypto Payment */}
               <Link
                 to="/payment/crypto"
-                className="group flex items-center gap-1.5 px-2.5 py-2 text-[9px] font-bold uppercase tracking-[0.15em] text-[#9f9381] outline-none transition duration-200 hover:text-[#e0bd80] focus-visible:ring-1 focus-visible:ring-[#b08a57] sm:px-3"
+                className="group flex items-center gap-1.5 px-2.5 py-2 text-[9px] font-bold uppercase tracking-[0.15em] text-white/55 outline-none transition duration-200 hover:text-white focus-visible:ring-1 focus-visible:ring-white sm:px-3"
               >
                 <WalletCards
                   size={14}
                   strokeWidth={1.5}
-                  className="text-[#8f744f] transition-colors duration-200 group-hover:text-[#d0aa70]"
+                  className="text-white/50 transition-colors duration-200 group-hover:text-white"
                   aria-hidden="true"
                 />
 
@@ -101,7 +100,7 @@ function Navbar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="ml-1 flex items-center gap-2 border border-[#765b38]/60 bg-[#15100c] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-[#c1b39e] outline-none transition duration-200 hover:border-[#b08a57] hover:bg-[#1c150e] hover:text-[#e0bd80] focus-visible:ring-1 focus-visible:ring-[#b08a57] sm:px-4"
+                className="ml-1 flex items-center gap-2 border border-white/20 bg-white/5 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-white/70 outline-none transition duration-200 hover:border-white/50 hover:bg-white/10 hover:text-white focus-visible:ring-1 focus-visible:ring-white sm:px-4"
               >
                 <LogOut
                   size={14}
@@ -119,17 +118,17 @@ function Navbar() {
               {/* Login */}
               <Link
                 to="/login"
-                className="group relative px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-[#9f9381] outline-none transition duration-200 hover:text-[#e0bd80] focus-visible:ring-1 focus-visible:ring-[#b08a57]"
+                className="group relative px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-white/55 outline-none transition duration-200 hover:text-white focus-visible:ring-1 focus-visible:ring-white"
               >
                 Login
 
-                <span className="absolute bottom-0 left-3 right-3 h-px origin-left scale-x-0 bg-[#b08a57] transition-transform duration-200 group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-3 right-3 h-px origin-left scale-x-0 bg-white transition-transform duration-200 group-hover:scale-x-100" />
               </Link>
 
               {/* Create Account */}
               <Link
                 to="/register"
-                className="ml-1 inline-flex items-center border border-[#9a7548] bg-[#8b693f] px-3.5 py-2.5 text-[9px] font-bold uppercase tracking-[0.17em] text-[#fff4df] shadow-[0_8px_25px_rgba(0,0,0,0.35)] outline-none transition duration-200 hover:border-[#d0aa70] hover:bg-[#a07848] hover:shadow-[0_10px_30px_rgba(0,0,0,0.45)] focus-visible:ring-1 focus-visible:ring-[#d0aa70] sm:px-4"
+                className="ml-1 inline-flex items-center border border-white bg-white px-3.5 py-2.5 text-[9px] font-bold uppercase tracking-[0.17em] text-black shadow-[0_8px_25px_rgba(0,0,0,0.35)] outline-none transition duration-200 hover:bg-black hover:text-white hover:shadow-[0_10px_30px_rgba(0,0,0,0.45)] focus-visible:ring-1 focus-visible:ring-white sm:px-4"
               >
                 Create Account
               </Link>
@@ -139,7 +138,7 @@ function Navbar() {
       </div>
 
       {/* Subtle case-file line */}
-      <div className="pointer-events-none absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-[#b08a57]/20 to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
     </nav>
   );
 }

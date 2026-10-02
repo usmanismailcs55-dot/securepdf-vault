@@ -657,14 +657,14 @@ export default function CryptoPayment() {
 
   const getPaymentStatusClasses = () => {
     if (paymentStatusType === "success") {
-      return "border-[#66502f] bg-[#211b13] text-[#d8c49d]";
+      return "border-white/25 bg-white/[0.08] text-white/85";
     }
 
     if (paymentStatusType === "failed") {
-      return "border-[#693d35] bg-[#211312] text-[#d7aaa0]";
+      return "border-white/25 bg-white/[0.05] text-white/75";
     }
 
-    return "border-[#66502f] bg-[#1d1913] text-[#cdbb92]";
+    return "border-white/20 bg-white/[0.04] text-white/75";
   };
 
   const getPaymentStatusIcon = () => {
@@ -672,7 +672,7 @@ export default function CryptoPayment() {
       return (
         <CheckCircle
           size={20}
-          className="shrink-0 text-[#c6a15b]"
+          className="shrink-0 text-white"
         />
       );
     }
@@ -680,11 +680,7 @@ export default function CryptoPayment() {
     return (
       <AlertTriangle
         size={20}
-        className={
-          paymentStatusType === "failed"
-            ? "shrink-0 text-[#bd7769]"
-            : "shrink-0 text-[#c6a15b]"
-        }
+        className="shrink-0 text-white/65"
       />
     );
   };
@@ -699,7 +695,7 @@ export default function CryptoPayment() {
 
   const getHistoryStatusClasses = (status) => {
     if (status === "paid") {
-      return "border-[#66502f] bg-[#211b13] text-[#d6c397]";
+      return "border-white/25 bg-white/[0.08] text-white/85";
     }
 
     if (
@@ -707,25 +703,25 @@ export default function CryptoPayment() {
       status === "expired" ||
       status === "refunded"
     ) {
-      return "border-[#693d35] bg-[#211312] text-[#d7aaa0]";
+      return "border-white/25 bg-white/[0.05] text-white/75";
     }
 
-    return "border-[#66502f] bg-[#1d1913] text-[#cdbb92]";
+    return "border-white/20 bg-white/[0.04] text-white/70";
   };
 
   return (
-    <main className="min-h-screen bg-[#090806] text-[#e8dfcf]">
+    <main className="min-h-screen bg-black text-white">
 
       {/* =====================================================
           STANDALONE CORE VISUAL
           No text. No logo. No controls. No overlay.
       ====================================================== */}
-      <section className="w-full bg-[#090806]">
+      <section className="w-full bg-black">
         <div className="w-full overflow-hidden">
           <img
             src="/images/noir-vault-hero.jpg"
             alt="Noir eyes"
-            className="block h-[55vh] min-h-[420px] w-full object-cover object-center sm:h-[65vh] lg:h-[72vh]"
+            className="block h-[55vh] min-h-[420px] w-full object-cover object-center grayscale sm:h-[65vh] lg:h-[72vh]"
           />
         </div>
       </section>
@@ -737,9 +733,9 @@ export default function CryptoPayment() {
 
         {/* Payment Error */}
         {paymentError && (
-          <div className="mb-6 flex items-start gap-3 border border-[#693d35] bg-[#211312] p-4 text-[#d7aaa0]">
+          <div className="mb-6 flex items-start gap-3 border border-white/25 bg-white/[0.05] p-4 text-white/75">
             <AlertTriangle
-              className="mt-0.5 shrink-0 text-[#bd7769]"
+              className="mt-0.5 shrink-0 text-white/65"
               size={20}
             />
 
@@ -771,41 +767,41 @@ export default function CryptoPayment() {
         {/* ===================================================
             PAYMENT SUMMARY
         ==================================================== */}
-        <section className="border-y border-[#3f3020] py-6">
+        <section className="border-y border-white/15 py-6">
 
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 
             <div>
-              <p className="text-[10px] tracking-[0.25em] text-[#80633d] uppercase">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-white/45">
                 Payment
               </p>
 
-              <p className="mt-2 text-3xl text-[#e2cf9e]">
+              <p className="mt-2 text-3xl text-white">
                 {paymentAmount} {paymentAsset}
               </p>
             </div>
 
             <div className="text-left sm:text-right">
-              <p className="text-[10px] tracking-[0.2em] text-[#71695d] uppercase">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">
                 Network
               </p>
 
-              <p className="mt-2 text-sm text-[#c7bca9]">
+              <p className="mt-2 text-sm text-white/65">
                 {paymentNetwork}
               </p>
             </div>
 
           </div>
 
-          <div className="mt-5 border-t border-[#302519] pt-5">
+          <div className="mt-5 border-t border-white/10 pt-5">
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 
-              <span className="text-[10px] tracking-[0.18em] text-[#71695d] uppercase">
+              <span className="text-[10px] uppercase tracking-[0.18em] text-white/40">
                 Reference
               </span>
 
-              <span className="break-all font-mono text-xs text-[#cbb88f] sm:max-w-lg sm:text-right">
+              <span className="break-all font-mono text-xs text-white/70 sm:max-w-lg sm:text-right">
                 {paymentLoading
                   ? "Creating..."
                   : paymentReference ||
@@ -820,14 +816,14 @@ export default function CryptoPayment() {
         {/* ===================================================
             WALLET / QR
         ==================================================== */}
-        <section className="border-b border-[#3f3020] py-8">
+        <section className="border-b border-white/15 py-8">
 
           <div className="grid gap-8 lg:grid-cols-[280px_1fr] lg:items-center">
 
             <div className="flex justify-center lg:justify-start">
 
               {walletAddress ? (
-                <div className="border border-[#66502f] bg-[#f4eee2] p-4">
+                <div className="border border-white/30 bg-white p-4">
                   <QRCodeSVG
                     value={walletAddress}
                     size={230}
@@ -836,7 +832,7 @@ export default function CryptoPayment() {
                   />
                 </div>
               ) : (
-                <div className="flex min-h-[230px] w-[230px] items-center justify-center border border-[#693d35] bg-[#211312] p-6 text-center text-sm text-[#d7aaa0]">
+                <div className="flex min-h-[230px] w-[230px] items-center justify-center border border-white/25 bg-white/[0.05] p-6 text-center text-sm text-white/70">
                   Payment wallet is not configured.
                 </div>
               )}
@@ -849,24 +845,24 @@ export default function CryptoPayment() {
                 <WalletCards
                   size={19}
                   strokeWidth={1.5}
-                  className="text-[#c6a15b]"
+                  className="text-white"
                 />
 
-                <p className="text-sm text-[#d7c7aa]">
+                <p className="text-sm text-white/80">
                   Send payment
                 </p>
               </div>
 
               {walletAddress && (
                 <>
-                  <div className="border border-[#493925] bg-[#0b0907] p-4 font-mono text-xs leading-6 break-all text-[#cfc2ad]">
+                  <div className="break-all border border-white/15 bg-black p-4 font-mono text-xs leading-6 text-white/75">
                     {walletAddress}
                   </div>
 
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="mt-3 flex items-center justify-center gap-2 border border-[#765b32] bg-[#b18b4d] px-5 py-3 text-sm font-semibold text-[#120e09] transition hover:bg-[#c6a15b]"
+                    className="mt-3 flex items-center justify-center gap-2 border border-white bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-white/90"
                   >
                     {copied ? (
                       <>
@@ -891,68 +887,68 @@ export default function CryptoPayment() {
         {/* ===================================================
             HOW TO PAY
         ==================================================== */}
-        <section className="border-b border-[#3f3020] py-8">
+        <section className="border-b border-white/15 py-8">
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
-            <div className="border-l border-[#66502f] pl-4">
-              <span className="font-serif text-lg text-[#c6a15b]">
+            <div className="border-l border-white/30 pl-4">
+              <span className="font-serif text-lg text-white">
                 01
               </span>
 
-              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+              <p className="mt-2 text-sm leading-6 text-white/60">
                 Open Trust Wallet and select{" "}
-                <strong className="font-medium text-[#d8c9b0]">
+                <strong className="font-medium text-white/80">
                   {paymentAsset}
                 </strong>
                 .
               </p>
             </div>
 
-            <div className="border-l border-[#66502f] pl-4">
-              <span className="font-serif text-lg text-[#c6a15b]">
+            <div className="border-l border-white/30 pl-4">
+              <span className="font-serif text-lg text-white">
                 02
               </span>
 
-              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+              <p className="mt-2 text-sm leading-6 text-white/60">
                 Use the{" "}
-                <strong className="font-medium text-[#d8c9b0]">
+                <strong className="font-medium text-white/80">
                   {paymentNetwork}
                 </strong>{" "}
                 network.
               </p>
             </div>
 
-            <div className="border-l border-[#66502f] pl-4">
-              <span className="font-serif text-lg text-[#c6a15b]">
+            <div className="border-l border-white/30 pl-4">
+              <span className="font-serif text-lg text-white">
                 03
               </span>
 
-              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+              <p className="mt-2 text-sm leading-6 text-white/60">
                 Send{" "}
-                <strong className="font-medium text-[#d8c9b0]">
+                <strong className="font-medium text-white/80">
                   {paymentAmount} {paymentAsset}
                 </strong>
                 .
               </p>
             </div>
 
-            <div className="border-l border-[#66502f] pl-4">
-              <span className="font-serif text-lg text-[#c6a15b]">
+            <div className="border-l border-white/30 pl-4">
+              <span className="font-serif text-lg text-white">
                 04
               </span>
 
-              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+              <p className="mt-2 text-sm leading-6 text-white/60">
                 Confirm the receiving wallet before sending.
               </p>
             </div>
 
-            <div className="border-l border-[#66502f] pl-4">
-              <span className="font-serif text-lg text-[#c6a15b]">
+            <div className="border-l border-white/30 pl-4">
+              <span className="font-serif text-lg text-white">
                 05
               </span>
 
-              <p className="mt-2 text-sm leading-6 text-[#aaa08f]">
+              <p className="mt-2 text-sm leading-6 text-white/60">
                 Copy your transaction hash after payment.
               </p>
             </div>
@@ -964,22 +960,22 @@ export default function CryptoPayment() {
         {/* ===================================================
             IMPORTANT
         ==================================================== */}
-        <section className="border-b border-[#3f3020] py-6">
+        <section className="border-b border-white/15 py-6">
 
           <div className="flex items-start gap-3">
 
             <AlertTriangle
-              className="mt-0.5 shrink-0 text-[#c6a15b]"
+              className="mt-0.5 shrink-0 text-white/70"
               size={19}
             />
 
-            <p className="text-sm leading-6 text-[#a99d89]">
+            <p className="text-sm leading-6 text-white/60">
               Send only{" "}
-              <strong className="text-[#d9c08b]">
+              <strong className="text-white/85">
                 {paymentAmount} {paymentAsset}
               </strong>{" "}
               using{" "}
-              <strong className="text-[#d9c08b]">
+              <strong className="text-white/85">
                 {paymentNetwork}
               </strong>
               . Using another asset or network may prevent
@@ -993,16 +989,16 @@ export default function CryptoPayment() {
         {/* ===================================================
             TRANSACTION VERIFICATION
         ==================================================== */}
-        <section className="border-b border-[#3f3020] py-8">
+        <section className="border-b border-white/15 py-8">
 
           <div className="mb-5 flex items-center gap-3">
             <ShieldCheck
               size={19}
               strokeWidth={1.5}
-              className="text-[#c6a15b]"
+              className="text-white"
             />
 
-            <p className="text-sm text-[#d7c8ae]">
+            <p className="text-sm text-white/80">
               Verify transaction
             </p>
           </div>
@@ -1011,7 +1007,7 @@ export default function CryptoPayment() {
 
             <label
               htmlFor="transactionHash"
-              className="mb-2 block text-[10px] tracking-[0.18em] text-[#71695d] uppercase"
+              className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-white/40"
             >
               Transaction hash
             </label>
@@ -1025,18 +1021,18 @@ export default function CryptoPayment() {
               autoComplete="off"
               spellCheck="false"
               maxLength={64}
-              className={`w-full border bg-[#0b0907] px-4 py-3 font-mono text-xs text-[#e1d6c4] outline-none transition placeholder:text-[#665d51] ${
+              className={`w-full border bg-black px-4 py-3 font-mono text-xs text-white/85 outline-none transition placeholder:text-white/25 ${
                 hashError
-                  ? "border-[#8b4b40] focus:border-[#bd7769]"
-                  : "border-[#493925] focus:border-[#765b32]"
+                  ? "border-white/50 focus:border-white/70"
+                  : "border-white/15 focus:border-white/50"
               }`}
             />
 
             {hashError && (
-              <div className="mt-3 flex items-start gap-2 text-sm text-[#d7aaa0]">
+              <div className="mt-3 flex items-start gap-2 text-sm text-white/75">
                 <AlertTriangle
                   size={17}
-                  className="mt-0.5 shrink-0 text-[#bd7769]"
+                  className="mt-0.5 shrink-0 text-white/65"
                 />
 
                 <p>{hashError}</p>
@@ -1044,10 +1040,10 @@ export default function CryptoPayment() {
             )}
 
             {submitted && !hashError && (
-              <div className="mt-3 flex items-start gap-2 text-sm text-[#cbb88f]">
+              <div className="mt-3 flex items-start gap-2 text-sm text-white/70">
                 <CheckCircle
                   size={17}
-                  className="mt-0.5 shrink-0 text-[#c6a15b]"
+                  className="mt-0.5 shrink-0 text-white"
                 />
 
                 <p>
@@ -1063,7 +1059,7 @@ export default function CryptoPayment() {
                 !paymentReference ||
                 paymentLoading
               }
-              className="mt-4 flex w-full items-center justify-center gap-2 border border-[#765b32] bg-[#b18b4d] px-4 py-3 text-sm font-semibold text-[#120e09] transition hover:bg-[#c6a15b] disabled:cursor-not-allowed disabled:opacity-40"
+              className="mt-4 flex w-full items-center justify-center gap-2 border border-white bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Submit transaction
               <ArrowRight size={17} />
@@ -1072,8 +1068,8 @@ export default function CryptoPayment() {
           </form>
 
           {queryStatus && (
-            <div className="mt-5 border border-[#3f3020] bg-[#0b0907] p-4">
-              <p className="text-sm leading-6 text-[#aaa08f]">
+            <div className="mt-5 border border-white/15 bg-black p-4">
+              <p className="text-sm leading-6 text-white/60">
                 {queryStatus}
               </p>
             </div>
@@ -1083,11 +1079,11 @@ export default function CryptoPayment() {
             <div
               className={`mt-5 border p-5 ${
                 transactionData.status === "pending"
-                  ? "border-[#66502f] bg-[#1d1913]"
+                  ? "border-white/20 bg-white/[0.04]"
                   : transactionData.status === "failed" ||
                     transactionData.status === "underpaid"
-                  ? "border-[#693d35] bg-[#211312]"
-                  : "border-[#66502f] bg-[#211b13]"
+                  ? "border-white/25 bg-white/[0.05]"
+                  : "border-white/25 bg-white/[0.08]"
               }`}
             >
 
@@ -1096,22 +1092,22 @@ export default function CryptoPayment() {
                 {transactionData.status === "pending" ? (
                   <AlertTriangle
                     size={19}
-                    className="text-[#c6a15b]"
+                    className="text-white/70"
                   />
                 ) : transactionData.status === "failed" ||
                   transactionData.status === "underpaid" ? (
                   <AlertTriangle
                     size={19}
-                    className="text-[#bd7769]"
+                    className="text-white/65"
                   />
                 ) : (
                   <CheckCircle
                     size={19}
-                    className="text-[#c6a15b]"
+                    className="text-white"
                   />
                 )}
 
-                <h3 className="text-sm font-semibold tracking-wide text-[#e3d8c6]">
+                <h3 className="text-sm font-semibold tracking-wide text-white/90">
                   {transactionData.status === "pending"
                     ? "Transaction Pending"
                     : transactionData.status === "failed"
@@ -1123,22 +1119,22 @@ export default function CryptoPayment() {
 
               </div>
 
-              <div className="space-y-3 border-t border-[#493925] pt-4">
+              <div className="space-y-3 border-t border-white/10 pt-4">
 
-                <p className="break-all text-xs leading-6 text-[#aaa08f]">
-                  <span className="text-[#7f7566]">
+                <p className="break-all text-xs leading-6 text-white/60">
+                  <span className="text-white/40">
                     Transaction ID:
                   </span>{" "}
-                  <span className="font-mono text-[#d1c3ad]">
+                  <span className="font-mono text-white/75">
                     {transactionData.txID}
                   </span>
                 </p>
 
-                <p className="break-all text-xs leading-6 text-[#aaa08f]">
-                  <span className="text-[#7f7566]">
+                <p className="break-all text-xs leading-6 text-white/60">
+                  <span className="text-white/40">
                     Payment Reference:
                   </span>{" "}
-                  <span className="font-mono text-[#d1c3ad]">
+                  <span className="font-mono text-white/75">
                     {transactionData.paymentReference}
                   </span>
                 </p>
@@ -1159,34 +1155,34 @@ export default function CryptoPayment() {
             <WalletCards
               size={19}
               strokeWidth={1.5}
-              className="text-[#c6a15b]"
+              className="text-white"
             />
 
-            <p className="text-sm text-[#d7c8ae]">
+            <p className="text-sm text-white/80">
               Payment history
             </p>
           </div>
 
           {historyLoading ? (
-            <div className="border border-[#302519] bg-[#0b0907] p-5">
-              <p className="text-sm text-[#9f9482]">
+            <div className="border border-white/10 bg-black p-5">
+              <p className="text-sm text-white/55">
                 Loading payment history...
               </p>
             </div>
           ) : historyError ? (
-            <div className="flex items-start gap-3 border border-[#693d35] bg-[#211312] p-4">
+            <div className="flex items-start gap-3 border border-white/25 bg-white/[0.05] p-4">
               <AlertTriangle
-                className="mt-0.5 shrink-0 text-[#bd7769]"
+                className="mt-0.5 shrink-0 text-white/65"
                 size={19}
               />
 
-              <p className="text-sm leading-6 text-[#d7aaa0]">
+              <p className="text-sm leading-6 text-white/75">
                 {historyError}
               </p>
             </div>
           ) : paymentHistory.length === 0 ? (
-            <div className="border border-[#302519] bg-[#0b0907] p-5">
-              <p className="text-sm text-[#9f9482]">
+            <div className="border border-white/10 bg-black p-5">
+              <p className="text-sm text-white/55">
                 No payment history found.
               </p>
             </div>
@@ -1196,18 +1192,18 @@ export default function CryptoPayment() {
               {paymentHistory.map((payment) => (
                 <div
                   key={payment._id}
-                  className="border border-[#493925] bg-[#0b0907] p-5"
+                  className="border border-white/15 bg-black p-5"
                 >
 
-                  <div className="mb-5 flex flex-col gap-3 border-b border-[#302519] pb-4 md:flex-row md:items-center md:justify-between">
+                  <div className="mb-5 flex flex-col gap-3 border-b border-white/10 pb-4 md:flex-row md:items-center md:justify-between">
 
                     <div className="min-w-0">
 
-                      <p className="break-all font-mono text-xs text-[#d4c4a6]">
+                      <p className="break-all font-mono text-xs text-white/75">
                         {payment.paymentReference}
                       </p>
 
-                      <p className="mt-2 text-[11px] text-[#71695d]">
+                      <p className="mt-2 text-[11px] text-white/40">
                         {formatPaymentDate(
                           payment.createdAt
                         )}
@@ -1216,7 +1212,7 @@ export default function CryptoPayment() {
                     </div>
 
                     <span
-                      className={`inline-flex w-fit border px-3 py-1 text-[10px] font-semibold tracking-[0.12em] uppercase ${getHistoryStatusClasses(
+                      className={`inline-flex w-fit border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${getHistoryStatusClasses(
                         payment.status
                       )}`}
                     >
@@ -1228,22 +1224,22 @@ export default function CryptoPayment() {
                   <div className="grid grid-cols-1 gap-5 text-sm md:grid-cols-2">
 
                     <div>
-                      <span className="text-[10px] tracking-[0.16em] text-[#71695d] uppercase">
+                      <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">
                         Amount
                       </span>
 
-                      <p className="mt-1 text-[#d1c3ad]">
+                      <p className="mt-1 text-white/75">
                         {payment.amount}{" "}
                         {payment.asset}
                       </p>
                     </div>
 
                     <div>
-                      <span className="text-[10px] tracking-[0.16em] text-[#71695d] uppercase">
+                      <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">
                         Paid at
                       </span>
 
-                      <p className="mt-1 text-[#d1c3ad]">
+                      <p className="mt-1 text-white/75">
                         {formatPaymentDate(
                           payment.paidAt
                         )}
@@ -1252,11 +1248,11 @@ export default function CryptoPayment() {
 
                     <div className="md:col-span-2">
 
-                      <span className="text-[10px] tracking-[0.16em] text-[#71695d] uppercase">
+                      <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">
                         Transaction hash
                       </span>
 
-                      <p className="mt-1 break-all font-mono text-xs leading-6 text-[#aaa08f]">
+                      <p className="mt-1 break-all font-mono text-xs leading-6 text-white/60">
                         {payment.transactionHash ||
                           "Not submitted"}
                       </p>
@@ -1266,11 +1262,11 @@ export default function CryptoPayment() {
                     {payment.failureReason && (
                       <div className="md:col-span-2">
 
-                        <span className="text-[10px] tracking-[0.16em] text-[#71695d] uppercase">
+                        <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">
                           Failure reason
                         </span>
 
-                        <p className="mt-1 text-sm leading-6 text-[#c99388]">
+                        <p className="mt-1 text-sm leading-6 text-white/65">
                           {payment.failureReason}
                         </p>
 
@@ -1287,10 +1283,10 @@ export default function CryptoPayment() {
 
         </section>
 
-        <div className="flex items-center justify-center gap-2 border-t border-[#302519] pt-6 text-center text-[10px] tracking-[0.2em] text-[#665d51] uppercase">
+        <div className="flex items-center justify-center gap-2 border-t border-white/10 pt-6 text-center text-[10px] uppercase tracking-[0.2em] text-white/30">
           <ShieldCheck
             size={14}
-            className="text-[#8c7044]"
+            className="text-white/50"
           />
           Secure cryptocurrency payment
         </div>

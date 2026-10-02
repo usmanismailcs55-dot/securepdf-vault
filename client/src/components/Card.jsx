@@ -7,7 +7,7 @@ const Card = forwardRef(function Card(
   return (
     <div
       ref={ref}
-      className={`rounded-xl border border-slate-200 bg-white p-6 shadow-sm ${className}`}
+      className={`rounded-xl border border-black/10 bg-white p-6 shadow-sm ${className}`}
     >
       {children}
     </div>

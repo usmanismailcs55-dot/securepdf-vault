@@ -124,9 +124,9 @@ export default function Register() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#080706] text-[#e8dfcf]">
+    <div className="min-h-screen bg-black text-white">
       <div className="mx-auto flex min-h-screen w-full max-w-[1500px] items-center justify-center px-3 py-3 sm:px-5 sm:py-5">
-        <div className="relative grid min-h-[calc(100vh-1.5rem)] w-full overflow-hidden border border-[#493823] bg-[#0b0907] shadow-[0_30px_100px_rgba(0,0,0,0.65)] sm:min-h-[calc(100vh-2.5rem)] lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="relative grid min-h-[calc(100vh-1.5rem)] w-full overflow-hidden border border-white/15 bg-black shadow-[0_30px_100px_rgba(0,0,0,0.75)] sm:min-h-[calc(100vh-2.5rem)] lg:grid-cols-[1.15fr_0.85fr]">
 
           {/* PHOTO SIDE */}
           <div className="relative min-h-[360px] overflow-hidden lg:min-h-0">
@@ -135,34 +135,34 @@ export default function Register() {
             <img
               src="/images/noir-vault-hero.jpg"
               alt="Eyes in cinematic darkness"
-              className="absolute inset-0 h-full w-full object-cover object-center"
+              className="absolute inset-0 h-full w-full object-cover object-center grayscale"
             />
 
             {/* Cinematic overlays */}
-            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 bg-black/25" />
 
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,4,3,0.62)_0%,rgba(5,4,3,0.08)_34%,rgba(5,4,3,0.18)_58%,rgba(5,4,3,0.9)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.68)_0%,rgba(0,0,0,0.08)_34%,rgba(0,0,0,0.18)_58%,rgba(0,0,0,0.92)_100%)]" />
 
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,7,6,0.38)_0%,transparent_45%,rgba(8,7,6,0.22)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.42)_0%,transparent_45%,rgba(0,0,0,0.28)_100%)]" />
 
             {/* Top brand */}
             <div className="absolute left-5 top-5 z-10 sm:left-8 sm:top-8">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center border border-[#9b774a]/70 bg-[#0b0907]/70 backdrop-blur-sm">
+                <div className="flex h-9 w-9 items-center justify-center border border-white/40 bg-black/70 backdrop-blur-sm">
                   <ShieldCheck
                     size={19}
                     strokeWidth={1.6}
-                    className="text-[#d2ae72]"
+                    className="text-white"
                     aria-hidden="true"
                   />
                 </div>
 
                 <div className="leading-none">
-                  <p className="font-serif text-sm tracking-[0.14em] text-[#eee3d0]">
+                  <p className="font-serif text-sm tracking-[0.14em] text-white">
                     SecurePDF
                   </p>
 
-                  <p className="mt-1 text-[8px] uppercase tracking-[0.38em] text-[#a5875c]">
+                  <p className="mt-1 text-[8px] uppercase tracking-[0.38em] text-white/60">
                     Vault
                   </p>
                 </div>
@@ -173,18 +173,18 @@ export default function Register() {
             <div className="absolute bottom-6 left-5 right-5 z-10 sm:bottom-8 sm:left-8 sm:right-8">
               <div className="flex items-end justify-between gap-5">
                 <div>
-                  <p className="text-[9px] uppercase tracking-[0.38em] text-[#c5a16a]">
+                  <p className="text-[9px] uppercase tracking-[0.38em] text-white/65">
                     Private access
                   </p>
 
-                  <p className="mt-2 max-w-xs font-serif text-xl leading-tight text-[#f0e5d2] sm:text-2xl">
+                  <p className="mt-2 max-w-xs font-serif text-xl leading-tight text-white sm:text-2xl">
                     Your files.
                     <br />
                     Under your control.
                   </p>
                 </div>
 
-                <span className="hidden border-l border-[#b08a57]/40 pl-4 text-[9px] uppercase tracking-[0.28em] text-[#a9967c] sm:block">
+                <span className="hidden border-l border-white/25 pl-4 text-[9px] uppercase tracking-[0.28em] text-white/50 sm:block">
                   01 / 04
                 </span>
               </div>
@@ -192,30 +192,30 @@ export default function Register() {
           </div>
 
           {/* REGISTER SIDE */}
-          <div className="relative flex items-center justify-center overflow-y-auto bg-[linear-gradient(135deg,#100d09_0%,#0c0a08_55%,#080706_100%)] px-5 py-10 sm:px-8 lg:px-12">
+          <div className="relative flex items-center justify-center overflow-y-auto bg-[linear-gradient(135deg,#0c0c0c_0%,#090909_55%,#000_100%)] px-5 py-10 sm:px-8 lg:px-12">
 
             {/* Subtle background glow */}
-            <div className="pointer-events-none absolute right-[-120px] top-[-120px] h-72 w-72 rounded-full bg-[#9b774a]/[0.06] blur-3xl" />
+            <div className="pointer-events-none absolute right-[-120px] top-[-120px] h-72 w-72 rounded-full bg-white/[0.035] blur-3xl" />
 
             <div className="relative z-10 w-full max-w-md">
 
               {/* Mobile brand */}
               <div className="mb-9 flex items-center gap-3 lg:hidden">
-                <div className="flex h-9 w-9 items-center justify-center border border-[#765a37] bg-[#15100b]">
+                <div className="flex h-9 w-9 items-center justify-center border border-white/30 bg-white/[0.04]">
                   <ShieldCheck
                     size={19}
                     strokeWidth={1.6}
-                    className="text-[#c7a36a]"
+                    className="text-white"
                     aria-hidden="true"
                   />
                 </div>
 
                 <div className="leading-none">
-                  <p className="font-serif text-sm tracking-[0.14em] text-[#eee3d0]">
+                  <p className="font-serif text-sm tracking-[0.14em] text-white">
                     SecurePDF
                   </p>
 
-                  <p className="mt-1 text-[8px] uppercase tracking-[0.38em] text-[#92734a]">
+                  <p className="mt-1 text-[8px] uppercase tracking-[0.38em] text-white/55">
                     Vault
                   </p>
                 </div>
@@ -223,24 +223,24 @@ export default function Register() {
 
               {/* Minimal heading */}
               <div className="mb-7">
-                <p className="mb-3 text-[9px] font-medium uppercase tracking-[0.36em] text-[#a5875c]">
+                <p className="mb-3 text-[9px] font-medium uppercase tracking-[0.36em] text-white/60">
                   New identity
                 </p>
 
-                <h1 className="font-serif text-3xl leading-tight text-[#eee3d0] sm:text-4xl">
+                <h1 className="font-serif text-3xl leading-tight text-white sm:text-4xl">
                   Create your vault.
                 </h1>
 
-                <div className="mt-4 h-px w-16 bg-[#9a7547]" />
+                <div className="mt-4 h-px w-16 bg-white/65" />
               </div>
 
               {/* Form */}
-              <div className="border border-[#493823] bg-[#100d09]/90 p-5 shadow-[0_20px_70px_rgba(0,0,0,0.42)] backdrop-blur-sm sm:p-7">
+              <div className="border border-white/15 bg-white/[0.025] p-5 shadow-[0_20px_70px_rgba(0,0,0,0.5)] backdrop-blur-sm sm:p-7">
 
                 {error && (
                   <div
                     role="alert"
-                    className="mb-5 border border-[#704039] bg-[#24120f] px-4 py-3 text-sm leading-5 text-[#d9a49a]"
+                    className="mb-5 border border-white/25 bg-white/[0.06] px-4 py-3 text-sm leading-5 text-white/85"
                   >
                     {error}
                   </div>
@@ -249,7 +249,7 @@ export default function Register() {
                 {success && (
                   <div
                     role="status"
-                    className="mb-5 border border-[#53613f] bg-[#151b10] px-4 py-3 text-sm leading-5 text-[#b8c99b]"
+                    className="mb-5 border border-white/25 bg-white/[0.08] px-4 py-3 text-sm leading-5 text-white/85"
                   >
                     {success}
                   </div>
@@ -261,7 +261,7 @@ export default function Register() {
                   <div>
                     <label
                       htmlFor="name"
-                      className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-[#a9967c]"
+                      className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-white/55"
                     >
                       Full name
                     </label>
@@ -275,7 +275,7 @@ export default function Register() {
                       placeholder="John Doe"
                       autoComplete="name"
                       disabled={isLoading}
-                      className="h-12 w-full border border-[#493823] bg-[#0b0907] px-4 text-sm text-[#eee3d0] outline-none transition placeholder:text-[#625747] hover:border-[#695236] focus:border-[#a78351] focus:bg-[#0f0c09] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="h-12 w-full border border-white/15 bg-black px-4 text-sm text-white outline-none transition placeholder:text-white/25 hover:border-white/30 focus:border-white/60 focus:bg-black disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
 
@@ -283,7 +283,7 @@ export default function Register() {
                   <div>
                     <label
                       htmlFor="email"
-                      className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-[#a9967c]"
+                      className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-white/55"
                     >
                       Email address
                     </label>
@@ -297,7 +297,7 @@ export default function Register() {
                       placeholder="you@example.com"
                       autoComplete="email"
                       disabled={isLoading}
-                      className="h-12 w-full border border-[#493823] bg-[#0b0907] px-4 text-sm text-[#eee3d0] outline-none transition placeholder:text-[#625747] hover:border-[#695236] focus:border-[#a78351] focus:bg-[#0f0c09] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="h-12 w-full border border-white/15 bg-black px-4 text-sm text-white outline-none transition placeholder:text-white/25 hover:border-white/30 focus:border-white/60 focus:bg-black disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
 
@@ -305,7 +305,7 @@ export default function Register() {
                   <div>
                     <label
                       htmlFor="password"
-                      className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-[#a9967c]"
+                      className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-white/55"
                     >
                       Password
                     </label>
@@ -320,7 +320,7 @@ export default function Register() {
                         placeholder="Create a strong password"
                         autoComplete="new-password"
                         disabled={isLoading}
-                        className="h-12 w-full border border-[#493823] bg-[#0b0907] px-4 pr-12 text-sm text-[#eee3d0] outline-none transition placeholder:text-[#625747] hover:border-[#695236] focus:border-[#a78351] focus:bg-[#0f0c09] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="h-12 w-full border border-white/15 bg-black px-4 pr-12 text-sm text-white outline-none transition placeholder:text-white/25 hover:border-white/30 focus:border-white/60 focus:bg-black disabled:cursor-not-allowed disabled:opacity-50"
                       />
 
                       <button
@@ -329,7 +329,7 @@ export default function Register() {
                           setShowPassword(!showPassword)
                         }
                         disabled={isLoading}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[#766652] transition hover:text-[#c7a36a] disabled:cursor-not-allowed disabled:opacity-40"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/40 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                         aria-label={
                           showPassword
                             ? "Hide password"
@@ -351,8 +351,8 @@ export default function Register() {
                           key={item.label}
                           className={`flex items-center gap-1.5 text-[10px] ${
                             item.valid
-                              ? "text-[#b79a69]"
-                              : "text-[#665a4b]"
+                              ? "text-white"
+                              : "text-white/35"
                           }`}
                         >
                           <Check size={12} />
@@ -366,7 +366,7 @@ export default function Register() {
                   <div>
                     <label
                       htmlFor="confirmPassword"
-                      className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-[#a9967c]"
+                      className="mb-2 block text-[10px] font-medium uppercase tracking-[0.22em] text-white/55"
                     >
                       Confirm password
                     </label>
@@ -385,7 +385,7 @@ export default function Register() {
                         placeholder="Repeat your password"
                         autoComplete="new-password"
                         disabled={isLoading}
-                        className="h-12 w-full border border-[#493823] bg-[#0b0907] px-4 pr-12 text-sm text-[#eee3d0] outline-none transition placeholder:text-[#625747] hover:border-[#695236] focus:border-[#a78351] focus:bg-[#0f0c09] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="h-12 w-full border border-white/15 bg-black px-4 pr-12 text-sm text-white outline-none transition placeholder:text-white/25 hover:border-white/30 focus:border-white/60 focus:bg-black disabled:cursor-not-allowed disabled:opacity-50"
                       />
 
                       <button
@@ -396,7 +396,7 @@ export default function Register() {
                           )
                         }
                         disabled={isLoading}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[#766652] transition hover:text-[#c7a36a] disabled:cursor-not-allowed disabled:opacity-40"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/40 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                         aria-label={
                           showConfirmPassword
                             ? "Hide password"
@@ -413,19 +413,19 @@ export default function Register() {
                   </div>
 
                   {/* Terms */}
-                  <div className="border-l border-[#765a37] bg-[#15100b] px-4 py-3">
-                    <p className="text-[11px] leading-5 text-[#827565]">
+                  <div className="border-l border-white/40 bg-white/[0.035] px-4 py-3">
+                    <p className="text-[11px] leading-5 text-white/45">
                       By creating an account, you agree to our{" "}
                       <a
                         href="/terms"
-                        className="text-[#b99a67] transition hover:text-[#e0bd80]"
+                        className="text-white/75 transition hover:text-white"
                       >
                         Terms
                       </a>{" "}
                       and{" "}
                       <a
                         href="/privacy"
-                        className="text-[#b99a67] transition hover:text-[#e0bd80]"
+                        className="text-white/75 transition hover:text-white"
                       >
                         Privacy Policy
                       </a>
@@ -437,7 +437,7 @@ export default function Register() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="group flex h-12 w-full items-center justify-center gap-2 border border-[#9a7547] bg-[#8b693f] px-5 text-sm font-semibold text-[#fff3dd] shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition hover:border-[#c19a61] hover:bg-[#a07a49] hover:shadow-[0_12px_35px_rgba(0,0,0,0.42)] active:scale-[0.995] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group flex h-12 w-full items-center justify-center gap-2 border border-white bg-white px-5 text-sm font-semibold text-black shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:bg-white/90 hover:shadow-[0_12px_35px_rgba(0,0,0,0.55)] active:scale-[0.995] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isLoading
                       ? "Creating Account..."
@@ -453,12 +453,12 @@ export default function Register() {
                 </form>
 
                 {/* Login */}
-                <div className="mt-6 border-t border-[#302419] pt-5 text-center">
-                  <p className="text-xs text-[#786c5c]">
+                <div className="mt-6 border-t border-white/10 pt-5 text-center">
+                  <p className="text-xs text-white/40">
                     Already have an account?{" "}
                     <a
                       href="/login"
-                      className="font-medium text-[#b99a67] transition hover:text-[#dfbc7d]"
+                      className="font-medium text-white/75 transition hover:text-white"
                     >
                       Sign in
                     </a>
@@ -467,7 +467,7 @@ export default function Register() {
               </div>
 
               {/* Minimal footer */}
-              <div className="mt-5 flex items-center justify-between text-[9px] uppercase tracking-[0.25em] text-[#625747]">
+              <div className="mt-5 flex items-center justify-between text-[9px] uppercase tracking-[0.25em] text-white/30">
                 <span>Private vault</span>
                 <span>Secure access</span>
               </div>

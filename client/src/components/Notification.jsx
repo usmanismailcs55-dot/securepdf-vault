@@ -6,9 +6,9 @@ function Notification({
   onClose,
 }) {
   const styles = {
-    success: "bg-green-50 text-green-700 border-green-200",
-    error: "bg-red-50 text-red-700 border-red-200",
-    info: "bg-blue-50 text-blue-700 border-blue-200",
+    success: "bg-black/[0.03] text-black/80 border-black/15",
+    error: "bg-black/[0.04] text-black/85 border-black/20",
+    info: "bg-black/[0.02] text-black/75 border-black/10",
   };
 
   const icons = {
@@ -21,7 +21,9 @@ function Notification({
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${styles[type] || styles.info}`}
+      className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
+        styles[type] || styles.info
+      }`}
       role="alert"
     >
       <Icon size={20} />

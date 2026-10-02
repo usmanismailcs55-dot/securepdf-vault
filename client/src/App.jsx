@@ -73,7 +73,7 @@ function Home() {
           <img
             src="/images/noir-vault-hero.jpg"
             alt="Noir eyes"
-            className="block h-[60vh] min-h-[420px] w-full object-cover object-center sm:h-[70vh] lg:h-[78vh]"
+            className="block h-[60vh] min-h-[420px] w-full object-cover object-center grayscale sm:h-[70vh] lg:h-[78vh]"
           />
 
         </div>
@@ -100,7 +100,7 @@ function Home() {
               Protect what must remain private.
             </h1>
 
-            <p className="mt-6 max-w-2xl text-sm leading-7 text-white">
+            <p className="mt-6 max-w-2xl text-sm leading-7 text-white/70">
               SecurePDF Vault protects sensitive PDF documents with controlled
               access, password protection, and private document distribution.
             </p>
@@ -137,7 +137,7 @@ function Home() {
                 Private document security
               </p>
 
-              <p className="mt-2 text-xs leading-6 text-white">
+              <p className="mt-2 text-xs leading-6 text-white/60">
                 Keep sensitive PDF documents protected and controlled.
               </p>
 
@@ -152,7 +152,7 @@ function Home() {
                 Password protection
               </p>
 
-              <p className="mt-2 text-xs leading-6 text-white">
+              <p className="mt-2 text-xs leading-6 text-white/60">
                 Protect documents before they are distributed.
               </p>
 
@@ -167,7 +167,7 @@ function Home() {
                 Controlled sharing
               </p>
 
-              <p className="mt-2 text-xs leading-6 text-white">
+              <p className="mt-2 text-xs leading-6 text-white/60">
                 Share protected documents through secure access links.
               </p>
 
@@ -182,7 +182,7 @@ function Home() {
 
       <footer className="border-t border-white/20 bg-black">
 
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 py-7 text-[9px] uppercase tracking-[0.2em] text-white sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 py-7 text-[9px] uppercase tracking-[0.2em] text-white/50 sm:flex-row sm:items-center sm:justify-between sm:px-8">
 
           <span>
             SecurePDF Vault
@@ -309,7 +309,7 @@ function SecureLinkAccess() {
           <img
             src="/images/noir-vault-hero.jpg"
             alt="Noir eyes"
-            className="block h-[55vh] min-h-[420px] w-full object-cover object-center sm:h-[65vh] lg:h-[72vh]"
+            className="block h-[55vh] min-h-[420px] w-full object-cover object-center grayscale sm:h-[65vh] lg:h-[72vh]"
           />
 
         </div>
@@ -333,7 +333,7 @@ function SecureLinkAccess() {
 
                 <div>
 
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-white">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-white/50">
                     Secure Access
                   </p>
 
@@ -346,7 +346,7 @@ function SecureLinkAccess() {
               </div>
 
 
-              <p className="mt-4 max-w-xl text-sm leading-6 text-white">
+              <p className="mt-4 max-w-xl text-sm leading-6 text-white/60">
                 This document has been shared through a controlled
                 SecurePDF Vault access link.
               </p>
@@ -356,7 +356,7 @@ function SecureLinkAccess() {
 
             {isLoading ? (
 
-              <div className="flex items-center gap-3 py-12 text-sm text-white">
+              <div className="flex items-center gap-3 py-12 text-sm text-white/60">
 
                 <Activity className="h-4 w-4 animate-pulse text-white" />
 
@@ -366,11 +366,11 @@ function SecureLinkAccess() {
 
             ) : error ? (
 
-              <div className="mt-6 border border-red-500/60 bg-red-950/30 p-5">
+              <div className="mt-6 border border-white/30 bg-white/[0.04] p-5">
 
                 <div className="flex items-start gap-3">
 
-                  <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-300" />
+                  <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-white" />
 
                   <div>
 
@@ -378,7 +378,7 @@ function SecureLinkAccess() {
                       Secure access unavailable
                     </p>
 
-                    <p className="mt-2 text-sm leading-6 text-white">
+                    <p className="mt-2 text-sm leading-6 text-white/60">
                       {error}
                     </p>
 
@@ -405,7 +405,7 @@ function SecureLinkAccess() {
 
                     <div className="min-w-0">
 
-                      <p className="text-[9px] uppercase tracking-[0.25em] text-white">
+                      <p className="text-[9px] uppercase tracking-[0.25em] text-white/40">
                         Document
                       </p>
 
@@ -443,7 +443,7 @@ function SecureLinkAccess() {
 
                     <label
                       htmlFor="secure-link-password"
-                      className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-white"
+                      className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-white/50"
                     >
                       Document password
                     </label>
@@ -458,7 +458,7 @@ function SecureLinkAccess() {
                           event.target.value
                         )
                       }
-                      className="w-full border border-white/30 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-white/60 transition focus:border-white"
+                      className="w-full border border-white/30 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-white"
                       placeholder="Enter document password"
                     />
 
@@ -493,7 +493,7 @@ function SecureLinkAccess() {
 
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-white" />
 
-                    <p className="text-xs leading-6 text-white">
+                    <p className="text-xs leading-6 text-white/60">
                       Access is controlled by the private secure link.
                       Only authorized recipients should download this
                       document.
@@ -516,7 +516,7 @@ function SecureLinkAccess() {
 
       <footer className="border-t border-white/20 bg-black">
 
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 py-7 text-[9px] uppercase tracking-[0.2em] text-white sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 py-7 text-[9px] uppercase tracking-[0.2em] text-white/40 sm:flex-row sm:items-center sm:justify-between sm:px-6">
 
           <span>
             SecurePDF Vault
@@ -990,7 +990,7 @@ function Dashboard() {
         label: "Protected",
         icon: CheckCircle2,
         classes:
-          "border-emerald-500/60 bg-emerald-950/40 text-white",
+          "border-white/40 bg-white/[0.08] text-white",
       };
 
     }
@@ -1002,7 +1002,7 @@ function Dashboard() {
         label: "Processing",
         icon: Clock3,
         classes:
-          "border-white/30 bg-white/10 text-white",
+          "border-white/30 bg-white/[0.05] text-white/80",
       };
 
     }
@@ -1014,7 +1014,7 @@ function Dashboard() {
         label: "Failed",
         icon: CircleAlert,
         classes:
-          "border-red-500/60 bg-red-950/40 text-white",
+          "border-white/40 bg-white/[0.08] text-white",
       };
 
     }
@@ -1026,7 +1026,7 @@ function Dashboard() {
         label: "Pending",
         icon: Circle,
         classes:
-          "border-white/30 bg-white/10 text-white",
+          "border-white/30 bg-white/[0.05] text-white/80",
       };
 
     }
@@ -1036,7 +1036,7 @@ function Dashboard() {
       label: "Unknown",
       icon: Circle,
       classes:
-        "border-white/30 bg-white/10 text-white",
+        "border-white/30 bg-white/[0.05] text-white/80",
     };
 
   }
@@ -1054,7 +1054,7 @@ function Dashboard() {
           <img
             src="/images/noir-vault-hero.jpg"
             alt="Noir eyes"
-            className="block h-[55vh] min-h-[420px] w-full object-cover object-center sm:h-[65vh] lg:h-[72vh]"
+            className="block h-[55vh] min-h-[420px] w-full object-cover object-center grayscale sm:h-[65vh] lg:h-[72vh]"
           />
 
         </div>
@@ -1078,7 +1078,7 @@ function Dashboard() {
 
                   <ShieldCheck className="h-5 w-5 text-white" />
 
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-white">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-white/50">
                     Private Document Registry
                   </p>
 
@@ -1090,7 +1090,7 @@ function Dashboard() {
                 </h1>
 
 
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-white">
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60">
                   Manage protected PDF documents, controlled downloads,
                   secure links, and access activity from one private archive.
                 </p>
@@ -1100,14 +1100,14 @@ function Dashboard() {
 
               <div className="border border-white/20 bg-[#0a0a0a] px-5 py-4">
 
-                <p className="text-[9px] uppercase tracking-[0.25em] text-white">
+                <p className="text-[9px] uppercase tracking-[0.25em] text-white/40">
                   Vault status
                 </p>
 
 
                 <div className="mt-2 flex items-center gap-2">
 
-                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="h-2 w-2 rounded-full bg-white" />
 
                   <span className="text-sm text-white">
                     Operational
@@ -1155,7 +1155,7 @@ function Dashboard() {
                   className="bg-[#0a0a0a] px-5 py-6"
                 >
 
-                  <p className="text-[9px] uppercase tracking-[0.24em] text-white">
+                  <p className="text-[9px] uppercase tracking-[0.24em] text-white/40">
                     {label}
                   </p>
 
@@ -1163,7 +1163,7 @@ function Dashboard() {
                     {value}
                   </p>
 
-                  <p className="mt-2 text-xs text-white">
+                  <p className="mt-2 text-xs text-white/50">
                     {description}
                   </p>
 
@@ -1187,7 +1187,7 @@ function Dashboard() {
 
                   <FileLock2 className="h-5 w-5 text-white" />
 
-                  <p className="text-[9px] uppercase tracking-[0.28em] text-white">
+                  <p className="text-[9px] uppercase tracking-[0.28em] text-white/40">
                     Case Intake
                   </p>
 
@@ -1199,7 +1199,7 @@ function Dashboard() {
                 </h2>
 
 
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-white">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
                   Upload a PDF document to begin the protection process.
                 </p>
 
@@ -1227,7 +1227,7 @@ function Dashboard() {
 
                   <FileText className="h-5 w-5 text-white" />
 
-                  <p className="text-[9px] uppercase tracking-[0.28em] text-white">
+                  <p className="text-[9px] uppercase tracking-[0.28em] text-white/40">
                     Case Files
                   </p>
 
@@ -1239,7 +1239,7 @@ function Dashboard() {
                 </h2>
 
 
-                <p className="mt-2 text-sm text-white">
+                <p className="mt-2 text-sm text-white/60">
                   Search, inspect, download, distribute, or remove your files.
                 </p>
 
@@ -1250,7 +1250,7 @@ function Dashboard() {
 
                 <div className="relative">
 
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
 
 
                   <input
@@ -1263,7 +1263,7 @@ function Dashboard() {
                       )
                     }
                     placeholder="Search documents"
-                    className="w-full border border-white/30 bg-black py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/60 focus:border-white sm:w-64"
+                    className="w-full border border-white/30 bg-black py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-white sm:w-64"
                   />
 
                 </div>
@@ -1326,7 +1326,7 @@ function Dashboard() {
 
               {isLoading ? (
 
-                <div className="flex items-center justify-center gap-3 py-14 text-sm text-white">
+                <div className="flex items-center justify-center gap-3 py-14 text-sm text-white/60">
 
                   <Activity className="h-5 w-5 animate-pulse text-white" />
 
@@ -1336,7 +1336,7 @@ function Dashboard() {
 
               ) : error ? (
 
-                <div className="border border-red-500/60 bg-red-950/30 p-5 text-sm text-white">
+                <div className="border border-white/30 bg-white/[0.04] p-5 text-sm text-white">
                   {error}
                 </div>
 
@@ -1344,13 +1344,13 @@ function Dashboard() {
 
                 <div className="border border-dashed border-white/30 bg-black px-6 py-14 text-center">
 
-                  <FileText className="mx-auto h-8 w-8 text-white" />
+                  <FileText className="mx-auto h-8 w-8 text-white/60" />
 
                   <p className="mt-4 text-sm text-white">
                     No documents have been added yet.
                   </p>
 
-                  <p className="mt-2 text-xs text-white">
+                  <p className="mt-2 text-xs text-white/50">
                     Upload a PDF above to create your first case file.
                   </p>
 
@@ -1360,7 +1360,7 @@ function Dashboard() {
 
                 <div className="border border-dashed border-white/30 bg-black px-6 py-14 text-center">
 
-                  <Search className="mx-auto h-8 w-8 text-white" />
+                  <Search className="mx-auto h-8 w-8 text-white/60" />
 
                   <p className="mt-4 text-sm text-white">
                     No matching documents found.
@@ -1402,11 +1402,11 @@ function Dashboard() {
 
                               <div className="flex flex-wrap items-center gap-3">
 
-                                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white">
+                                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/40">
                                   CASE
                                 </span>
 
-                                <span className="font-mono text-[10px] text-white">
+                                <span className="font-mono text-[10px] text-white/50">
                                   {String(
                                     document._id
                                   ).slice(-8)}
@@ -1420,7 +1420,7 @@ function Dashboard() {
                               </h3>
 
 
-                              <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-white">
+                              <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-white/50">
 
                                 <span>
                                   {formatFileSize(
@@ -1550,7 +1550,7 @@ function Dashboard() {
                                   document._id
                                 )
                               }
-                              className="inline-flex items-center gap-2 border border-red-500/60 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white transition hover:border-red-400 hover:bg-red-950/30"
+                              className="inline-flex items-center gap-2 border border-white/30 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white transition hover:border-white hover:bg-white hover:text-black"
                             >
 
                               <Trash2 className="h-3.5 w-3.5" />
@@ -1594,7 +1594,7 @@ function Dashboard() {
 
                     <Eye className="h-5 w-5 text-white" />
 
-                    <p className="text-[9px] uppercase tracking-[0.28em] text-white">
+                    <p className="text-[9px] uppercase tracking-[0.28em] text-white/40">
                       Case File
                     </p>
 
@@ -1624,7 +1624,7 @@ function Dashboard() {
 
               {isDetailsLoading ? (
 
-                <div className="flex items-center gap-3 py-10 text-sm text-white">
+                <div className="flex items-center gap-3 py-10 text-sm text-white/60">
 
                   <Activity className="h-5 w-5 animate-pulse text-white" />
 
@@ -1634,7 +1634,7 @@ function Dashboard() {
 
               ) : detailsError ? (
 
-                <div className="mt-6 border border-red-500/60 bg-red-950/30 p-5 text-sm text-white">
+                <div className="mt-6 border border-white/30 bg-white/[0.04] p-5 text-sm text-white">
                   {detailsError}
                 </div>
 
@@ -1714,7 +1714,7 @@ function Dashboard() {
                           className="bg-black p-5"
                         >
 
-                          <p className="text-[9px] uppercase tracking-[0.2em] text-white">
+                          <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">
                             {label}
                           </p>
 
@@ -1743,7 +1743,7 @@ function Dashboard() {
 
                       <div>
 
-                        <p className="text-[9px] uppercase tracking-[0.28em] text-white">
+                        <p className="text-[9px] uppercase tracking-[0.28em] text-white/40">
                           Controlled Distribution
                         </p>
 
@@ -1767,7 +1767,7 @@ function Dashboard() {
 
                         <label
                           htmlFor="recipient-email"
-                          className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-white"
+                          className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-white/50"
                         >
                           Recipient email
                         </label>
@@ -1785,7 +1785,7 @@ function Dashboard() {
                               event.target.value
                             )
                           }
-                          className="w-full border border-white/30 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-white/60 focus:border-white"
+                          className="w-full border border-white/30 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-white"
                           placeholder="recipient@example.com"
                         />
 
@@ -1796,7 +1796,7 @@ function Dashboard() {
 
                         <label
                           htmlFor="secure-link-password"
-                          className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-white"
+                          className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-white/50"
                         >
                           Secure link password
                         </label>
@@ -1814,7 +1814,7 @@ function Dashboard() {
                               event.target.value
                             )
                           }
-                          className="w-full border border-white/30 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-white/60 focus:border-white"
+                          className="w-full border border-white/30 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-white"
                           placeholder="Create access password"
                         />
 
@@ -1846,7 +1846,7 @@ function Dashboard() {
 
                     {secureLinkError && (
 
-                      <div className="mt-5 border border-red-500/60 bg-red-950/30 p-5 text-sm text-white">
+                      <div className="mt-5 border border-white/30 bg-white/[0.04] p-5 text-sm text-white">
                         {secureLinkError}
                       </div>
 
@@ -1855,11 +1855,11 @@ function Dashboard() {
 
                     {secureLinkSuccess && (
 
-                      <div className="mt-6 border border-emerald-500/60 bg-emerald-950/35 p-5">
+                      <div className="mt-6 border border-white/30 bg-white/[0.06] p-5">
 
                         <div className="flex items-center gap-3">
 
-                          <CheckCircle className="h-5 w-5 text-emerald-300" />
+                          <CheckCircle className="h-5 w-5 text-white" />
 
                           <p className="text-sm font-medium text-white">
                             Secure link created successfully.
@@ -1870,7 +1870,7 @@ function Dashboard() {
 
                         <div className="mt-5">
 
-                          <p className="text-[9px] uppercase tracking-[0.2em] text-white">
+                          <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">
                             Generated URL
                           </p>
 
@@ -1916,7 +1916,7 @@ function Dashboard() {
 
                         {secureLinkSuccess.recipientEmail && (
 
-                          <p className="mt-4 text-xs text-white">
+                          <p className="mt-4 text-xs text-white/60">
                             Recipient:{" "}
                             {
                               secureLinkSuccess.recipientEmail
@@ -1928,7 +1928,7 @@ function Dashboard() {
 
                         {secureLinkSuccess.expiresAt && (
 
-                          <p className="mt-2 text-xs text-white">
+                          <p className="mt-2 text-xs text-white/60">
                             Expires:{" "}
                             {formatDateTime(
                               secureLinkSuccess.expiresAt
@@ -1967,7 +1967,7 @@ function Dashboard() {
 
                 <div>
 
-                  <p className="text-[9px] uppercase tracking-[0.28em] text-black">
+                  <p className="text-[9px] uppercase tracking-[0.28em] text-black/50">
                     Surveillance Log
                   </p>
 
@@ -1980,7 +1980,7 @@ function Dashboard() {
               </div>
 
 
-              <p className="mt-3 text-sm text-black">
+              <p className="mt-3 text-sm text-black/60">
                 Recent document access and activity recorded by the vault.
               </p>
 
@@ -1993,7 +1993,7 @@ function Dashboard() {
 
                 <div className="border border-dashed border-black/30 bg-white px-6 py-12 text-center">
 
-                  <History className="mx-auto h-8 w-8 text-black" />
+                  <History className="mx-auto h-8 w-8 text-black/60" />
 
                   <p className="mt-4 text-sm text-black">
                     No access activity recorded yet.
@@ -2009,7 +2009,7 @@ function Dashboard() {
 
                     {/* TABLE HEADER */}
 
-                    <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr] border-b border-black/20 px-4 pb-3 text-[9px] uppercase tracking-[0.2em] text-black">
+                    <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr] border-b border-black/20 px-4 pb-3 text-[9px] uppercase tracking-[0.2em] text-black/50">
 
                       <span>
                         Document
@@ -2066,17 +2066,7 @@ function Dashboard() {
                               </span>
 
 
-                              <span
-                                className={
-                                  entry.status ===
-                                  "success"
-                                    ? "text-green-700"
-                                    : entry.status ===
-                                        "failed"
-                                      ? "text-red-700"
-                                      : "text-black"
-                                }
-                              >
+                              <span className="text-black">
                                 {entry.status ||
                                   "Recorded"}
                               </span>
@@ -2113,7 +2103,7 @@ function Dashboard() {
 
           <footer className="border-t border-white/20 pt-6">
 
-            <div className="flex flex-col gap-3 text-[9px] uppercase tracking-[0.2em] text-white sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 text-[9px] uppercase tracking-[0.2em] text-white/40 sm:flex-row sm:items-center sm:justify-between">
 
               <span>
                 SecurePDF Vault
