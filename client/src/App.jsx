@@ -17,7 +17,6 @@ import {
   FileText,
   Search,
   ArrowRight,
-  Fingerprint,
   FileLock2,
   Activity,
 } from "lucide-react";
@@ -601,6 +600,7 @@ function Dashboard() {
 
       setError(
         err?.response?.data?.message ||
+          err?.message ||
           "Unable to load your documents."
       );
 
@@ -673,6 +673,7 @@ function Dashboard() {
 
       setError(
         err?.response?.data?.message ||
+          err?.message ||
           "Unable to download this document."
       );
 
@@ -719,6 +720,7 @@ function Dashboard() {
 
       setError(
         err?.response?.data?.message ||
+          err?.message ||
           "Unable to delete this document."
       );
 
@@ -755,6 +757,7 @@ function Dashboard() {
 
       setDetailsError(
         err?.response?.data?.message ||
+          err?.message ||
           "Unable to load document details."
       );
 
@@ -818,6 +821,7 @@ function Dashboard() {
 
       setSecureLinkError(
         err?.response?.data?.message ||
+          err?.message ||
           "Unable to create secure link."
       );
 
