@@ -75,7 +75,7 @@ export default function CryptoPayment() {
         setHistoryError("");
 
         const response = await fetch(
-          "http://localhost:5000/api/payments/history",
+          "https://localhost:5000/api/payments/history",
           {
             method: "GET",
             headers: {
@@ -135,7 +135,7 @@ export default function CryptoPayment() {
         }
 
         const response = await fetch(
-          "http://localhost:5000/api/payments/create",
+          "https://localhost:5000/api/payments/create",
           {
             method: "POST",
             headers: {
@@ -519,7 +519,7 @@ export default function CryptoPayment() {
       }
 
       const paymentResponse = await fetch(
-        "http://localhost:5000/api/payments/submit-transaction",
+        "https://localhost:5000/api/payments/submit-transaction",
         {
           method: "POST",
           headers: {
@@ -613,7 +613,7 @@ export default function CryptoPayment() {
           localStorage.getItem("accessToken");
 
         const historyResponse = await fetch(
-          "http://localhost:5000/api/payments/history",
+          "https://localhost:5000/api/payments/history",
           {
             method: "GET",
             headers: {
