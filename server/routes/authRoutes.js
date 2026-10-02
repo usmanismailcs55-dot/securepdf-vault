@@ -3,11 +3,15 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 
 const User = require("../models/User");
-const { createSession } = require("../services/sessionService");
+const {
+  createSession,
+  revokeSession,
+} = require("../services/sessionService");
 const generateVerificationToken = require("../utils/generateVerificationToken");
 const generatePasswordResetToken = require("../utils/generatePasswordResetToken");
 const transporter = require("../utils/sendEmail");
 const { validate, schemas } = require("../middleware/validateInput");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -191,6 +195,23 @@ router.post(
     }
   }
 );
+
+// =========================
+// LOGOUT
+// =========================
+router.post("/logout", authMiddleware, async (req, res, next) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+
+    await revokeSession(token);
+
+    return res.status(200).json({
+      message: "Logout successful.",
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // =========================
 // FORGOT PASSWORD
