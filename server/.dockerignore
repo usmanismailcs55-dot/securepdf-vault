@@ -1,0 +1,8 @@
+node_modules
+.env
+.env.*
+uploads
+protected-pdfs
+certs
+tests
+*.log
