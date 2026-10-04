@@ -1,7 +1,14 @@
+
 services:
   client:
     build:
       context: ./client
+      args:
+        VITE_PAYMENT_RECEIVING_WALLET: ${VITE_PAYMENT_RECEIVING_WALLET}
+        VITE_PAYMENT_AMOUNT: ${VITE_PAYMENT_AMOUNT}
+        VITE_PAYMENT_ASSET: ${VITE_PAYMENT_ASSET}
+        VITE_PAYMENT_NETWORK: ${VITE_PAYMENT_NETWORK}
+        VITE_TRON_API_URL: ${VITE_TRON_API_URL}
     ports:
       - "8080:80"
     depends_on:
