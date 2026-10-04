@@ -41,11 +41,20 @@ app.use((req, res, next) => {
 app.use(helmet());
 
 // CORS
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
+
 app.use(
   cors({
-    origin:
-      process.env.CLIENT_URL ||
-      "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: [
       "GET",
       "POST",

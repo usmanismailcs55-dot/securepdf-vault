@@ -1,19 +1,16 @@
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
 
 const upload = require("../middleware/uploadMiddleware");
 const validatePdfSignature = require("../utils/validatePdf");
 const generateStorageName = require("../utils/generateStorageName");
 const { encryptBuffer } = require("../utils/fileEncryption");
+const { uploadObject } = require("../utils/b2Storage");
 const { securityLog } = require("../utils/securityLogger");
 
 const Document = require("../models/Document");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
-
-const uploadDirectory = path.join(__dirname, "../uploads");
 
 router.post(
   "/",
@@ -47,23 +44,18 @@ router.post(
         });
       }
 
-      // Make sure the upload directory exists
-      fs.mkdirSync(uploadDirectory, {
-        recursive: true,
-      });
-
       // Generate a random storage filename
       const storageName = generateStorageName();
 
-      const filePath = path.join(
-        uploadDirectory,
-        storageName
-      );
+      // Store the encrypted original PDF in Backblaze B2
+      const originalObjectKey = `originals/${storageName}`;
 
-      // Store the PDF
-      fs.writeFileSync(
-        filePath,
-        encryptBuffer(req.file.buffer)
+      const encryptedPdf = encryptBuffer(req.file.buffer);
+
+      await uploadObject(
+        originalObjectKey,
+        encryptedPdf,
+        "application/octet-stream"
       );
 
       // Create document record
@@ -71,7 +63,7 @@ router.post(
         owner: req.user.userId,
         originalFilename: req.file.originalname,
         storedFilename: storageName,
-        originalPath: filePath,
+        originalPath: originalObjectKey,
         mimeType: req.file.mimetype,
         fileSize: req.file.size,
         protectionStatus: "pending",

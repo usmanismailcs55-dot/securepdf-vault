@@ -210,92 +210,75 @@ function SecureLinkAccess() {
 
   const [document, setDocument] = useState(null);
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [accessToken, setAccessToken] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState("");
-  const [requiresPassword, setRequiresPassword] = useState(false);
+  const [requiresPassword, setRequiresPassword] = useState(true);
 
+  async function handleAccess(event) {
+    event.preventDefault();
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadSecureLink() {
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const response = await accessSecureLink(token);
-
-        if (!mounted) {
-          return;
-        }
-
-        setDocument(
-          response?.document || response
-        );
-
-        setRequiresPassword(
-          Boolean(response?.requiresPassword)
-        );
-
-      } catch (err) {
-
-        if (!mounted) {
-          return;
-        }
-
-        setError(
-          err?.response?.data?.message ||
-            "This secure link is invalid, expired, or unavailable."
-        );
-
-      } finally {
-
-        if (mounted) {
-          setIsLoading(false);
-        }
-
-      }
+    if (!password.trim()) {
+      setError("Please enter the password.");
+      return;
     }
 
+    try {
+      setIsLoading(true);
+      setError("");
 
-    if (token) {
-      loadSecureLink();
+      const response = await accessSecureLink(
+        token,
+        password
+      );
+
+      setDocument(
+        response?.document || null
+      );
+
+      setAccessToken(
+        response?.secureLink?.accessToken || ""
+      );
+
+      setRequiresPassword(false);
+    } catch (err) {
+      setError(
+        err?.message ||
+          "This secure link is invalid, expired, or unavailable."
+      );
+    } finally {
+      setIsLoading(false);
     }
-
-
-    return () => {
-      mounted = false;
-    };
-
-  }, [token]);
-
+  }
 
   async function handleDownload() {
-    try {
+    if (!accessToken) {
+      setError(
+        "Please verify the secure-link password first."
+      );
+      return;
+    }
 
+    try {
       setIsDownloading(true);
       setError("");
 
       await downloadSecureLinkDocument(
         token,
-        password
+        accessToken,
+        document?.originalFilename ||
+          "protected-document.pdf"
       );
-
     } catch (err) {
-
       setError(
-        err?.response?.data?.message ||
+        err?.message ||
           "Unable to download this document."
       );
-
     } finally {
-
       setIsDownloading(false);
-
     }
   }
-
 
   return (
     <main className="min-h-screen bg-black">
@@ -388,6 +371,58 @@ function SecureLinkAccess() {
 
               </div>
 
+            ) : !document ? (
+
+              <form
+                onSubmit={handleAccess}
+                className="space-y-5 pt-7"
+              >
+
+                <div>
+
+                  <label
+                    htmlFor="secure-link-password"
+                    className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-white/50"
+                  >
+                    Document password
+                  </label>
+
+                  <input
+                    id="secure-link-password"
+                    type="password"
+                    value={password}
+                    onChange={(event) =>
+                      setPassword(event.target.value)
+                    }
+                    className="w-full border border-white/30 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-white"
+                    placeholder="Enter document password"
+                    autoComplete="current-password"
+                    disabled={isLoading}
+                  />
+
+                </div>
+
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="inline-flex w-full items-center justify-center gap-2 border border-white bg-white px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+
+                  {isLoading ? (
+                    <Activity className="h-4 w-4 animate-pulse" />
+                  ) : (
+                    <LockKeyhole className="h-4 w-4" />
+                  )}
+
+                  {isLoading
+                    ? "Verifying..."
+                    : "Access document"}
+
+                </button>
+
+              </form>
+
             ) : (
 
               <div className="space-y-7 pt-7">
@@ -437,40 +472,10 @@ function SecureLinkAccess() {
                 </div>
 
 
-                {requiresPassword && (
-
-                  <div>
-
-                    <label
-                      htmlFor="secure-link-password"
-                      className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-white/50"
-                    >
-                      Document password
-                    </label>
-
-
-                    <input
-                      id="secure-link-password"
-                      type="password"
-                      value={password}
-                      onChange={(event) =>
-                        setPassword(
-                          event.target.value
-                        )
-                      }
-                      className="w-full border border-white/30 bg-black px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-white"
-                      placeholder="Enter document password"
-                    />
-
-                  </div>
-
-                )}
-
-
                 <button
                   type="button"
                   onClick={handleDownload}
-                  disabled={isDownloading}
+                  disabled={isDownloading || !accessToken}
                   className="inline-flex w-full items-center justify-center gap-2 border border-white bg-white px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
 
@@ -494,9 +499,9 @@ function SecureLinkAccess() {
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-white" />
 
                     <p className="text-xs leading-6 text-white/60">
-                      Access is controlled by the private secure link.
-                      Only authorized recipients should download this
-                      document.
+                      Secure access has been verified. The download
+                      uses a temporary access token and is available
+                      only while that token remains valid.
                     </p>
 
                   </div>
@@ -533,7 +538,6 @@ function SecureLinkAccess() {
     </main>
   );
 }
-
 
 // ============================================================
 // DASHBOARD

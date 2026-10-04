@@ -264,23 +264,41 @@ router.post(
           status: "pending",
         });
 
-      const subscription =
-        await Subscription.findOneAndUpdate(
-          {
-            user: req.user.userId,
-          },
-          {
-            $set: {
-              status: "pending",
-              payment: payment._id,
+      const existingSubscription =
+        await Subscription.findOne({
+          user: req.user.userId,
+        });
+
+      let subscription;
+
+      const hasActiveSubscription =
+        existingSubscription &&
+        existingSubscription.status === "active" &&
+        existingSubscription.expiresAt &&
+        existingSubscription.expiresAt > new Date();
+
+      if (hasActiveSubscription) {
+        subscription =
+          existingSubscription;
+      } else {
+        subscription =
+          await Subscription.findOneAndUpdate(
+            {
+              user: req.user.userId,
             },
-          },
-          {
-            new: true,
-            upsert: true,
-            setDefaultsOnInsert: true,
-          }
-        );
+            {
+              $set: {
+                status: "pending",
+                payment: payment._id,
+              },
+            },
+            {
+              new: true,
+              upsert: true,
+              setDefaultsOnInsert: true,
+            }
+          );
+      }
 
       res.status(201).json({
         message:

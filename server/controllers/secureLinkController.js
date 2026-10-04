@@ -1,4 +1,3 @@
-const fs = require("fs");
 const bcrypt = require("bcryptjs");
 
 const SecureLink = require("../models/SecureLink");
@@ -8,6 +7,11 @@ const {
   generateSecureToken,
   hashSecureToken,
 } = require("../utils/secureToken");
+
+const {
+  downloadObject,
+  objectExists,
+} = require("../utils/b2Storage");
 
 const SECURE_LINK_EXPIRATION_HOURS = 24;
 const SECURE_ACCESS_TOKEN_EXPIRATION_MINUTES = 15;
@@ -40,6 +44,16 @@ const createSecureLink = async (req, res, next) => {
 
     if (!document.protectedPath) {
       return res.status(400).json({
+        success: false,
+        message: "Protected PDF is not available",
+      });
+    }
+
+    const protectedExists =
+      await objectExists(document.protectedPath);
+
+    if (!protectedExists) {
+      return res.status(404).json({
         success: false,
         message: "Protected PDF is not available",
       });
@@ -104,6 +118,7 @@ const createSecureLink = async (req, res, next) => {
   }
 };
 
+
 const getSecureLinkStatus = async (req, res, next) => {
   try {
     const { documentId } = req.params;
@@ -157,6 +172,7 @@ const getSecureLinkStatus = async (req, res, next) => {
     next(error);
   }
 };
+
 
 /**
  * Verify a recipient's secure-link password.
@@ -225,7 +241,10 @@ const accessSecureLink = async (req, res, next) => {
       });
     }
 
-    if (!fs.existsSync(document.protectedPath)) {
+    const protectedExists =
+      await objectExists(document.protectedPath);
+
+    if (!protectedExists) {
       return res.status(404).json({
         success: false,
         message: "The protected PDF file is not available",
@@ -282,6 +301,7 @@ const accessSecureLink = async (req, res, next) => {
     next(error);
   }
 };
+
 
 /**
  * Download a protected PDF using the temporary recipient access token.
@@ -363,10 +383,17 @@ const downloadSecureLinkDocument = async (
       });
     }
 
-    if (
-      !document.protectedPath ||
-      !fs.existsSync(document.protectedPath)
-    ) {
+    if (!document.protectedPath) {
+      return res.status(404).json({
+        success: false,
+        message: "The protected PDF file is not available",
+      });
+    }
+
+    const protectedExists =
+      await objectExists(document.protectedPath);
+
+    if (!protectedExists) {
       return res.status(404).json({
         success: false,
         message: "The protected PDF file is not available",
@@ -378,19 +405,39 @@ const downloadSecureLinkDocument = async (
 
     await document.save();
 
-    return res.download(
-      document.protectedPath,
-      document.originalFilename,
-      (error) => {
-        if (error) {
-          next(error);
-        }
-      }
+    /*
+     * Download the protected PDF from Backblaze B2.
+     */
+    const protectedPdf =
+      await downloadObject(document.protectedPath);
+
+    /*
+     * Send the protected PDF directly to the recipient.
+     */
+    res.setHeader(
+      "Content-Type",
+      document.mimeType || "application/pdf"
     );
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${encodeURIComponent(
+        document.originalFilename
+      )}"`
+    );
+
+    res.setHeader(
+      "Content-Length",
+      protectedPdf.length
+    );
+
+    return res.status(200).send(protectedPdf);
+
   } catch (error) {
     next(error);
   }
 };
+
 
 module.exports = {
   createSecureLink,

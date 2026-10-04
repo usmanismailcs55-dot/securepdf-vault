@@ -1,22 +1,5 @@
-const path = require("path");
 const Document = require("../models/Document");
-const deleteFile = require("./deleteFile");
-
-const uploadsDirectory = path.resolve(__dirname, "../uploads");
-const protectedDirectory = path.resolve(__dirname, "../protected-pdfs");
-
-const isSafeDocumentPath = (filePath, allowedDirectory) => {
-  if (!filePath) return false;
-
-  const resolvedPath = path.resolve(filePath);
-  const relativePath = path.relative(allowedDirectory, resolvedPath);
-
-  return (
-    relativePath &&
-    !relativePath.startsWith("..") &&
-    !path.isAbsolute(relativePath)
-  );
-};
+const { deleteObject } = require("./b2Storage");
 
 const cleanupExpiredDocuments = async () => {
   const expiredDocuments = await Document.find({
@@ -27,16 +10,31 @@ const cleanupExpiredDocuments = async () => {
   let cleanedCount = 0;
 
   for (const document of expiredDocuments) {
-    if (isSafeDocumentPath(document.originalPath, uploadsDirectory)) {
-      await deleteFile(document.originalPath);
+    if (document.originalPath) {
+      try {
+        await deleteObject(document.originalPath);
+      } catch (error) {
+        console.error(
+          `Failed to delete original B2 object for document ${document._id}:`,
+          error.message
+        );
+      }
     }
 
-    if (isSafeDocumentPath(document.protectedPath, protectedDirectory)) {
-      await deleteFile(document.protectedPath);
+    if (document.protectedPath) {
+      try {
+        await deleteObject(document.protectedPath);
+      } catch (error) {
+        console.error(
+          `Failed to delete protected B2 object for document ${document._id}:`,
+          error.message
+        );
+      }
     }
 
     document.isDeleted = true;
     document.deletedAt = new Date();
+
     await document.save();
 
     cleanedCount += 1;
