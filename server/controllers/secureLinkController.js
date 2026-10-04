@@ -13,6 +13,8 @@ const {
   objectExists,
 } = require("../utils/b2Storage");
 
+const { sendSecurePdfLink } = require("../services/emailService");
+
 const SECURE_LINK_EXPIRATION_HOURS = 24;
 const SECURE_ACCESS_TOKEN_EXPIRATION_MINUTES = 15;
 
@@ -103,9 +105,32 @@ const createSecureLink = async (req, res, next) => {
       `${process.env.CLIENT_URL || "http://localhost:5173"}` +
       `/secure/${token}`;
 
+    try {
+      await sendSecurePdfLink({
+        recipientEmail,
+        secureUrl: secureLinkUrl,
+        expiresAt,
+      });
+    } catch (emailError) {
+      await SecureLink.deleteOne({
+        _id: secureLink._id,
+      });
+
+      console.error(
+        "Failed to send secure PDF link email:",
+        emailError.message
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Secure link could not be emailed. Please try again.",
+      });
+    }
+
     return res.status(201).json({
       success: true,
-      message: "Secure link created successfully",
+      message: "Secure link created and emailed successfully",
       secureLink: {
         id: secureLink._id,
         url: secureLinkUrl,
@@ -119,6 +144,9 @@ const createSecureLink = async (req, res, next) => {
 };
 
 
+/**
+ * Get the current secure-link status for a document.
+ */
 const getSecureLinkStatus = async (req, res, next) => {
   try {
     const { documentId } = req.params;
@@ -270,9 +298,7 @@ const accessSecureLink = async (req, res, next) => {
 
     const accessTokenExpiresAt = new Date(
       Date.now() +
-        SECURE_ACCESS_TOKEN_EXPIRATION_MINUTES *
-          60 *
-          1000
+        SECURE_ACCESS_TOKEN_EXPIRATION_MINUTES * 60 * 1000
     );
 
     secureLink.accessTokenHash = accessTokenHash;
