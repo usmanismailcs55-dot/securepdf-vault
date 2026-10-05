@@ -257,7 +257,7 @@ router.post(
 
       await user.save();
 
-      const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+      const resetUrl = `http://localhost:8080/reset-password/${resetToken}`;
 
       await transporter.sendMail({
         from: process.env.EMAIL_USER,

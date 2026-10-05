@@ -101,57 +101,46 @@ function ResetPassword() {
   ];
 
   return (
-    <main className="relative min-h-[calc(100vh-73px)] overflow-hidden bg-black text-white">
+    <main className="relative min-h-[calc(100vh-73px)] overflow-hidden bg-white text-black">
       {/* BACKGROUND */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.06),transparent_48%)]" />
-
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.78),rgba(0,0,0,0.18),rgba(0,0,0,0.82))]" />
-
-        <div className="absolute inset-0 opacity-[0.035] bg-[radial-gradient(circle_at_20%_30%,#fff_0.5px,transparent_0.7px)] bg-[length:6px_6px]" />
-      </div>
+      <div className="pointer-events-none absolute inset-0 bg-white" />
 
       {/* MAIN FRAME */}
       <div className="relative mx-auto flex min-h-[calc(100vh-73px)] max-w-[1500px] items-center px-3 py-3 sm:px-5 sm:py-5">
-        <div className="relative grid w-full overflow-hidden border border-white/15 bg-black shadow-[0_30px_100px_rgba(0,0,0,0.75)] lg:min-h-[680px] lg:grid-cols-[1.35fr_0.65fr]">
-
+        <div className="relative grid w-full overflow-hidden border border-black bg-white lg:min-h-[680px] lg:grid-cols-[1.35fr_0.65fr]">
           {/* EYES / PHOTOGRAPHIC SIDE */}
-          <section className="relative min-h-[390px] overflow-hidden lg:min-h-[680px]">
+          <section className="relative min-h-[390px] overflow-hidden border-b border-black lg:min-h-[680px] lg:border-b-0">
             <img
               src="/images/noir-vault-hero.jpg"
               alt=""
               className="absolute inset-0 h-full w-full object-cover object-center grayscale"
             />
 
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.2)_0%,rgba(0,0,0,0.02)_38%,rgba(0,0,0,0.58)_100%)]" />
-
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.32)_0%,transparent_35%,rgba(0,0,0,0.88)_100%)]" />
-
-            <div className="absolute inset-0 bg-white/[0.025] mix-blend-screen" />
+            <div className="absolute inset-0 bg-black/20" />
 
             {/* BRAND */}
             <div className="absolute left-6 top-6 z-10 sm:left-8 sm:top-8">
               <Link
                 to="/"
-                className="group flex items-center gap-3"
+                className="group flex items-center gap-3 text-black"
               >
-                <div className="relative flex h-11 w-11 items-center justify-center border border-white/40 bg-black/70 backdrop-blur-sm transition group-hover:border-white/70">
+                <div className="relative flex h-11 w-11 items-center justify-center border border-black bg-white">
                   <ShieldCheck
                     size={23}
                     strokeWidth={1.5}
-                    className="text-white"
+                    className="text-black"
                     aria-hidden="true"
                   />
 
-                  <span className="absolute bottom-0 left-0 h-px w-full bg-white/70" />
+                  <span className="absolute bottom-0 left-0 h-px w-full bg-black" />
                 </div>
 
                 <div>
-                  <div className="font-serif text-lg tracking-[0.12em] text-white">
+                  <div className="font-serif text-lg tracking-[0.12em] text-black">
                     SecurePDF
                   </div>
 
-                  <div className="mt-1 text-[9px] uppercase tracking-[0.4em] text-white/65">
+                  <div className="mt-1 text-[9px] uppercase tracking-[0.4em] text-black">
                     Vault
                   </div>
                 </div>
@@ -160,8 +149,8 @@ function ResetPassword() {
 
             {/* CASE LABEL */}
             <div className="absolute right-6 top-7 z-10 sm:right-8 sm:top-8">
-              <div className="border border-white/25 bg-black/55 px-3 py-2 backdrop-blur-sm">
-                <span className="text-[8px] uppercase tracking-[0.3em] text-white/70">
+              <div className="border border-black bg-white px-3 py-2">
+                <span className="text-[8px] uppercase tracking-[0.3em] text-black">
                   Secure recovery
                 </span>
               </div>
@@ -170,14 +159,14 @@ function ResetPassword() {
             {/* BOTTOM CAPTION */}
             <div className="absolute bottom-7 left-6 z-10 sm:bottom-9 sm:left-8">
               <div className="flex items-center gap-3">
-                <span className="h-px w-10 bg-white/70" />
+                <span className="h-px w-10 bg-black" />
 
-                <span className="text-[9px] uppercase tracking-[0.35em] text-white/75">
+                <span className="text-[9px] uppercase tracking-[0.35em] text-black">
                   The Vault
                 </span>
               </div>
 
-              <p className="mt-3 max-w-xs font-serif text-xl text-white sm:text-2xl">
+              <p className="mt-3 max-w-xs font-serif text-xl text-black sm:text-2xl">
                 New key.
                 <br />
                 Same vault.
@@ -186,34 +175,33 @@ function ResetPassword() {
           </section>
 
           {/* RESET PANEL */}
-          <section className="relative flex items-center border-t border-white/15 bg-black px-6 py-10 sm:px-10 lg:border-l lg:border-t-0 lg:px-12">
-            <div className="pointer-events-none absolute left-0 top-12 hidden h-32 w-px bg-gradient-to-b from-transparent via-white/45 to-transparent lg:block" />
+          <section className="relative flex items-center border-black bg-white px-6 py-10 sm:px-10 lg:border-l lg:border-t-0 lg:px-12">
+            <div className="pointer-events-none absolute left-0 top-12 hidden h-32 w-px bg-black lg:block" />
 
             <div className="w-full max-w-md">
-
               {/* MOBILE BRAND */}
               <div className="mb-9 flex justify-center lg:hidden">
                 <Link
                   to="/"
-                  className="flex items-center gap-3"
+                  className="flex items-center gap-3 text-black"
                 >
-                  <div className="relative flex h-11 w-11 items-center justify-center border border-white/30 bg-white/[0.04]">
+                  <div className="relative flex h-11 w-11 items-center justify-center border border-black bg-white">
                     <ShieldCheck
                       size={23}
                       strokeWidth={1.5}
-                      className="text-white"
+                      className="text-black"
                       aria-hidden="true"
                     />
 
-                    <span className="absolute bottom-0 left-0 h-px w-full bg-white/70" />
+                    <span className="absolute bottom-0 left-0 h-px w-full bg-black" />
                   </div>
 
                   <div>
-                    <div className="font-serif text-lg tracking-[0.1em] text-white">
+                    <div className="font-serif text-lg tracking-[0.1em] text-black">
                       SecurePDF
                     </div>
 
-                    <div className="mt-1 text-[9px] uppercase tracking-[0.4em] text-white/55">
+                    <div className="mt-1 text-[9px] uppercase tracking-[0.4em] text-black">
                       Vault
                     </div>
                   </div>
@@ -223,55 +211,47 @@ function ResetPassword() {
               {/* HEADING */}
               <div className="mb-8">
                 <div className="mb-5 flex items-center gap-3">
-                  <span className="h-px w-9 bg-white/60" />
+                  <span className="h-px w-9 bg-black" />
 
-                  <span className="text-[9px] uppercase tracking-[0.35em] text-white/60">
+                  <span className="text-[9px] uppercase tracking-[0.35em] text-black">
                     New credentials
                   </span>
                 </div>
 
-                <h1 className="font-serif text-3xl leading-tight text-white sm:text-4xl">
+                <h1 className="font-serif text-3xl leading-tight text-black sm:text-4xl">
                   Reset password
                 </h1>
 
-                <p className="mt-3 text-sm leading-6 text-white/50">
+                <p className="mt-3 text-sm leading-6 text-black">
                   Create a new password for your vault.
                 </p>
               </div>
 
               {/* FORM CARD */}
-              <div className="relative border border-white/15 bg-white/[0.025] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.5)] sm:p-7">
-
+              <div className="relative border border-black bg-white p-6 sm:p-7">
                 {/* Corner details */}
-                <span className="absolute left-0 top-0 h-7 w-px bg-white/70" />
-                <span className="absolute left-0 top-0 h-px w-7 bg-white/70" />
+                <span className="absolute left-0 top-0 h-7 w-px bg-black" />
+                <span className="absolute left-0 top-0 h-px w-7 bg-black" />
 
-                <span className="absolute bottom-0 right-0 h-7 w-px bg-white/35" />
-                <span className="absolute bottom-0 right-0 h-px w-7 bg-white/35" />
+                <span className="absolute bottom-0 right-0 h-7 w-px bg-black" />
+                <span className="absolute bottom-0 right-0 h-px w-7 bg-black" />
 
                 {/* MESSAGE */}
                 {message && (
                   <div
                     role={isSuccess ? "status" : "alert"}
-                    className={`mb-6 border px-4 py-3 text-sm leading-6 ${
-                      isSuccess
-                        ? "border-white/25 bg-white/[0.08] text-white/85"
-                        : "border-white/25 bg-white/[0.06] text-white/85"
-                    }`}
+                    className="mb-6 border border-black bg-white px-4 py-3 text-sm leading-6 text-black"
                   >
                     {message}
                   </div>
                 )}
 
-                <form
-                  onSubmit={handleSubmit}
-                  className="space-y-6"
-                >
+                <form onSubmit={handleSubmit} className="space-y-6">
                   {/* PASSWORD */}
                   <div>
                     <label
                       htmlFor="password"
-                      className="mb-2 block text-[9px] uppercase tracking-[0.28em] text-white/55"
+                      className="mb-2 block text-[9px] uppercase tracking-[0.28em] text-black"
                     >
                       New password
                     </label>
@@ -281,22 +261,18 @@ function ResetPassword() {
                         id="password"
                         type={showPassword ? "text" : "password"}
                         value={password}
-                        onChange={(e) =>
-                          setPassword(e.target.value)
-                        }
+                        onChange={(e) => setPassword(e.target.value)}
                         placeholder="Enter new password"
                         autoComplete="new-password"
                         disabled={isLoading || isSuccess}
-                        className="h-12 w-full border border-white/15 bg-black px-4 pr-12 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-white/60 focus:ring-1 focus:ring-white/25 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="h-12 w-full border border-black bg-white px-4 pr-12 text-sm text-black outline-none transition placeholder:text-black focus:border-black focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:bg-white"
                       />
 
                       <button
                         type="button"
-                        onClick={() =>
-                          setShowPassword(!showPassword)
-                        }
+                        onClick={() => setShowPassword(!showPassword)}
                         disabled={isLoading || isSuccess}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/35 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 border border-black bg-white p-2 text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:bg-white disabled:text-black"
                         aria-label={
                           showPassword
                             ? "Hide password"
@@ -316,11 +292,7 @@ function ResetPassword() {
                       {passwordRequirements.map((item) => (
                         <div
                           key={item.label}
-                          className={`flex items-center gap-1.5 text-[10px] ${
-                            item.valid
-                              ? "text-white/80"
-                              : "text-white/30"
-                          }`}
+                          className="flex items-center gap-1.5 text-[10px] text-black"
                         >
                           <Check size={12} />
                           {item.label}
@@ -333,7 +305,7 @@ function ResetPassword() {
                   <div>
                     <label
                       htmlFor="confirmPassword"
-                      className="mb-2 block text-[9px] uppercase tracking-[0.28em] text-white/55"
+                      className="mb-2 block text-[9px] uppercase tracking-[0.28em] text-black"
                     >
                       Confirm password
                     </label>
@@ -353,7 +325,7 @@ function ResetPassword() {
                         placeholder="Repeat new password"
                         autoComplete="new-password"
                         disabled={isLoading || isSuccess}
-                        className="h-12 w-full border border-white/15 bg-black px-4 pr-12 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-white/60 focus:ring-1 focus:ring-white/25 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="h-12 w-full border border-black bg-white px-4 pr-12 text-sm text-black outline-none transition placeholder:text-black focus:border-black focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:bg-white"
                       />
 
                       <button
@@ -364,7 +336,7 @@ function ResetPassword() {
                           )
                         }
                         disabled={isLoading || isSuccess}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/35 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 border border-black bg-white p-2 text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:bg-white disabled:text-black"
                         aria-label={
                           showConfirmPassword
                             ? "Hide password"
@@ -384,7 +356,7 @@ function ResetPassword() {
                   <button
                     type="submit"
                     disabled={isLoading || isSuccess}
-                    className="group flex h-12 w-full items-center justify-center gap-3 border border-white bg-white px-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-black shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition duration-300 hover:bg-white/90 hover:shadow-[0_14px_35px_rgba(0,0,0,0.55)] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group flex h-12 w-full items-center justify-center gap-3 border border-black bg-white px-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-black transition duration-300 hover:bg-black hover:text-white active:translate-y-px disabled:cursor-not-allowed disabled:bg-white disabled:text-black"
                   >
                     {isLoading ? (
                       "Resetting Password..."
@@ -406,7 +378,7 @@ function ResetPassword() {
                   <button
                     type="button"
                     onClick={() => navigate("/login")}
-                    className="mt-4 flex h-11 w-full items-center justify-center gap-2 border border-white/20 bg-white/[0.04] px-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70 transition hover:border-white/40 hover:bg-white/[0.08] hover:text-white"
+                    className="mt-4 flex h-11 w-full items-center justify-center gap-2 border border-black bg-white px-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-black transition hover:bg-black hover:text-white"
                   >
                     Go to Login
                     <ArrowRight
@@ -418,10 +390,10 @@ function ResetPassword() {
 
                 {/* BACK */}
                 {!isSuccess && (
-                  <div className="mt-7 border-t border-white/10 pt-6">
+                  <div className="mt-7 border-t border-black pt-6">
                     <Link
                       to="/login"
-                      className="group flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.22em] text-white/60 transition hover:text-white"
+                      className="group flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.22em] text-black transition hover:underline"
                     >
                       <ArrowLeft
                         size={14}
@@ -436,7 +408,7 @@ function ResetPassword() {
               </div>
 
               {/* SECURITY LINE */}
-              <div className="mt-6 flex items-center justify-center gap-2 text-[9px] uppercase tracking-[0.22em] text-white/30">
+              <div className="mt-6 flex items-center justify-center gap-2 text-[9px] uppercase tracking-[0.22em] text-black">
                 <LockKeyhole
                   size={13}
                   strokeWidth={1.5}

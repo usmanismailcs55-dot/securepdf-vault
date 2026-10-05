@@ -1,9 +1,9 @@
 function DashboardLayout({ children }) {
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-7xl bg-white px-4 py-8 text-black sm:px-6 lg:px-8">
       <div className="relative">
-        {/* Subtle dossier-style frame */}
-        <div className="pointer-events-none absolute inset-0 rounded-sm border border-black/10 opacity-60" />
+        {/* Dossier-style frame */}
+        <div className="pointer-events-none absolute inset-0 rounded-sm border border-black" />
 
         <div className="relative">
           {children}

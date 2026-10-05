@@ -6,9 +6,9 @@ function Notification({
   onClose,
 }) {
   const styles = {
-    success: "bg-black/[0.03] text-black/80 border-black/15",
-    error: "bg-black/[0.04] text-black/85 border-black/20",
-    info: "bg-black/[0.02] text-black/75 border-black/10",
+    success: "bg-white text-black border-black",
+    error: "bg-white text-black border-black",
+    info: "bg-white text-black border-black",
   };
 
   const icons = {
@@ -26,9 +26,12 @@ function Notification({
       }`}
       role="alert"
     >
-      <Icon size={20} />
+      <Icon
+        size={20}
+        className="text-black"
+      />
 
-      <p className="flex-1 text-sm">
+      <p className="flex-1 text-sm text-black">
         {message}
       </p>
 
@@ -36,7 +39,7 @@ function Notification({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md p-1 hover:bg-black/5"
+          className="rounded-md border border-black bg-white p-1 text-black transition hover:bg-black hover:text-white"
           aria-label="Close notification"
         >
           <X size={18} />

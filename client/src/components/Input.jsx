@@ -26,7 +26,7 @@ function Input({
         placeholder={placeholder}
         disabled={disabled}
         required={required}
-        className={`w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-black outline-none transition placeholder:text-black/35 focus:border-black focus:ring-2 focus:ring-black/10 disabled:cursor-not-allowed disabled:bg-black/[0.04] ${className}`}
+        className={`w-full rounded-md border border-black bg-white px-3 py-2 text-sm text-black outline-none transition placeholder:text-black focus:border-black focus:ring-2 focus:ring-black disabled:cursor-not-allowed disabled:bg-white ${className}`}
       />
     </div>
   );

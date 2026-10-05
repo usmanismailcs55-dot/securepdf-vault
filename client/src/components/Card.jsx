@@ -1,3 +1,4 @@
+
 import { forwardRef } from "react";
 
 const Card = forwardRef(function Card(
@@ -7,7 +8,7 @@ const Card = forwardRef(function Card(
   return (
     <div
       ref={ref}
-      className={`rounded-xl border border-black/10 bg-white p-6 shadow-sm ${className}`}
+      className={`rounded-xl border border-black bg-white p-6 shadow-sm ${className}`}
     >
       {children}
     </div>
