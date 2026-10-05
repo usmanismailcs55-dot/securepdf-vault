@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import { describe, expect, test, vi } from "vitest";
+
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import App from "../App";
 
@@ -9,7 +9,7 @@ vi.mock("../components/Navbar", () => ({
 }));
 
 vi.mock("../components/ProtectedRoute", () => ({
-  default: () => <div>Protected Route</div>,
+  default: ({ children }) => <div>{children}</div>,
 }));
 
 vi.mock("../components/PdfUpload", () => ({
@@ -54,76 +54,66 @@ vi.mock("../pages/CryptoPayment", () => ({
   default: () => <h1>Crypto Payment Page</h1>,
 }));
 
+vi.mock("../pages/SecureLinkAccess", () => ({
+  default: () => <h1>Secure Link Access Page</h1>,
+}));
+
+afterEach(() => {
+  cleanup();
+});
+
+function renderRoute(path) {
+  window.history.pushState({}, "", path);
+  return render(<App />);
+}
+
 describe("Frontend Routes", () => {
   test("renders home route", () => {
-    render(
-      <MemoryRouter initialEntries={["/"]}>
-        <App />
-      </MemoryRouter>
-    );
+    renderRoute("/");
 
     expect(
-      screen.getByText("Secure your PDF documents with password protection.")
+      screen.getByText(
+        "Secure your PDF documents with password protection."
+      )
     ).toBeInTheDocument();
   });
 
   test("renders register route", () => {
-    render(
-      <MemoryRouter initialEntries={["/register"]}>
-        <App />
-      </MemoryRouter>
-    );
+    renderRoute("/register");
 
     expect(screen.getByText("Register Page")).toBeInTheDocument();
   });
 
   test("renders login route", () => {
-    render(
-      <MemoryRouter initialEntries={["/login"]}>
-        <App />
-      </MemoryRouter>
-    );
+    renderRoute("/login");
 
     expect(screen.getByText("Login Page")).toBeInTheDocument();
   });
 
   test("renders forgot password route", () => {
-    render(
-      <MemoryRouter initialEntries={["/forgot-password"]}>
-        <App />
-      </MemoryRouter>
-    );
+    renderRoute("/forgot-password");
 
     expect(screen.getByText("Forgot Password Page")).toBeInTheDocument();
   });
 
   test("renders reset password route", () => {
-    render(
-      <MemoryRouter initialEntries={["/reset-password/test-token"]}>
-        <App />
-      </MemoryRouter>
-    );
+    renderRoute("/reset-password/test-token");
 
     expect(screen.getByText("Reset Password Page")).toBeInTheDocument();
   });
 
   test("renders crypto payment route", () => {
-    render(
-      <MemoryRouter initialEntries={["/payment/crypto"]}>
-        <App />
-      </MemoryRouter>
-    );
+    renderRoute("/crypto-payment");
 
     expect(screen.getByText("Crypto Payment Page")).toBeInTheDocument();
   });
 
   test("renders dashboard route", () => {
-    render(
-      <MemoryRouter initialEntries={["/dashboard"]}>
-        <App />
-      </MemoryRouter>
-    );
+    renderRoute("/dashboard");
 
-    expect(screen.getByText("Protected Route")).toBeInTheDocument();
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Upload PDF")).toBeInTheDocument();
+    expect(screen.getByText("Documents")).toBeInTheDocument();
+    expect(screen.getByText("Access History")).toBeInTheDocument();
   });
 });
