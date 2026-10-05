@@ -44,6 +44,7 @@ app.use(helmet());
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:8080",
+  "https://404watch.watch",
 ];
 
 app.use(
@@ -126,22 +127,28 @@ console.log(
     : "wallet missing"
 );
 
-// HTTPS server
+// Server
 const PORT = process.env.PORT || 5000;
 
-const certPath = path.join(__dirname, "certs");
+if (process.env.NODE_ENV === "production") {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`HTTP server running on port ${PORT}`);
+  });
+} else {
+  const certPath = path.join(__dirname, "certs");
 
-const httpsOptions = {
-  key: fs.readFileSync(
-    path.join(certPath, "localhost-key.pem")
-  ),
-  cert: fs.readFileSync(
-    path.join(certPath, "localhost-cert.pem")
-  ),
-};
+  const httpsOptions = {
+    key: fs.readFileSync(
+      path.join(certPath, "localhost-key.pem")
+    ),
+    cert: fs.readFileSync(
+      path.join(certPath, "localhost-cert.pem")
+    ),
+  };
 
-https.createServer(httpsOptions, app).listen(PORT, () => {
-  console.log(
-    `HTTPS server running on https://localhost:${PORT}`
-  );
-});
+  https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log(
+      `HTTPS server running on https://localhost:${PORT}`
+    );
+  });
+}
