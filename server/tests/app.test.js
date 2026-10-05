@@ -22,9 +22,18 @@ jest.mock("../utils/verifyPdfProtection", () =>
 
 jest.mock("../utils/fileEncryption", () => ({
   encryptBuffer: jest.fn((buffer) => buffer),
-  decryptFile: jest.fn(() =>
+  decryptBuffer: jest.fn(() =>
     Buffer.from("decrypted-pdf-content")
   ),
+}));
+
+jest.mock("../utils/b2Storage", () => ({
+  uploadObject: jest.fn().mockResolvedValue(undefined),
+  downloadObject: jest.fn().mockResolvedValue(
+    Buffer.from("encrypted-pdf-content")
+  ),
+  deleteObject: jest.fn().mockResolvedValue(undefined),
+  objectExists: jest.fn().mockResolvedValue(true),
 }));
 
 jest.mock("../models/User", () => ({
@@ -103,7 +112,7 @@ const verifyPdfProtectionActual = jest.requireActual(
   "../utils/verifyPdfProtection"
 );
 
-const { decryptFile } = require("../utils/fileEncryption");
+const { decryptBuffer } = require("../utils/fileEncryption");
 const { PDFDocument } = require("pdf-lib");
 
 const app = require("../app");
@@ -376,7 +385,8 @@ describe("PDF Protection", () => {
       _id: "507f1f77bcf86cd799439099",
       owner: "507f1f77bcf86cd799439011",
       originalFilename: "test.pdf",
-      originalPath: "C:\\test\\test.pdf",
+      originalPath: "original/test.pdf",
+      storedFilename: "stored-test.pdf",
       protectionStatus: "pending",
       processingError: null,
       protectedPath: null,
@@ -388,21 +398,22 @@ describe("PDF Protection", () => {
       mockDocument
     );
 
-    jest
-      .spyOn(fs, "mkdirSync")
-      .mockImplementation(() => {});
+    protectPdf.mockImplementation(
+      async (inputBuffer, outputPath) => {
+        expect(inputBuffer).toBeInstanceOf(Buffer);
 
-    jest
-      .spyOn(fs, "existsSync")
-      .mockReturnValue(false);
-
-    protectPdf.mockResolvedValue(undefined);
+        fs.writeFileSync(
+          outputPath,
+          Buffer.from("protected-pdf-content")
+        );
+      }
+    );
 
     generatePdfPassword.mockReturnValue(
       "TestPassword123!"
     );
 
-    decryptFile.mockReturnValue(
+    decryptBuffer.mockReturnValue(
       Buffer.from("decrypted-pdf-content")
     );
 
@@ -414,7 +425,9 @@ describe("PDF Protection", () => {
       .post(
         "/api/documents/507f1f77bcf86cd799439099/protect"
       )
-      .send({});
+      .send({
+        password: "TestPassword123!",
+      });
 
     expect(response.statusCode).toBe(200);
 
@@ -448,24 +461,28 @@ describe("PDF Protection", () => {
 
     expect(
       mockDocument.protectedPath
-    ).toEqual(
-      expect.stringContaining("protected-")
+    ).toBe(
+      "protected/stored-test.pdf"
     );
 
-    expect(decryptFile).toHaveBeenCalledWith(
-      mockDocument.originalPath
-    );
+    expect(
+      decryptBuffer
+    ).toHaveBeenCalled();
 
     expect(protectPdf).toHaveBeenCalledWith(
       expect.any(Buffer),
-      expect.stringContaining("protected-"),
+      expect.stringMatching(
+        /securepdf-protected-.*\.pdf$/
+      ),
       "TestPassword123!"
     );
 
     expect(
       verifyPdfProtection
     ).toHaveBeenCalledWith(
-      expect.stringContaining("protected-")
+      expect.stringMatching(
+        /securepdf-protected-.*\.pdf$/
+      )
     );
 
     expect(
@@ -723,11 +740,6 @@ describe("Trust Wallet Payment Verification", () => {
     const recipientHex =
       "410000000000000000000000000000000000000001";
 
-    /*
-     * Base58Check address corresponding to:
-     *
-     * 410000000000000000000000000000000000000001
-     */
     const receivingWallet =
       "T9yD14Nj9j7xAB4dbGeiX9h8unkKLxmGkn";
 
@@ -1433,9 +1445,8 @@ describe("Trust Wallet Payment Verification", () => {
 
       failureReason: null,
 
-      save: jest
-        .fn()
-        .mockResolvedValue(true),
+      save:
+        jest.fn().mockResolvedValue(true),
     };
 
     Payment.findOne.mockResolvedValue(

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -55,7 +56,7 @@ function ForgotPassword() {
         data.message ||
           "If an account exists with this email, password reset instructions will be sent."
       );
-    } catch (error) {
+    } catch {
       setError(
         "Unable to connect to the server. Please make sure the backend is running."
       );
@@ -66,17 +67,14 @@ function ForgotPassword() {
 
   return (
     <main className="relative min-h-[calc(100vh-73px)] overflow-hidden bg-white text-black">
-
       {/* BACKGROUND */}
       <div className="pointer-events-none absolute inset-0 bg-white" />
 
       {/* MAIN FRAME */}
       <div className="relative mx-auto flex min-h-[calc(100vh-73px)] max-w-[1500px] items-center px-3 py-3 sm:px-5 sm:py-5">
         <div className="relative grid w-full overflow-hidden border border-black bg-white shadow-sm lg:min-h-[680px] lg:grid-cols-[1.35fr_0.65fr]">
-
           {/* EYES / PHOTOGRAPHIC SIDE */}
           <section className="relative min-h-[390px] overflow-hidden bg-white lg:min-h-[680px]">
-
             <img
               src="/images/noir-vault-hero.jpg"
               alt=""
@@ -135,20 +133,18 @@ function ForgotPassword() {
               </div>
 
               <p className="mt-3 max-w-xs font-serif text-xl text-black sm:text-2xl">
-                Access can be
+                Access can
                 <br />
-                restored securely.
+                be restored securely.
               </p>
             </div>
           </section>
 
           {/* FORM PANEL */}
           <section className="relative flex items-center border-t border-black bg-white px-6 py-10 sm:px-10 lg:border-l lg:border-t-0 lg:px-12">
-
             <div className="pointer-events-none absolute left-0 top-12 hidden h-32 w-px bg-black lg:block" />
 
             <div className="w-full max-w-md">
-
               {/* Mobile brand */}
               <div className="mb-9 flex justify-center lg:hidden">
                 <Link
@@ -199,7 +195,6 @@ function ForgotPassword() {
 
               {/* FORM CARD */}
               <div className="relative border border-black bg-white p-6 shadow-sm sm:p-7">
-
                 {/* Corner details */}
                 <span className="absolute left-0 top-0 h-7 w-px bg-black" />
                 <span className="absolute left-0 top-0 h-px w-7 bg-black" />

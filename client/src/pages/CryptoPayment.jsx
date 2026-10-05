@@ -62,10 +62,6 @@ export default function CryptoPayment() {
       localStorage.getItem("accessToken");
 
     if (!accessToken) {
-      setHistoryError(
-        "You must be logged in to view payment history."
-      );
-      setHistoryLoading(false);
       return;
     }
 
@@ -189,7 +185,9 @@ export default function CryptoPayment() {
   }, [paymentAmount]);
 
   const handleCopy = async () => {
-    if (!walletAddress) return;
+    if (!walletAddress) {
+      return;
+    }
 
     try {
       await navigator.clipboard.writeText(walletAddress);
@@ -449,7 +447,8 @@ export default function CryptoPayment() {
       }
 
       const transferAmount =
-        data?.raw_data?.contract?.[0]?.parameter?.value?.amount;
+        data?.raw_data?.contract?.[0]?.parameter?.value
+          ?.amount;
 
       if (!transferAmount) {
         setQueryStatus(
@@ -685,13 +684,8 @@ export default function CryptoPayment() {
     return new Date(date).toLocaleString();
   };
 
-  const getHistoryStatusClasses = () => {
-    return "border-black bg-white text-black";
-  };
-
   return (
     <main className="min-h-screen bg-white text-black">
-
       <section className="w-full bg-white">
         <div className="w-full overflow-hidden">
           <img
@@ -703,7 +697,6 @@ export default function CryptoPayment() {
       </section>
 
       <section className="mx-auto w-full max-w-5xl bg-white px-4 py-10 text-black sm:px-6 lg:px-8">
-
         {paymentError && (
           <div className="mb-6 flex items-start gap-3 border border-black bg-white p-4 text-black">
             <AlertTriangle
@@ -736,9 +729,7 @@ export default function CryptoPayment() {
         )}
 
         <section className="border-y border-black bg-white py-6">
-
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-
             <div>
               <p className="text-[10px] uppercase tracking-[0.25em] text-black">
                 Payment
@@ -758,13 +749,10 @@ export default function CryptoPayment() {
                 {paymentNetwork}
               </p>
             </div>
-
           </div>
 
           <div className="mt-5 border-t border-black pt-5">
-
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-
               <span className="text-[10px] uppercase tracking-[0.18em] text-black">
                 Reference
               </span>
@@ -775,18 +763,13 @@ export default function CryptoPayment() {
                   : paymentReference ||
                     "Unavailable"}
               </span>
-
             </div>
-
           </div>
         </section>
 
         <section className="border-b border-black py-8">
-
           <div className="grid gap-8 lg:grid-cols-[280px_1fr] lg:items-center">
-
             <div className="flex justify-center lg:justify-start">
-
               {walletAddress ? (
                 <div className="border border-black bg-white p-4">
                   <QRCodeSVG
@@ -801,11 +784,9 @@ export default function CryptoPayment() {
                   Payment wallet is not configured.
                 </div>
               )}
-
             </div>
 
             <div>
-
               <div className="mb-4 flex items-center gap-3">
                 <WalletCards
                   size={19}
@@ -843,16 +824,12 @@ export default function CryptoPayment() {
                   </button>
                 </>
               )}
-
             </div>
-
           </div>
         </section>
 
         <section className="border-b border-black py-8">
-
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-
             <div className="border-l border-black pl-4">
               <span className="font-serif text-lg text-black">
                 01
@@ -914,15 +891,11 @@ export default function CryptoPayment() {
                 Copy your transaction hash after payment.
               </p>
             </div>
-
           </div>
-
         </section>
 
         <section className="border-b border-black py-6">
-
           <div className="flex items-start gap-3">
-
             <AlertTriangle
               className="mt-0.5 shrink-0 text-black"
               size={19}
@@ -940,13 +913,10 @@ export default function CryptoPayment() {
               . Using another asset or network may prevent
               the payment from being credited.
             </p>
-
           </div>
-
         </section>
 
         <section className="border-b border-black py-8">
-
           <div className="mb-5 flex items-center gap-3">
             <ShieldCheck
               size={19}
@@ -960,7 +930,6 @@ export default function CryptoPayment() {
           </div>
 
           <form onSubmit={handleSubmitTransaction}>
-
             <label
               htmlFor="transactionHash"
               className="mb-2 block text-[10px] uppercase tracking-[0.18em] text-black"
@@ -1020,7 +989,6 @@ export default function CryptoPayment() {
               Submit transaction
               <ArrowRight size={17} />
             </button>
-
           </form>
 
           {queryStatus && (
@@ -1033,9 +1001,7 @@ export default function CryptoPayment() {
 
           {transactionData && (
             <div className="mt-5 border border-black bg-white p-5">
-
               <div className="mb-4 flex items-center gap-2">
-
                 {transactionData.status === "paid" ? (
                   <CheckCircle
                     size={19}
@@ -1057,11 +1023,9 @@ export default function CryptoPayment() {
                     ? "Payment Underpaid"
                     : "Payment Successful"}
                 </h3>
-
               </div>
 
               <div className="space-y-3 border-t border-black pt-4">
-
                 <p className="break-all text-xs leading-6 text-black">
                   <span className="text-black">
                     Transaction ID:
@@ -1079,16 +1043,12 @@ export default function CryptoPayment() {
                     {transactionData.paymentReference}
                   </span>
                 </p>
-
               </div>
-
             </div>
           )}
-
         </section>
 
         <section className="py-8">
-
           <div className="mb-5 flex items-center gap-3">
             <WalletCards
               size={19}
@@ -1126,17 +1086,13 @@ export default function CryptoPayment() {
             </div>
           ) : (
             <div className="space-y-4">
-
               {paymentHistory.map((payment) => (
                 <div
                   key={payment._id}
                   className="border border-black bg-white p-5"
                 >
-
                   <div className="mb-5 flex flex-col gap-3 border-b border-black pb-4 md:flex-row md:items-center md:justify-between">
-
                     <div className="min-w-0">
-
                       <p className="break-all font-mono text-xs text-black">
                         {payment.paymentReference}
                       </p>
@@ -1146,19 +1102,14 @@ export default function CryptoPayment() {
                           payment.createdAt
                         )}
                       </p>
-
                     </div>
 
-                    <span
-                      className={`inline-flex w-fit border border-black bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-black`}
-                    >
+                    <span className="inline-flex w-fit border border-black bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-black">
                       {payment.status}
                     </span>
-
                   </div>
 
                   <div className="grid grid-cols-1 gap-5 text-sm md:grid-cols-2">
-
                     <div>
                       <span className="text-[10px] uppercase tracking-[0.16em] text-black">
                         Amount
@@ -1183,7 +1134,6 @@ export default function CryptoPayment() {
                     </div>
 
                     <div className="md:col-span-2">
-
                       <span className="text-[10px] uppercase tracking-[0.16em] text-black">
                         Transaction hash
                       </span>
@@ -1192,12 +1142,10 @@ export default function CryptoPayment() {
                         {payment.transactionHash ||
                           "Not submitted"}
                       </p>
-
                     </div>
 
                     {payment.failureReason && (
                       <div className="md:col-span-2">
-
                         <span className="text-[10px] uppercase tracking-[0.16em] text-black">
                           Failure reason
                         </span>
@@ -1205,18 +1153,13 @@ export default function CryptoPayment() {
                         <p className="mt-1 text-sm leading-6 text-black">
                           {payment.failureReason}
                         </p>
-
                       </div>
                     )}
-
                   </div>
-
                 </div>
               ))}
-
             </div>
           )}
-
         </section>
 
         <div className="flex items-center justify-center gap-2 border-t border-black pt-6 text-center text-[10px] uppercase tracking-[0.2em] text-black">
@@ -1226,7 +1169,6 @@ export default function CryptoPayment() {
           />
           Secure cryptocurrency payment
         </div>
-
       </section>
     </main>
   );

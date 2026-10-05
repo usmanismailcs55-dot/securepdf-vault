@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
@@ -76,7 +77,7 @@ function ResetPassword() {
 
       setPassword("");
       setConfirmPassword("");
-    } catch (error) {
+    } catch {
       setMessage(
         "Unable to connect to the server. Please make sure the backend is running."
       );

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   ShieldCheck,
@@ -99,7 +100,7 @@ export default function Register() {
         password: "",
         confirmPassword: "",
       });
-    } catch (error) {
+    } catch {
       setError(
         "Unable to connect to the server. Please make sure the backend is running."
       );
@@ -127,10 +128,8 @@ export default function Register() {
     <div className="min-h-screen bg-white text-black">
       <div className="mx-auto flex min-h-screen w-full max-w-[1500px] items-center justify-center px-3 py-3 sm:px-5 sm:py-5">
         <div className="relative grid min-h-[calc(100vh-1.5rem)] w-full overflow-hidden border border-black bg-white shadow-sm sm:min-h-[calc(100vh-2.5rem)] lg:grid-cols-[1.15fr_0.85fr]">
-
           {/* PHOTO SIDE */}
           <div className="relative min-h-[360px] overflow-hidden bg-white lg:min-h-0">
-
             {/* Actual eyes photography */}
             <img
               src="/images/noir-vault-hero.jpg"
@@ -189,9 +188,7 @@ export default function Register() {
 
           {/* REGISTER SIDE */}
           <div className="relative flex items-center justify-center overflow-y-auto bg-white px-5 py-10 sm:px-8 lg:px-12">
-
             <div className="relative z-10 w-full max-w-md">
-
               {/* Mobile brand */}
               <div className="mb-9 flex items-center gap-3 lg:hidden">
                 <div className="flex h-9 w-9 items-center justify-center border border-black bg-white">
@@ -229,7 +226,6 @@ export default function Register() {
 
               {/* Form */}
               <div className="border border-black bg-white p-5 shadow-sm sm:p-7">
-
                 {error && (
                   <div
                     role="alert"
@@ -249,7 +245,6 @@ export default function Register() {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-
                   {/* Name */}
                   <div>
                     <label

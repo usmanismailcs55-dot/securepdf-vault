@@ -1,3 +1,6 @@
+
+/* global process, Buffer */
+
 import { test, expect } from "@playwright/test";
 
 test("home page loads", async ({ page }) => {
@@ -50,7 +53,6 @@ test("rejects a fake PDF with an invalid PDF signature", async ({ page }) => {
 
   await page.getByLabel("Email").fill(email);
   await page.locator('input[name="password"]').fill(password);
-
   await page.getByRole("button", { name: "Sign In" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -86,7 +88,6 @@ test("rejects a non-PDF upload", async ({ page }) => {
 
   await page.getByLabel("Email").fill(email);
   await page.locator('input[name="password"]').fill(password);
-
   await page.getByRole("button", { name: "Sign In" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -137,7 +138,6 @@ test("rejects an oversized PDF and shows the UI error", async ({ page }) => {
 
   await page.getByLabel("Email").fill(email);
   await page.locator('input[name="password"]').fill(password);
-
   await page.getByRole("button", { name: "Sign In" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -171,4 +171,3 @@ test("rejects an oversized PDF and shows the UI error", async ({ page }) => {
 
   await expect(page.getByText("File too large")).toBeVisible();
 });
-

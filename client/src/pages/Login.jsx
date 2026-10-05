@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -81,7 +80,7 @@ export default function Login() {
       }
 
       navigate("/dashboard");
-    } catch (error) {
+    } catch {
       setError(
         "Unable to connect to the server. Please make sure the backend is running."
       );
@@ -92,18 +91,14 @@ export default function Login() {
 
   return (
     <main className="relative min-h-[calc(100vh-73px)] overflow-hidden bg-white text-black">
-
       {/* FULL PAGE BACKGROUND */}
       <div className="pointer-events-none absolute inset-0 bg-white" />
 
       {/* MAIN LAYOUT */}
       <div className="relative mx-auto flex min-h-[calc(100vh-73px)] max-w-[1500px] items-center px-4 py-8 sm:px-6 lg:px-10">
-
         <div className="relative grid w-full overflow-hidden border border-black bg-white shadow-sm lg:min-h-[700px] lg:grid-cols-[1.35fr_0.65fr]">
-
           {/* EYE / PHOTOGRAPHIC VISUAL */}
           <section className="relative min-h-[420px] overflow-hidden bg-white lg:min-h-[700px]">
-
             <img
               src="/images/noir-vault-hero.jpg"
               alt=""
@@ -115,7 +110,6 @@ export default function Login() {
 
             {/* TOP BRAND */}
             <div className="absolute left-6 top-6 z-10 sm:left-8 sm:top-8">
-
               <Link
                 to="/"
                 className="group flex items-center gap-3"
@@ -140,7 +134,6 @@ export default function Login() {
                   </div>
                 </div>
               </Link>
-
             </div>
 
             {/* SMALL CASE LABEL */}
@@ -154,7 +147,6 @@ export default function Login() {
 
             {/* BOTTOM VISUAL CAPTION */}
             <div className="absolute bottom-7 left-6 z-10 sm:bottom-9 sm:left-8">
-
               <div className="flex items-center gap-3">
                 <span className="h-px w-10 bg-black" />
 
@@ -168,19 +160,15 @@ export default function Login() {
                 <br />
                 Under your control.
               </p>
-
             </div>
-
           </section>
 
           {/* LOGIN PANEL */}
           <section className="relative flex items-center border-t border-black bg-white px-6 py-10 sm:px-10 lg:border-l lg:border-t-0 lg:px-12">
-
             {/* Decorative vertical line */}
             <div className="pointer-events-none absolute left-0 top-12 hidden h-32 w-px bg-black lg:block" />
 
             <div className="w-full max-w-md">
-
               {/* Mobile logo */}
               <div className="mb-9 flex justify-center lg:hidden">
                 <Link
@@ -211,7 +199,6 @@ export default function Login() {
 
               {/* MINIMAL HEADING */}
               <div className="mb-8">
-
                 <div className="mb-5 flex items-center gap-3">
                   <span className="h-px w-9 bg-black" />
 
@@ -227,12 +214,10 @@ export default function Login() {
                 <p className="mt-3 text-sm leading-6 text-black">
                   Enter your credentials to continue.
                 </p>
-
               </div>
 
               {/* LOGIN FORM */}
               <div className="relative border border-black bg-white p-6 shadow-sm sm:p-7">
-
                 {/* Corner details */}
                 <span className="absolute left-0 top-0 h-7 w-px bg-black" />
                 <span className="absolute left-0 top-0 h-px w-7 bg-black" />
@@ -253,7 +238,6 @@ export default function Login() {
                   onSubmit={handleSubmit}
                   className="space-y-6"
                 >
-
                   {/* Email */}
                   <div>
                     <label
@@ -279,7 +263,6 @@ export default function Login() {
                   {/* Password */}
                   <div>
                     <div className="mb-2 flex items-center justify-between">
-
                       <label
                         htmlFor="password"
                         className="block text-[9px] uppercase tracking-[0.28em] text-black"
@@ -293,11 +276,9 @@ export default function Login() {
                       >
                         Forgot password?
                       </Link>
-
                     </div>
 
                     <div className="relative">
-
                       <input
                         id="password"
                         name="password"
@@ -341,13 +322,11 @@ export default function Login() {
                           />
                         )}
                       </button>
-
                     </div>
                   </div>
 
                   {/* Remember me */}
                   <label className="flex cursor-pointer items-center gap-3">
-
                     <input
                       type="checkbox"
                       className="h-4 w-4 rounded-none border border-black bg-white text-black focus:ring-1 focus:ring-black"
@@ -356,7 +335,6 @@ export default function Login() {
                     <span className="text-xs text-black">
                       Remember me
                     </span>
-
                   </label>
 
                   {/* Submit */}
@@ -379,12 +357,10 @@ export default function Login() {
                       </>
                     )}
                   </button>
-
                 </form>
 
                 {/* Register */}
                 <div className="mt-7 border-t border-black pt-6 text-center">
-
                   <p className="text-xs text-black">
                     Don't have an account?{" "}
 
@@ -395,27 +371,20 @@ export default function Login() {
                       Create an account
                     </Link>
                   </p>
-
                 </div>
-
               </div>
 
               {/* Security line */}
               <div className="mt-6 flex items-center justify-center gap-2 text-[9px] uppercase tracking-[0.22em] text-black">
-
                 <LockKeyhole
                   size={13}
                   strokeWidth={1.5}
                 />
 
                 Secure authentication
-
               </div>
-
             </div>
-
           </section>
-
         </div>
       </div>
     </main>
