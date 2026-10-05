@@ -1,0 +1,15 @@
+
+node_modules
+client/node_modules
+server/node_modules
+client/dist
+server/uploads
+server/protected-pdfs
+uploads
+protected-pdfs
+.git
+.github
+.env
+.env.*
+*.log
+
