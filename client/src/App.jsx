@@ -25,9 +25,6 @@ function App() {
   const secureLinkSectionRef = useRef(null);
   const accessTokenRef = useRef(localStorage.getItem("accessToken"));
 
-  const documentsRequestIdRef = useRef(0);
-  const accessHistoryRequestIdRef = useRef(0);
-
   const [accessToken, setAccessToken] = useState(
     localStorage.getItem("accessToken")
   );
@@ -137,20 +134,16 @@ function App() {
         return;
       }
 
-      const requestId = ++documentsRequestIdRef.current;
-
       setLoadingDocuments(true);
       setDocumentsError("");
       setSubscriptionError("");
 
       try {
         const response = await axios.get(
-          `${API_URL}/documents?_refresh=${Date.now()}`,
+          `${API_URL}/documents`,
           {
             headers: {
               Authorization: `Bearer ${currentToken}`,
-              "Cache-Control": "no-cache",
-              Pragma: "no-cache",
             },
           }
         );
@@ -159,17 +152,9 @@ function App() {
           return;
         }
 
-        if (requestId !== documentsRequestIdRef.current) {
-          return;
-        }
-
         setDocuments(response.data.documents || []);
       } catch (error) {
         if (accessTokenRef.current !== currentToken) {
-          return;
-        }
-
-        if (requestId !== documentsRequestIdRef.current) {
           return;
         }
 
@@ -194,8 +179,7 @@ function App() {
         );
       } finally {
         if (
-          accessTokenRef.current === currentToken &&
-          requestId === documentsRequestIdRef.current
+          accessTokenRef.current === currentToken
         ) {
           setLoadingDocuments(false);
         }
@@ -212,19 +196,15 @@ function App() {
         return;
       }
 
-      const requestId = ++accessHistoryRequestIdRef.current;
-
       setAccessHistoryLoading(true);
       setAccessHistoryError("");
 
       try {
         const response = await axios.get(
-          `${API_URL}/documents/access-history?_refresh=${Date.now()}`,
+          `${API_URL}/documents/access-history`,
           {
             headers: {
               Authorization: `Bearer ${currentToken}`,
-              "Cache-Control": "no-cache",
-              Pragma: "no-cache",
             },
           }
         );
@@ -233,17 +213,9 @@ function App() {
           return;
         }
 
-        if (requestId !== accessHistoryRequestIdRef.current) {
-          return;
-        }
-
         setAccessHistory(response.data.accessLogs || []);
       } catch (error) {
         if (accessTokenRef.current !== currentToken) {
-          return;
-        }
-
-        if (requestId !== accessHistoryRequestIdRef.current) {
           return;
         }
 
@@ -267,8 +239,7 @@ function App() {
         );
       } finally {
         if (
-          accessTokenRef.current === currentToken &&
-          requestId === accessHistoryRequestIdRef.current
+          accessTokenRef.current === currentToken
         ) {
           setAccessHistoryLoading(false);
         }
@@ -992,8 +963,6 @@ function App() {
                           if (!uploadedDocument) {
                             return;
                           }
-
-                          documentsRequestIdRef.current += 1;
 
                           setLoadingDocuments(false);
                           setDocumentsError("");
