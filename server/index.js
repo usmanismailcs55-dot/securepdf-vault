@@ -45,6 +45,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:8080",
   "https://404watch.watch",
+  "https://securepdf-vault-production.up.railway.app",
 ];
 
 app.use(
