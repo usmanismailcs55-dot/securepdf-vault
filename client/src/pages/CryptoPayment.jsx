@@ -9,6 +9,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://localhost:5000/api";
+
 export default function CryptoPayment() {
   const walletAddress =
     import.meta.env.VITE_PAYMENT_RECEIVING_WALLET || "";
@@ -33,35 +36,27 @@ export default function CryptoPayment() {
   const [queryStatus, setQueryStatus] = useState("");
   const [transactionData, setTransactionData] = useState(null);
 
-  const [paymentReference, setPaymentReference] =
-    useState("");
+  const [paymentReference, setPaymentReference] = useState("");
 
-  const [paymentLoading, setPaymentLoading] =
-    useState(true);
+  const [paymentLoading, setPaymentLoading] = useState(true);
 
-  const [paymentError, setPaymentError] =
-    useState("");
+  const [paymentError, setPaymentError] = useState("");
 
-  const [paymentStatus, setPaymentStatus] =
-    useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
 
-  const [paymentStatusType, setPaymentStatusType] =
-    useState("");
+  const [paymentStatusType, setPaymentStatusType] = useState("");
 
-  const [paymentHistory, setPaymentHistory] =
-    useState([]);
+  const [paymentHistory, setPaymentHistory] = useState([]);
 
-  const [historyLoading, setHistoryLoading] =
-    useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
 
-  const [historyError, setHistoryError] =
-    useState("");
+  const [historyError, setHistoryError] = useState("");
 
   useEffect(() => {
-    const accessToken =
-      localStorage.getItem("accessToken");
+    const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
+      setHistoryLoading(false);
       return;
     }
 
@@ -71,38 +66,31 @@ export default function CryptoPayment() {
         setHistoryError("");
 
         const response = await fetch(
-          "https://localhost:5000/api/payments/history",
+          `${API_URL}/payments/history`,
           {
             method: "GET",
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
 
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(
-            data.message ||
-              "Failed to load payment history."
+            data.message || "Failed to load payment history.",
           );
         }
 
         setPaymentHistory(
-          Array.isArray(data.payments)
-            ? data.payments
-            : []
+          Array.isArray(data.payments) ? data.payments : [],
         );
       } catch (error) {
-        console.error(
-          "Load payment history error:",
-          error
-        );
+        console.error("Load payment history error:", error);
 
         setHistoryError(
-          error.message ||
-            "Unable to load payment history."
+          error.message || "Unable to load payment history.",
         );
       } finally {
         setHistoryLoading(false);
@@ -120,18 +108,17 @@ export default function CryptoPayment() {
         setPaymentStatus("");
         setPaymentStatusType("");
 
-        const accessToken =
-          localStorage.getItem("accessToken");
+        const accessToken = localStorage.getItem("accessToken");
 
         if (!accessToken) {
           setPaymentError(
-            "You must be logged in to create a payment."
+            "You must be logged in to create a payment.",
           );
           return;
         }
 
         const response = await fetch(
-          "https://localhost:5000/api/payments/create",
+          `${API_URL}/payments/create`,
           {
             method: "POST",
             headers: {
@@ -141,40 +128,31 @@ export default function CryptoPayment() {
             body: JSON.stringify({
               amount: Number(paymentAmount),
             }),
-          }
+          },
         );
 
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(
-            data.message ||
-              "Failed to create payment."
+            data.message || "Failed to create payment.",
           );
         }
 
-        setPaymentReference(
-          data.paymentReference
-        );
+        setPaymentReference(data.paymentReference);
 
         setPaymentStatus(
-          "Payment created. Waiting for your transaction."
+          "Payment created. Waiting for your transaction.",
         );
         setPaymentStatusType("pending");
       } catch (error) {
-        console.error(
-          "Create payment error:",
-          error
-        );
+        console.error("Create payment error:", error);
 
         setPaymentError(
-          error.message ||
-            "Unable to create payment."
+          error.message || "Unable to create payment.",
         );
 
-        setPaymentStatus(
-          "Unable to create the payment."
-        );
+        setPaymentStatus("Unable to create the payment.");
         setPaymentStatusType("failed");
       } finally {
         setPaymentLoading(false);
@@ -200,7 +178,7 @@ export default function CryptoPayment() {
     } catch (error) {
       console.error(
         "Failed to copy wallet address:",
-        error
+        error,
       );
     }
   };
@@ -233,27 +211,26 @@ export default function CryptoPayment() {
 
     if (!paymentReference) {
       setQueryStatus(
-        "Payment reference is not available yet."
+        "Payment reference is not available yet.",
       );
 
       setPaymentStatus(
-        "Payment is still being prepared."
+        "Payment is still being prepared.",
       );
       setPaymentStatusType("pending");
 
       return;
     }
 
-    const tronTransactionHashRegex =
-      /^[a-fA-F0-9]{64}$/;
+    const tronTransactionHashRegex = /^[a-fA-F0-9]{64}$/;
 
     if (!hash) {
       setHashError(
-        "Please enter your transaction hash."
+        "Please enter your transaction hash.",
       );
 
       setPaymentStatus(
-        "Please enter your transaction hash."
+        "Please enter your transaction hash.",
       );
       setPaymentStatusType("failed");
 
@@ -262,11 +239,11 @@ export default function CryptoPayment() {
 
     if (!tronTransactionHashRegex.test(hash)) {
       setHashError(
-        "Invalid TRON transaction hash. The transaction hash must contain exactly 64 hexadecimal characters."
+        "Invalid TRON transaction hash. The transaction hash must contain exactly 64 hexadecimal characters.",
       );
 
       setPaymentStatus(
-        "Payment could not be verified because the transaction hash is invalid."
+        "Payment could not be verified because the transaction hash is invalid.",
       );
       setPaymentStatusType("failed");
 
@@ -274,12 +251,10 @@ export default function CryptoPayment() {
     }
 
     setSubmitted(true);
-    setQueryStatus(
-      "Querying the TRON blockchain..."
-    );
+    setQueryStatus("Querying the TRON blockchain...");
 
     setPaymentStatus(
-      "Your payment is being verified..."
+      "Your payment is being verified...",
     );
     setPaymentStatusType("pending");
 
@@ -294,30 +269,23 @@ export default function CryptoPayment() {
           body: JSON.stringify({
             value: hash,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
         throw new Error(
-          `TRON API request failed with status ${response.status}`
+          `TRON API request failed with status ${response.status}`,
         );
       }
 
       const data = await response.json();
 
-      console.log(
-        "TRON transaction response:",
-        data
-      );
+      console.log("TRON transaction response:", data);
 
       if (data.Error) {
-        setQueryStatus(
-          `TRON API error: ${data.Error}`
-        );
+        setQueryStatus(`TRON API error: ${data.Error}`);
 
-        setPaymentStatus(
-          "Payment verification failed."
-        );
+        setPaymentStatus("Payment verification failed.");
         setPaymentStatusType("failed");
 
         return;
@@ -325,11 +293,11 @@ export default function CryptoPayment() {
 
       if (!data || !data.txID) {
         setQueryStatus(
-          "Transaction was not found on the TRON network."
+          "Transaction was not found on the TRON network.",
         );
 
         setPaymentStatus(
-          "Transaction not found. Your payment is not verified yet."
+          "Transaction not found. Your payment is not verified yet.",
         );
         setPaymentStatusType("failed");
 
@@ -337,11 +305,11 @@ export default function CryptoPayment() {
       }
 
       setQueryStatus(
-        "Transaction found. Checking confirmation status..."
+        "Transaction found. Checking confirmation status...",
       );
 
       setPaymentStatus(
-        "Transaction found. Waiting for blockchain confirmation..."
+        "Transaction found. Waiting for blockchain confirmation...",
       );
       setPaymentStatusType("pending");
 
@@ -355,21 +323,20 @@ export default function CryptoPayment() {
           body: JSON.stringify({
             value: hash,
           }),
-        }
+        },
       );
 
       if (!infoResponse.ok) {
         throw new Error(
-          `TRON transaction information request failed with status ${infoResponse.status}`
+          `TRON transaction information request failed with status ${infoResponse.status}`,
         );
       }
 
-      const transactionInfo =
-        await infoResponse.json();
+      const transactionInfo = await infoResponse.json();
 
       console.log(
         "TRON transaction info:",
-        transactionInfo
+        transactionInfo,
       );
 
       if (
@@ -377,11 +344,11 @@ export default function CryptoPayment() {
         Object.keys(transactionInfo).length === 0
       ) {
         setQueryStatus(
-          "Transaction is pending confirmation on the TRON network. Please wait and try again."
+          "Transaction is pending confirmation on the TRON network. Please wait and try again.",
         );
 
         setPaymentStatus(
-          "Payment is pending confirmation."
+          "Payment is pending confirmation.",
         );
         setPaymentStatusType("pending");
 
@@ -400,11 +367,11 @@ export default function CryptoPayment() {
         transactionInfo.blockNumber === null
       ) {
         setQueryStatus(
-          "Transaction is pending confirmation on the TRON network. Please wait and try again."
+          "Transaction is pending confirmation on the TRON network. Please wait and try again.",
         );
 
         setPaymentStatus(
-          "Payment is pending confirmation."
+          "Payment is pending confirmation.",
         );
         setPaymentStatusType("pending");
 
@@ -427,11 +394,11 @@ export default function CryptoPayment() {
 
         if (executionResult !== "SUCCESS") {
           setQueryStatus(
-            `Transaction found, but blockchain execution status is: ${executionResult}`
+            `Transaction found, but blockchain execution status is: ${executionResult}`,
           );
 
           setPaymentStatus(
-            "Payment failed because the blockchain transaction failed."
+            "Payment failed because the blockchain transaction failed.",
           );
           setPaymentStatusType("failed");
 
@@ -452,11 +419,11 @@ export default function CryptoPayment() {
 
       if (!transferAmount) {
         setQueryStatus(
-          "Transaction was found, but the transfer amount could not be determined."
+          "Transaction was found, but the transfer amount could not be determined.",
         );
 
         setPaymentStatus(
-          "Payment amount could not be verified."
+          "Payment amount could not be verified.",
         );
         setPaymentStatusType("failed");
 
@@ -468,11 +435,11 @@ export default function CryptoPayment() {
 
       if (Number(transferAmount) !== expectedAmount) {
         setQueryStatus(
-          `Transaction amount does not match the required ${paymentAmount} ${paymentAsset}.`
+          `Transaction amount does not match the required ${paymentAmount} ${paymentAsset}.`,
         );
 
         setPaymentStatus(
-          `Payment amount does not match the required ${paymentAmount} ${paymentAsset}.`
+          `Payment amount does not match the required ${paymentAmount} ${paymentAsset}.`,
         );
         setPaymentStatusType("failed");
 
@@ -484,11 +451,11 @@ export default function CryptoPayment() {
 
       if (contractType !== "TriggerSmartContract") {
         setQueryStatus(
-          "Transaction is not a TRC-20 token transfer."
+          "Transaction is not a TRC-20 token transfer.",
         );
 
         setPaymentStatus(
-          "Payment failed because the transaction is not a valid TRC-20 token transfer."
+          "Payment failed because the transaction is not a valid TRC-20 token transfer.",
         );
         setPaymentStatusType("failed");
 
@@ -506,11 +473,11 @@ export default function CryptoPayment() {
         recipientAddress !== walletAddress
       ) {
         setQueryStatus(
-          "Transaction was not sent to the configured receiving wallet."
+          "Transaction was not sent to the configured receiving wallet.",
         );
 
         setPaymentStatus(
-          "Payment failed because it was sent to the wrong wallet."
+          "Payment failed because it was sent to the wrong wallet.",
         );
         setPaymentStatusType("failed");
 
@@ -518,37 +485,36 @@ export default function CryptoPayment() {
       }
 
       const paymentResponse = await fetch(
-        "https://localhost:5000/api/payments/submit-transaction",
+        `${API_URL}/payments/submit-transaction`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem(
-              "accessToken"
+              "accessToken",
             )}`,
           },
           body: JSON.stringify({
             paymentReference,
             transactionHash: hash,
           }),
-        }
+        },
       );
 
       const paymentResult =
         await paymentResponse.json();
 
       if (!paymentResponse.ok) {
-        const resultStatus =
-          paymentResult.status;
+        const resultStatus = paymentResult.status;
 
         if (resultStatus === "underpaid") {
           setPaymentStatus(
-            `Underpayment: you paid ${paymentResult.receivedAmount} ${paymentAsset}, but ${paymentResult.requiredAmount} ${paymentAsset} is required.`
+            `Underpayment: you paid ${paymentResult.receivedAmount} ${paymentAsset}, but ${paymentResult.requiredAmount} ${paymentAsset} is required.`,
           );
         } else {
           setPaymentStatus(
             paymentResult.message ||
-              "This payment could not be verified."
+              "This payment could not be verified.",
           );
         }
 
@@ -556,7 +522,7 @@ export default function CryptoPayment() {
 
         setQueryStatus(
           paymentResult.message ||
-            "This transaction could not be associated with the payment."
+            "This transaction could not be associated with the payment.",
         );
 
         setTransactionData({
@@ -581,17 +547,14 @@ export default function CryptoPayment() {
       const overpaymentAmount =
         Number(paymentResult.overpaymentAmount || 0);
 
-      if (
-        receivedAmount >
-        requiredAmount
-      ) {
+      if (receivedAmount > requiredAmount) {
         setPaymentStatus(
-          `Payment successful. You paid ${receivedAmount} ${paymentAsset}, which is ${overpaymentAmount} ${paymentAsset} over the required amount. Your overpayment was accepted.`
+          `Payment successful. You paid ${receivedAmount} ${paymentAsset}, which is ${overpaymentAmount} ${paymentAsset} over the required amount. Your overpayment was accepted.`,
         );
         setPaymentStatusType("success");
       } else {
         setPaymentStatus(
-          `Payment successful. ${requiredAmount} ${paymentAsset} received.`
+          `Payment successful. ${requiredAmount} ${paymentAsset} received.`,
         );
         setPaymentStatusType("success");
       }
@@ -604,7 +567,7 @@ export default function CryptoPayment() {
       });
 
       setQueryStatus(
-        `Transaction verified and associated with payment reference ${paymentReference}.`
+        `Transaction verified and associated with payment reference ${paymentReference}.`,
       );
 
       try {
@@ -612,13 +575,13 @@ export default function CryptoPayment() {
           localStorage.getItem("accessToken");
 
         const historyResponse = await fetch(
-          "https://localhost:5000/api/payments/history",
+          `${API_URL}/payments/history`,
           {
             method: "GET",
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
 
         const historyData =
@@ -628,27 +591,27 @@ export default function CryptoPayment() {
           setPaymentHistory(
             Array.isArray(historyData.payments)
               ? historyData.payments
-              : []
+              : [],
           );
         }
       } catch (historyRefreshError) {
         console.error(
           "Refresh payment history error:",
-          historyRefreshError
+          historyRefreshError,
         );
       }
     } catch (error) {
       console.error(
         "Failed to query TRON transaction:",
-        error
+        error,
       );
 
       setQueryStatus(
-        "Unable to query the TRON blockchain. Please try again."
+        "Unable to query the TRON blockchain. Please try again.",
       );
 
       setPaymentStatus(
-        "Payment verification could not be completed. Please try again."
+        "Payment verification could not be completed. Please try again.",
       );
       setPaymentStatusType("failed");
     }
@@ -760,8 +723,7 @@ export default function CryptoPayment() {
               <span className="break-all font-mono text-xs text-black sm:max-w-lg sm:text-right">
                 {paymentLoading
                   ? "Creating..."
-                  : paymentReference ||
-                    "Unavailable"}
+                  : paymentReference || "Unavailable"}
               </span>
             </div>
           </div>
@@ -1018,10 +980,10 @@ export default function CryptoPayment() {
                   {transactionData.status === "pending"
                     ? "Transaction Pending"
                     : transactionData.status === "failed"
-                    ? "Transaction Failed"
-                    : transactionData.status === "underpaid"
-                    ? "Payment Underpaid"
-                    : "Payment Successful"}
+                      ? "Transaction Failed"
+                      : transactionData.status === "underpaid"
+                        ? "Payment Underpaid"
+                        : "Payment Successful"}
                 </h3>
               </div>
 
@@ -1098,9 +1060,7 @@ export default function CryptoPayment() {
                       </p>
 
                       <p className="mt-2 text-[11px] text-black">
-                        {formatPaymentDate(
-                          payment.createdAt
-                        )}
+                        {formatPaymentDate(payment.createdAt)}
                       </p>
                     </div>
 
@@ -1116,8 +1076,7 @@ export default function CryptoPayment() {
                       </span>
 
                       <p className="mt-1 text-black">
-                        {payment.amount}{" "}
-                        {payment.asset}
+                        {payment.amount} {payment.asset}
                       </p>
                     </div>
 
@@ -1127,9 +1086,7 @@ export default function CryptoPayment() {
                       </span>
 
                       <p className="mt-1 text-black">
-                        {formatPaymentDate(
-                          payment.paidAt
-                        )}
+                        {formatPaymentDate(payment.paidAt)}
                       </p>
                     </div>
 

@@ -1,4 +1,5 @@
-const API_URL = "https://localhost:5000/api";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://localhost:5000/api";
 
 export const getDocuments = async () => {
   const accessToken = localStorage.getItem("accessToken");

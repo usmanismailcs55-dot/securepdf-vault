@@ -1,28 +1,16 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   ShieldCheck,
   LogOut,
   WalletCards,
 } from "lucide-react";
 
-function Navbar() {
-  const navigate = useNavigate();
-
-  const isLoggedIn = Boolean(
-    localStorage.getItem("accessToken")
-  );
-
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-
-    navigate("/login");
-  };
+function Navbar({ accessToken, onLogout }) {
+  const isLoggedIn = Boolean(accessToken);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-black bg-white shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
       <div className="mx-auto flex min-h-[68px] max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-8 lg:px-12">
-
         {/* Brand */}
         <Link
           to="/"
@@ -52,7 +40,6 @@ function Navbar() {
 
         {/* Navigation */}
         <div className="flex items-center gap-1 sm:gap-2">
-
           {/* Home */}
           <Link
             to="/"
@@ -99,13 +86,13 @@ function Navbar() {
               {/* Logout */}
               <button
                 type="button"
-                onClick={handleLogout}
-                className="ml-1 flex items-center gap-2 border border-black bg-white px-3 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-black outline-none transition duration-200 hover:border-black hover:bg-black hover:text-white focus-visible:ring-1 focus-visible:ring-black sm:px-4"
+                onClick={onLogout}
+                className="group ml-1 flex items-center gap-2 border border-black bg-white px-3 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-black outline-none transition duration-200 hover:border-black hover:bg-black hover:text-white focus-visible:ring-1 focus-visible:ring-black sm:px-4"
               >
                 <LogOut
                   size={14}
                   strokeWidth={1.5}
-                  className="text-black group-hover:text-white"
+                  className="text-black transition-colors duration-200 group-hover:text-white"
                   aria-hidden="true"
                 />
 

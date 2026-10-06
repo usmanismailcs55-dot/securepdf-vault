@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { FileUp, FileText } from "lucide-react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://localhost:5000/api";
+
 export default function PdfUpload() {
   const [file, setFile] = useState(null);
   const [password, setPassword] = useState("");
@@ -48,7 +51,7 @@ export default function PdfUpload() {
       formData.append("pdf", file);
 
       const uploadResponse = await fetch(
-        "https://localhost:5000/api/documents/upload",
+        `${API_URL}/documents/upload`,
         {
           method: "POST",
           headers: {
@@ -83,7 +86,7 @@ export default function PdfUpload() {
       );
 
       const protectResponse = await fetch(
-        `https://localhost:5000/api/documents/${documentId}/protect`,
+        `${API_URL}/documents/${documentId}/protect`,
         {
           method: "POST",
           headers: {
@@ -142,17 +145,17 @@ export default function PdfUpload() {
 
         <label
           htmlFor="pdf-file"
-          className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-black bg-white px-6 py-10 text-center transition hover:bg-black hover:text-white"
+          className="group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-black bg-white px-6 py-10 text-center transition hover:bg-black hover:text-white"
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-black text-white">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-black text-white transition group-hover:bg-white group-hover:text-black">
             <FileUp size={26} />
           </div>
 
-          <p className="mt-4 text-sm font-semibold text-black group-hover:text-white">
+          <p className="mt-4 text-sm font-semibold text-black transition group-hover:text-white">
             Click to select a PDF
           </p>
 
-          <p className="mt-1 text-xs text-black">
+          <p className="mt-1 text-xs text-black transition group-hover:text-white">
             PDF files only
           </p>
 

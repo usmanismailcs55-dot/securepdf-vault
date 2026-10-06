@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Routes, Route, Navigate, Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -15,9 +15,16 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PdfUpload from "./components/PdfUpload";
 import ExpirationStatus from "./components/ExpirationStatus";
 
-const API_URL = "https://localhost:5000/api";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://localhost:5000/api";
 
 function App() {
+  const location = useLocation();
+
+  const detailsSectionRef = useRef(null);
+  const secureLinkSectionRef = useRef(null);
+  const accessTokenRef = useRef(localStorage.getItem("accessToken"));
+
   const [accessToken, setAccessToken] = useState(
     localStorage.getItem("accessToken")
   );
@@ -43,6 +50,12 @@ function App() {
   const [secureLinkData, setSecureLinkData] = useState(null);
   const [secureLinkError, setSecureLinkError] = useState("");
 
+  const [secureLinkDocumentId, setSecureLinkDocumentId] = useState(null);
+  const [secureLinkRecipientEmail, setSecureLinkRecipientEmail] =
+    useState("");
+  const [secureLinkCreatePassword, setSecureLinkCreatePassword] =
+    useState("");
+
   const [downloadLoadingId, setDownloadLoadingId] = useState(null);
 
   const [secureLinkToken, setSecureLinkToken] = useState("");
@@ -52,121 +65,213 @@ function App() {
 
   const [subscriptionError, setSubscriptionError] = useState("");
 
+  useEffect(() => {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [location.pathname]);
+
   const handleLogin = (token) => {
     localStorage.setItem("accessToken", token);
+    accessTokenRef.current = token;
+
     setAccessToken(token);
-  };
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    setAccessToken(null);
     setDocuments([]);
-    setSelectedDocument(null);
     setAccessHistory([]);
-    setSecureLinkData(null);
-    setSubscriptionError("");
-  };
-
-  const loadDocuments = async () => {
-    if (!accessToken) {
-      return;
-    }
-
-    setLoadingDocuments(true);
     setDocumentsError("");
+    setAccessHistoryError("");
+    setSubscriptionError("");
+    setSelectedDocument(null);
+    setDetailsError("");
+    setSecureLinkData(null);
+    setSecureLinkDocumentId(null);
+    setSecureLinkError("");
+  };
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+
+    accessTokenRef.current = null;
+
+    setAccessToken(null);
+
+    setDocuments([]);
+    setDocumentsError("");
+    setLoadingDocuments(false);
+
+    setAccessHistory([]);
+    setAccessHistoryError("");
+    setAccessHistoryLoading(false);
+
+    setSelectedDocument(null);
+    setDetailsError("");
+    setDetailsLoading(false);
+
+    setSearchTerm("");
+    setStatusFilter("all");
+
+    setSecureLinkData(null);
+    setSecureLinkDocumentId(null);
+    setSecureLinkRecipientEmail("");
+    setSecureLinkCreatePassword("");
+    setSecureLinkError("");
+    setSecureLinkLoadingId(null);
+
+    setDownloadLoadingId(null);
+
     setSubscriptionError("");
 
-    try {
-      const response = await axios.get(`${API_URL}/documents`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
 
-      setDocuments(response.data.documents || []);
-    } catch (error) {
-      if (error.response?.status === 401) {
-        handleLogout();
+  const loadDocuments = useCallback(
+    async (tokenOverride) => {
+      const currentToken = tokenOverride || accessTokenRef.current;
+
+      if (!currentToken) {
         return;
       }
 
-      if (error.response?.status === 403) {
-        setSubscriptionError(
-          error.response.data?.message ||
-            "An active subscription is required to access your documents."
-        );
-        setDocuments([]);
-        return;
-      }
+      setLoadingDocuments(true);
+      setDocumentsError("");
+      setSubscriptionError("");
 
-      setDocumentsError(
-        error.response?.data?.message ||
-          "Failed to load documents."
-      );
-    } finally {
-      setLoadingDocuments(false);
-    }
-  };
-
-  const loadAccessHistory = async () => {
-    if (!accessToken) {
-      return;
-    }
-
-    setAccessHistoryLoading(true);
-    setAccessHistoryError("");
-
-    try {
-      const response = await axios.get(
-        `${API_URL}/documents/access-history`,
-        {
+      try {
+        const response = await axios.get(`${API_URL}/documents`, {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${currentToken}`,
           },
+        });
+
+        if (accessTokenRef.current !== currentToken) {
+          return;
         }
-      );
 
-      setAccessHistory(response.data.history || []);
-    } catch (error) {
-      if (error.response?.status === 401) {
-        handleLogout();
-        return;
-      }
+        setDocuments(response.data.documents || []);
+      } catch (error) {
+        if (accessTokenRef.current !== currentToken) {
+          return;
+        }
 
-      if (error.response?.status === 403) {
-        setAccessHistoryError(
-          error.response.data?.message ||
-            "An active subscription is required to view access history."
+        if (error.response?.status === 401) {
+          handleLogout();
+          return;
+        }
+
+        if (error.response?.status === 403) {
+          setSubscriptionError(
+            error.response.data?.message ||
+              "An active subscription is required to access your documents."
+          );
+
+          setDocuments([]);
+          return;
+        }
+
+        setDocumentsError(
+          error.response?.data?.message || "Failed to load documents."
         );
+      } finally {
+        if (accessTokenRef.current === currentToken) {
+          setLoadingDocuments(false);
+        }
+      }
+    },
+    [handleLogout]
+  );
+
+  const loadAccessHistory = useCallback(
+    async (tokenOverride) => {
+      const currentToken = tokenOverride || accessTokenRef.current;
+
+      if (!currentToken) {
         return;
       }
 
-      setAccessHistoryError(
-        error.response?.data?.message ||
-          "Failed to load access history."
-      );
-    } finally {
-      setAccessHistoryLoading(false);
-    }
-  };
+      setAccessHistoryLoading(true);
+      setAccessHistoryError("");
+
+      try {
+        const response = await axios.get(
+          `${API_URL}/documents/access-history`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentToken}`,
+            },
+          }
+        );
+
+        if (accessTokenRef.current !== currentToken) {
+          return;
+        }
+
+        setAccessHistory(response.data.accessLogs || []);
+      } catch (error) {
+        if (accessTokenRef.current !== currentToken) {
+          return;
+        }
+
+        if (error.response?.status === 401) {
+          handleLogout();
+          return;
+        }
+
+        if (error.response?.status === 403) {
+          setAccessHistoryError(
+            error.response.data?.message ||
+              "An active subscription is required to view access history."
+          );
+
+          return;
+        }
+
+        setAccessHistoryError(
+          error.response?.data?.message ||
+            "Failed to load access history."
+        );
+      } finally {
+        if (accessTokenRef.current === currentToken) {
+          setAccessHistoryLoading(false);
+        }
+      }
+    },
+    [handleLogout]
+  );
 
   const handleViewDetails = async (documentId) => {
     setDetailsLoading(true);
     setDetailsError("");
     setSelectedDocument(null);
 
+    const currentToken = accessTokenRef.current;
+
+    if (!currentToken) {
+      setDetailsLoading(false);
+      return;
+    }
+
     try {
       const response = await axios.get(
         `${API_URL}/documents/${documentId}`,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${currentToken}`,
           },
         }
       );
 
+      if (accessTokenRef.current !== currentToken) {
+        return;
+      }
+
       setSelectedDocument(response.data.document);
     } catch (error) {
+      if (accessTokenRef.current !== currentToken) {
+        return;
+      }
+
       if (error.response?.status === 401) {
         handleLogout();
         return;
@@ -177,6 +282,7 @@ function App() {
           error.response.data?.message ||
             "An active subscription is required."
         );
+
         return;
       }
 
@@ -185,7 +291,9 @@ function App() {
           "Failed to load document details."
       );
     } finally {
-      setDetailsLoading(false);
+      if (accessTokenRef.current === currentToken) {
+        setDetailsLoading(false);
+      }
     }
   };
 
@@ -198,17 +306,24 @@ function App() {
       return;
     }
 
+    const currentToken = accessTokenRef.current;
+
+    if (!currentToken) {
+      return;
+    }
+
     setDeleteLoadingId(documentId);
 
     try {
-      await axios.delete(
-        `${API_URL}/documents/${documentId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      await axios.delete(`${API_URL}/documents/${documentId}`, {
+        headers: {
+          Authorization: `Bearer ${currentToken}`,
+        },
+      });
+
+      if (accessTokenRef.current !== currentToken) {
+        return;
+      }
 
       setDocuments((currentDocuments) =>
         currentDocuments.filter(
@@ -222,6 +337,10 @@ function App() {
 
       toast.success("Document deleted successfully.");
     } catch (error) {
+      if (accessTokenRef.current !== currentToken) {
+        return;
+      }
+
       if (error.response?.status === 401) {
         handleLogout();
         return;
@@ -232,6 +351,7 @@ function App() {
           error.response.data?.message ||
             "An active subscription is required."
         );
+
         return;
       }
 
@@ -240,11 +360,19 @@ function App() {
           "Failed to delete document."
       );
     } finally {
-      setDeleteLoadingId(null);
+      if (accessTokenRef.current === currentToken) {
+        setDeleteLoadingId(null);
+      }
     }
   };
 
   const handleDownloadDocument = async (documentId) => {
+    const currentToken = accessTokenRef.current;
+
+    if (!currentToken) {
+      return;
+    }
+
     setDownloadLoadingId(documentId);
 
     try {
@@ -252,19 +380,22 @@ function App() {
         `${API_URL}/documents/${documentId}/download`,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${currentToken}`,
           },
           responseType: "blob",
         }
       );
 
-      const blobUrl = window.URL.createObjectURL(
-        response.data
-      );
+      if (accessTokenRef.current !== currentToken) {
+        return;
+      }
+
+      const blobUrl = window.URL.createObjectURL(response.data);
 
       const link = document.createElement("a");
       link.href = blobUrl;
       link.download = "protected-document.pdf";
+
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -272,9 +403,14 @@ function App() {
       window.URL.revokeObjectURL(blobUrl);
 
       toast.success("Document downloaded successfully.");
-      await loadDocuments();
-      await loadAccessHistory();
+
+      await loadDocuments(currentToken);
+      await loadAccessHistory(currentToken);
     } catch (error) {
+      if (accessTokenRef.current !== currentToken) {
+        return;
+      }
+
       if (error.response?.status === 401) {
         handleLogout();
         return;
@@ -285,6 +421,7 @@ function App() {
           error.response.data?.message ||
             "An active subscription is required."
         );
+
         return;
       }
 
@@ -293,31 +430,73 @@ function App() {
           "Failed to download document."
       );
     } finally {
-      setDownloadLoadingId(null);
+      if (accessTokenRef.current === currentToken) {
+        setDownloadLoadingId(null);
+      }
     }
   };
 
-  const handleCreateSecureLink = async (documentId) => {
-    setSecureLinkLoadingId(documentId);
+  const openSecureLinkForm = (documentId) => {
+    setSecureLinkDocumentId(documentId);
+    setSecureLinkRecipientEmail("");
+    setSecureLinkCreatePassword("");
+    setSecureLinkData(null);
+    setSecureLinkError("");
+  };
+
+  const closeSecureLinkForm = () => {
+    setSecureLinkDocumentId(null);
+    setSecureLinkRecipientEmail("");
+    setSecureLinkCreatePassword("");
+    setSecureLinkError("");
+  };
+
+  const handleCreateSecureLink = async (event) => {
+    event.preventDefault();
+
+    if (!secureLinkDocumentId) {
+      return;
+    }
+
+    const currentToken = accessTokenRef.current;
+
+    if (!currentToken) {
+      return;
+    }
+
+    setSecureLinkLoadingId(secureLinkDocumentId);
     setSecureLinkData(null);
     setSecureLinkError("");
 
     try {
       const response = await axios.post(
-        `${API_URL}/secure-links`,
+        `${API_URL}/secure-links/${secureLinkDocumentId}`,
         {
-          documentId,
+          recipientEmail: secureLinkRecipientEmail,
+          password: secureLinkCreatePassword,
         },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${currentToken}`,
           },
         }
       );
 
+      if (accessTokenRef.current !== currentToken) {
+        return;
+      }
+
       setSecureLinkData(response.data);
+      setSecureLinkDocumentId(null);
+      setSecureLinkRecipientEmail("");
+      setSecureLinkCreatePassword("");
+
       toast.success("Secure link created successfully.");
     } catch (error) {
+      if (accessTokenRef.current !== currentToken) {
+        return;
+      }
+
       if (error.response?.status === 401) {
         handleLogout();
         return;
@@ -328,6 +507,7 @@ function App() {
           error.response.data?.message ||
             "An active subscription is required."
         );
+
         return;
       }
 
@@ -336,7 +516,9 @@ function App() {
           "Failed to create secure link."
       );
     } finally {
-      setSecureLinkLoadingId(null);
+      if (accessTokenRef.current === currentToken) {
+        setSecureLinkLoadingId(null);
+      }
     }
   };
 
@@ -356,6 +538,7 @@ function App() {
       );
 
       const accessTokenFromLink =
+        response.data.secureLink?.accessToken ||
         response.data.accessToken;
 
       if (!accessTokenFromLink) {
@@ -378,30 +561,43 @@ function App() {
 
   useEffect(() => {
     if (!accessToken) {
+      setDocuments([]);
+      setAccessHistory([]);
+      setLoadingDocuments(false);
+      setAccessHistoryLoading(false);
       return;
     }
 
-    const timeoutId = setTimeout(() => {
-      loadDocuments();
-    }, 0);
+    accessTokenRef.current = accessToken;
 
-    return () => clearTimeout(timeoutId);
-  }, [accessToken]);
+    loadDocuments(accessToken);
+    loadAccessHistory(accessToken);
+  }, [accessToken, loadDocuments, loadAccessHistory]);
 
   useEffect(() => {
-    if (!accessToken) {
+    if (!selectedDocument) {
       return;
     }
 
-    const timeoutId = setTimeout(() => {
-      loadAccessHistory();
-    }, 0);
+    detailsSectionRef.current?.scrollIntoView?.({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [selectedDocument]);
 
-    return () => clearTimeout(timeoutId);
-  }, [accessToken]);
+  useEffect(() => {
+    if (!secureLinkDocumentId) {
+      return;
+    }
+
+    secureLinkSectionRef.current?.scrollIntoView?.({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [secureLinkDocumentId]);
 
   const filteredDocuments = documents.filter((document) => {
-    const matchesSearch = document.originalName
+    const matchesSearch = document.originalFilename
       ?.toLowerCase()
       .includes(searchTerm.toLowerCase());
 
@@ -415,13 +611,11 @@ function App() {
   const totalDocuments = documents.length;
 
   const protectedDocuments = documents.filter(
-    (document) =>
-      document.protectionStatus === "protected"
+    (document) => document.protectionStatus === "protected"
   ).length;
 
   const failedDocuments = documents.filter(
-    (document) =>
-      document.protectionStatus === "failed"
+    (document) => document.protectionStatus === "failed"
   ).length;
 
   const totalDownloads = documents.reduce(
@@ -431,7 +625,7 @@ function App() {
   );
 
   return (
-    <BrowserRouter>
+    <>
       <Toaster position="top-right" />
 
       <Navbar
@@ -444,46 +638,48 @@ function App() {
           path="/"
           element={
             <div className="min-h-screen bg-white text-black">
-              <main className="mx-auto max-w-7xl px-6 py-16">
-                <section className="grid gap-12 lg:grid-cols-2 lg:items-center">
-                  <div>
-                    <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em]">
+              <main className="mx-auto max-w-[1600px] px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+                <section>
+                  <div className="w-full overflow-hidden">
+                    <img
+                      src="/images/noir-vault-hero.jpg"
+                      alt="SecurePDF Vault"
+                      className="block h-[420px] w-full object-cover object-center sm:h-[520px] lg:h-[650px]"
+                    />
+                  </div>
+
+                  <div className="mt-10 border border-black bg-white p-7 sm:p-10 lg:p-14">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.35em]">
                       SecurePDF Vault
                     </p>
 
-                    <h1 className="max-w-3xl text-5xl font-bold tracking-tight">
-                      Secure your PDF documents with password protection.
+                    <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+                      Private documents.
+                      <br />
+                      Protected access.
                     </h1>
 
-                    <p className="mt-6 max-w-2xl text-lg leading-8">
+                    <p className="mt-6 max-w-3xl text-base leading-7 sm:text-lg">
                       Upload your PDF documents, protect them with
                       passwords, and securely manage access from one
-                      dashboard.
+                      professional vault.
                     </p>
 
-                    <div className="mt-8 flex flex-wrap gap-4">
-                      <a
-                        href="/register"
-                        className="border border-black bg-black px-6 py-3 font-semibold text-white"
+                    <div className="mt-8 flex flex-wrap gap-3">
+                      <Link
+                        to="/register"
+                        className="border border-black bg-white px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black"
                       >
                         Create Account
-                      </a>
+                      </Link>
 
-                      <a
-                        href="/login"
-                        className="border border-black bg-white px-6 py-3 font-semibold text-black"
+                      <Link
+                        to="/login"
+                        className="border border-black bg-white px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black"
                       >
                         Sign In
-                      </a>
+                      </Link>
                     </div>
-                  </div>
-
-                  <div className="border border-black p-8">
-                    <img
-                      src="/securepdf-vault.png"
-                      alt="SecurePDF Vault"
-                      className="mx-auto max-h-80 w-auto object-contain"
-                    />
                   </div>
                 </section>
               </main>
@@ -533,86 +729,107 @@ function App() {
         />
 
         <Route
+          path="/payment/crypto"
+          element={
+            <ProtectedRoute accessToken={accessToken}>
+              <CryptoPayment />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/secure-link"
           element={
-            <div className="min-h-screen bg-white px-6 py-12 text-black">
-              <div className="mx-auto max-w-xl border border-black p-8">
-                <h1 className="text-3xl font-bold">
-                  Secure Link Access
-                </h1>
-
-                <p className="mt-3">
-                  Enter the secure link token and password to
-                  access the document.
-                </p>
-
-                <form
-                  onSubmit={handleSecureLinkAccess}
-                  className="mt-8 space-y-5"
-                >
-                  <div>
-                    <label
-                      htmlFor="secure-link-token"
-                      className="mb-2 block font-semibold"
-                    >
-                      Secure Link Token
-                    </label>
-
-                    <input
-                      id="secure-link-token"
-                      value={secureLinkToken}
-                      onChange={(event) =>
-                        setSecureLinkToken(
-                          event.target.value
-                        )
-                      }
-                      className="w-full border border-black bg-white px-4 py-3 text-black"
-                      required
+            <div className="min-h-screen bg-white px-5 py-10 text-black sm:px-8">
+              <main className="mx-auto max-w-xl">
+                <section>
+                  <div className="w-full overflow-hidden">
+                    <img
+                      src="/images/noir-vault-hero.jpg"
+                      alt="SecurePDF Vault"
+                      className="block h-64 w-full object-cover object-center"
                     />
                   </div>
 
-                  <div>
-                    <label
-                      htmlFor="secure-link-password"
-                      className="mb-2 block font-semibold"
-                    >
-                      Password
-                    </label>
+                  <div className="mt-10 border border-black bg-white p-7 sm:p-9">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em]">
+                      SecurePDF Vault
+                    </p>
 
-                    <input
-                      id="secure-link-password"
-                      type="password"
-                      value={secureLinkPassword}
-                      onChange={(event) =>
-                        setSecureLinkPassword(
-                          event.target.value
-                        )
-                      }
-                      className="w-full border border-black bg-white px-4 py-3 text-black"
-                      required
-                    />
+                    <h1 className="mt-2 text-3xl font-bold">
+                      Secure Link Access
+                    </h1>
+
+                    <p className="mt-4 leading-7">
+                      Enter the secure link token and password to
+                      access the document.
+                    </p>
+
+                    <form
+                      onSubmit={handleSecureLinkAccess}
+                      className="mt-8 space-y-5"
+                    >
+                      <div>
+                        <label
+                          htmlFor="secure-link-token"
+                          className="mb-2 block text-sm font-bold uppercase tracking-[0.1em]"
+                        >
+                          Secure Link Token
+                        </label>
+
+                        <input
+                          id="secure-link-token"
+                          value={secureLinkToken}
+                          onChange={(event) =>
+                            setSecureLinkToken(event.target.value)
+                          }
+                          className="w-full border border-black bg-white px-4 py-3 text-black outline-none transition focus:border-black focus:ring-1 focus:ring-black"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="secure-link-password"
+                          className="mb-2 block text-sm font-bold uppercase tracking-[0.1em]"
+                        >
+                          Password
+                        </label>
+
+                        <input
+                          id="secure-link-password"
+                          type="password"
+                          value={secureLinkPassword}
+                          onChange={(event) =>
+                            setSecureLinkPassword(event.target.value)
+                          }
+                          className="w-full border border-black bg-white px-4 py-3 text-black outline-none transition focus:border-black focus:ring-1 focus:ring-black"
+                          required
+                        />
+                      </div>
+
+                      {secureLinkAccessError && (
+                        <div
+                          role="alert"
+                          className="border border-black bg-white p-4 font-semibold text-black"
+                        >
+                          {secureLinkAccessError}
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={secureLinkLoading}
+                        className="w-full border border-black bg-white px-4 py-3 text-sm font-bold uppercase tracking-[0.12em] text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed"
+                      >
+                        {secureLinkLoading
+                          ? "Accessing..."
+                          : "Access Document"}
+                      </button>
+                    </form>
                   </div>
-
-                  {secureLinkAccessError && (
-                    <div
-                      role="alert"
-                      className="border border-black p-3 font-semibold"
-                    >
-                      {secureLinkAccessError}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={secureLinkLoading}
-                    className="w-full border border-black bg-black px-4 py-3 font-semibold text-white disabled:cursor-not-allowed"
-                  >
-                    {secureLinkLoading
-                      ? "Accessing..."
-                      : "Access Document"}
-                  </button>
-                </form>
-              </div>
+                </section>
+              </main>
             </div>
           }
         />
@@ -621,105 +838,143 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute accessToken={accessToken}>
-              <div className="min-h-screen bg-white px-6 py-10 text-black">
-                <main className="mx-auto max-w-7xl">
-                  <div className="mb-10 flex flex-col gap-6 border-b border-black pb-8 md:flex-row md:items-end md:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em]">
+              <div className="min-h-screen bg-white text-black">
+                <main className="mx-auto max-w-[1600px] px-5 py-7 sm:px-8 lg:px-12 lg:py-10">
+                  <section className="mb-10">
+                    <div className="w-full overflow-hidden">
+                      <img
+                        src="/images/noir-vault-hero.jpg"
+                        alt="SecurePDF Vault"
+                        className="block h-[360px] w-full object-cover object-center sm:h-[480px] lg:h-[600px]"
+                      />
+                    </div>
+                  </section>
+
+                  <section className="mb-8 border border-black bg-white">
+                    <div className="p-7 sm:p-9 lg:p-11">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.35em]">
                         SecurePDF Vault
                       </p>
 
-                      <h1 className="mt-2 text-4xl font-bold">
+                      <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
                         Dashboard
                       </h1>
-                    </div>
 
-                    <a
-                      href="/crypto-payment"
-                      className="border border-black bg-black px-5 py-3 text-center font-semibold text-white"
-                    >
-                      Manage Subscription
-                    </a>
-                  </div>
+                      <p className="mt-4 max-w-3xl text-sm leading-7 sm:text-base">
+                        Manage protected documents, downloads,
+                        secure links, and access activity from one
+                        professional vault.
+                      </p>
+
+                      <div className="mt-8">
+                        <Link
+                          to="/payment/crypto"
+                          className="inline-flex border border-black bg-white px-5 py-3 text-sm font-bold uppercase tracking-[0.1em] text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black"
+                        >
+                          Manage Subscription
+                        </Link>
+                      </div>
+                    </div>
+                  </section>
 
                   {subscriptionError && (
-                    <div
+                    <section
                       role="alert"
-                      className="mb-8 border border-black p-5"
+                      className="mb-8 border border-black bg-white p-5"
                     >
-                      <p className="font-semibold">
+                      <p className="font-semibold text-black">
                         {subscriptionError}
                       </p>
 
-                      <a
-                        href="/crypto-payment"
-                        className="mt-4 inline-block border border-black bg-black px-5 py-3 font-semibold text-white"
+                      <Link
+                        to="/payment/crypto"
+                        className="mt-4 inline-block border border-black bg-white px-5 py-3 text-sm font-bold uppercase tracking-[0.1em] text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black"
                       >
                         Go to Payment
-                      </a>
-                    </div>
+                      </Link>
+                    </section>
                   )}
 
-                  <section className="mb-10 grid gap-5 md:grid-cols-4">
-                    <div className="border border-black p-5">
-                      <p className="text-sm font-semibold">
+                  <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="border border-black bg-white p-6">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em]">
                         Total Documents
                       </p>
-                      <p className="mt-2 text-3xl font-bold">
+
+                      <p className="mt-3 text-4xl font-bold">
                         {totalDocuments}
                       </p>
                     </div>
 
-                    <div className="border border-black p-5">
-                      <p className="text-sm font-semibold">
+                    <div className="border border-black bg-white p-6">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em]">
                         Protected
                       </p>
-                      <p className="mt-2 text-3xl font-bold">
+
+                      <p className="mt-3 text-4xl font-bold">
                         {protectedDocuments}
                       </p>
                     </div>
 
-                    <div className="border border-black p-5">
-                      <p className="text-sm font-semibold">
+                    <div className="border border-black bg-white p-6">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em]">
                         Failed
                       </p>
-                      <p className="mt-2 text-3xl font-bold">
+
+                      <p className="mt-3 text-4xl font-bold">
                         {failedDocuments}
                       </p>
                     </div>
 
-                    <div className="border border-black p-5">
-                      <p className="text-sm font-semibold">
+                    <div className="border border-black bg-white p-6">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em]">
                         Downloads
                       </p>
-                      <p className="mt-2 text-3xl font-bold">
+
+                      <p className="mt-3 text-4xl font-bold">
                         {totalDownloads}
                       </p>
                     </div>
                   </section>
 
-                  <section className="mb-10 border border-black p-6">
-                    <h2 className="text-2xl font-bold">
-                      Upload PDF
-                    </h2>
+                  <section className="mb-8 border border-black bg-white">
+                    <div className="border-b border-black px-6 py-5 sm:px-7">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.25em]">
+                        Document Security
+                      </p>
 
-                    <div className="mt-5">
+                      <h2 className="mt-1 text-2xl font-bold">
+                        Upload PDF
+                      </h2>
+                    </div>
+
+                    <div className="p-6 sm:p-7">
                       <PdfUpload
                         accessToken={accessToken}
                         onUploadComplete={() => {
-                          loadDocuments();
-                          loadAccessHistory();
+                          loadDocuments(accessToken);
+                          loadAccessHistory(accessToken);
                         }}
                       />
                     </div>
                   </section>
 
-                  <section className="mb-10 border border-black p-6">
-                    <div className="flex flex-col gap-5 md:flex-row md:items-end">
-                      <div className="flex-1">
+                  <section className="mb-8 border border-black bg-white">
+                    <div className="border-b border-black px-6 py-5 sm:px-7">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.25em]">
+                        Vault Controls
+                      </p>
+
+                      <h2 className="mt-1 text-2xl font-bold">
+                        Find Documents
+                      </h2>
+                    </div>
+
+                    <div className="grid gap-5 p-6 sm:grid-cols-[1fr_auto] sm:items-end">
+                      <div>
                         <label
                           htmlFor="document-search"
-                          className="mb-2 block font-semibold"
+                          className="mb-2 block text-sm font-bold uppercase tracking-[0.1em]"
                         >
                           Search Documents
                         </label>
@@ -728,19 +983,17 @@ function App() {
                           id="document-search"
                           value={searchTerm}
                           onChange={(event) =>
-                            setSearchTerm(
-                              event.target.value
-                            )
+                            setSearchTerm(event.target.value)
                           }
                           placeholder="Search by filename"
-                          className="w-full border border-black bg-white px-4 py-3 text-black"
+                          className="w-full border border-black bg-white px-4 py-3 text-black outline-none transition placeholder:text-black focus:border-black focus:ring-1 focus:ring-black"
                         />
                       </div>
 
                       <div>
                         <label
                           htmlFor="status-filter"
-                          className="mb-2 block font-semibold"
+                          className="mb-2 block text-sm font-bold uppercase tracking-[0.1em]"
                         >
                           Status
                         </label>
@@ -749,24 +1002,16 @@ function App() {
                           id="status-filter"
                           value={statusFilter}
                           onChange={(event) =>
-                            setStatusFilter(
-                              event.target.value
-                            )
+                            setStatusFilter(event.target.value)
                           }
-                          className="border border-black bg-white px-4 py-3 text-black"
+                          className="w-full border border-black bg-white px-4 py-3 text-black outline-none focus:border-black focus:ring-1 focus:ring-black md:w-auto"
                         >
-                          <option value="all">
-                            All
-                          </option>
+                          <option value="all">All</option>
                           <option value="protected">
                             Protected
                           </option>
-                          <option value="failed">
-                            Failed
-                          </option>
-                          <option value="pending">
-                            Pending
-                          </option>
+                          <option value="failed">Failed</option>
+                          <option value="pending">Pending</option>
                           <option value="processing">
                             Processing
                           </option>
@@ -775,77 +1020,84 @@ function App() {
                     </div>
                   </section>
 
-                  <section className="mb-10 border border-black p-6">
-                    <h2 className="text-2xl font-bold">
-                      Documents
-                    </h2>
-
-                    {documentsError && (
-                      <div
-                        role="alert"
-                        className="mt-5 border border-black p-4 font-semibold"
-                      >
-                        {documentsError}
-                      </div>
-                    )}
-
-                    {loadingDocuments ? (
-                      <p className="mt-5">
-                        Loading documents...
+                  <section className="mb-8 border border-black bg-white">
+                    <div className="border-b border-black px-6 py-5 sm:px-7">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.25em]">
+                        Vault Contents
                       </p>
-                    ) : filteredDocuments.length === 0 ? (
-                      <p className="mt-5">
-                        No documents found.
-                      </p>
-                    ) : (
-                      <div className="mt-5 space-y-5">
-                        {filteredDocuments.map(
-                          (document) => (
+
+                      <h2 className="mt-1 text-2xl font-bold">
+                        Documents
+                      </h2>
+                    </div>
+
+                    <div className="p-6 sm:p-7">
+                      {documentsError && (
+                        <div
+                          role="alert"
+                          className="mb-5 border border-black bg-white p-4 font-semibold text-black"
+                        >
+                          {documentsError}
+                        </div>
+                      )}
+
+                      {loadingDocuments ? (
+                        <div className="border border-black bg-white p-8 text-center">
+                          <p className="font-semibold uppercase tracking-[0.1em]">
+                            Loading documents...
+                          </p>
+                        </div>
+                      ) : filteredDocuments.length === 0 ? (
+                        <div className="border border-black bg-white p-8 text-center">
+                          <p className="font-semibold uppercase tracking-[0.1em]">
+                            No documents found.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {filteredDocuments.map((document) => (
                             <div
                               key={document._id}
-                              className="border border-black p-5"
+                              className="border border-black bg-white p-5 transition hover:bg-gray-50 sm:p-6"
                             >
-                              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                                <div>
+                              <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="min-w-0">
+                                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em]">
+                                    PDF Document
+                                  </p>
+
                                   <h3 className="break-all text-lg font-bold">
-                                    {document.originalName}
+                                    {document.originalFilename}
                                   </h3>
 
-                                  <p className="mt-2">
-                                    Status:{" "}
-                                    <span className="font-semibold">
-                                      {
-                                        document.protectionStatus
-                                      }
-                                    </span>
-                                  </p>
+                                  <div className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
+                                    <p>
+                                      <span className="font-bold">
+                                        Status:
+                                      </span>{" "}
+                                      {document.protectionStatus}
+                                    </p>
 
-                                  <p className="mt-1">
-                                    Downloads:{" "}
-                                    <span className="font-semibold">
-                                      {
-                                        document.downloadCount ||
-                                        0
-                                      }
-                                    </span>
-                                  </p>
+                                    <p>
+                                      <span className="font-bold">
+                                        Downloads:
+                                      </span>{" "}
+                                      {document.downloadCount || 0}
+                                    </p>
 
-                                  <ExpirationStatus
-                                    expiresAt={
-                                      document.expiresAt
-                                    }
-                                  />
+                                    <ExpirationStatus
+                                      expiresAt={document.expiresAt}
+                                    />
+                                  </div>
                                 </div>
 
-                                <div className="flex flex-wrap gap-3">
+                                <div className="flex flex-wrap gap-2 xl:max-w-xl xl:justify-end">
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      handleViewDetails(
-                                        document._id
-                                      )
+                                      handleViewDetails(document._id)
                                     }
-                                    className="border border-black bg-white px-4 py-2 font-semibold text-black"
+                                    className="border border-black bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black"
                                   >
                                     Details
                                   </button>
@@ -861,7 +1113,7 @@ function App() {
                                       downloadLoadingId ===
                                       document._id
                                     }
-                                    className="border border-black bg-black px-4 py-2 font-semibold text-white disabled:cursor-not-allowed"
+                                    className="border border-black bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed"
                                   >
                                     {downloadLoadingId ===
                                     document._id
@@ -872,7 +1124,7 @@ function App() {
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      handleCreateSecureLink(
+                                      openSecureLinkForm(
                                         document._id
                                       )
                                     }
@@ -880,7 +1132,7 @@ function App() {
                                       secureLinkLoadingId ===
                                       document._id
                                     }
-                                    className="border border-black bg-white px-4 py-2 font-semibold text-black disabled:cursor-not-allowed"
+                                    className="border border-black bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed"
                                   >
                                     {secureLinkLoadingId ===
                                     document._id
@@ -899,7 +1151,7 @@ function App() {
                                       deleteLoadingId ===
                                       document._id
                                     }
-                                    className="border border-black bg-black px-4 py-2 font-semibold text-white disabled:cursor-not-allowed"
+                                    className="border border-black bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed"
                                   >
                                     {deleteLoadingId ===
                                     document._id
@@ -909,25 +1161,25 @@ function App() {
                                 </div>
                               </div>
                             </div>
-                          )
-                        )}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </section>
 
                   {detailsLoading && (
-                    <section className="mb-10 border border-black p-6">
-                      <p>
+                    <section className="mb-8 border border-black bg-white p-6">
+                      <p className="font-semibold uppercase tracking-[0.1em]">
                         Loading document details...
                       </p>
                     </section>
                   )}
 
                   {detailsError && (
-                    <section className="mb-10 border border-black p-6">
+                    <section className="mb-8 border border-black bg-white p-6">
                       <p
                         role="alert"
-                        className="font-semibold"
+                        className="font-semibold text-black"
                       >
                         {detailsError}
                       </p>
@@ -935,40 +1187,49 @@ function App() {
                   )}
 
                   {selectedDocument && (
-                    <section className="mb-10 border border-black p-6">
-                      <div className="flex items-start justify-between gap-5">
-                        <h2 className="text-2xl font-bold">
-                          Document Details
-                        </h2>
+                    <section
+                      ref={detailsSectionRef}
+                      className="mb-8 border border-black bg-white scroll-mt-24"
+                    >
+                      <div className="flex items-start justify-between gap-5 border-b border-black px-6 py-5 sm:px-7">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.25em]">
+                            Document Record
+                          </p>
+
+                          <h2 className="mt-1 text-2xl font-bold">
+                            Document Details
+                          </h2>
+                        </div>
 
                         <button
                           type="button"
                           onClick={() =>
                             setSelectedDocument(null)
                           }
-                          className="border border-black bg-white px-4 py-2 font-semibold text-black"
+                          className="border border-black bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black"
                         >
                           Close
                         </button>
                       </div>
 
-                      <div className="mt-6 space-y-3">
+                      <div className="grid gap-x-8 gap-y-4 p-6 sm:grid-cols-2 sm:p-7">
                         <p>
-                          <span className="font-semibold">
+                          <span className="font-bold">
                             Filename:
                           </span>{" "}
-                          {selectedDocument.originalName}
+                          {selectedDocument.originalFilename}
                         </p>
 
                         <p>
-                          <span className="font-semibold">
+                          <span className="font-bold">
                             Status:
                           </span>{" "}
                           {selectedDocument.protectionStatus}
                         </p>
 
                         <p>
-                          <span className="font-semibold">
+                          <span className="font-bold">
                             Password Protected:
                           </span>{" "}
                           {selectedDocument.isPasswordProtected
@@ -977,15 +1238,14 @@ function App() {
                         </p>
 
                         <p>
-                          <span className="font-semibold">
+                          <span className="font-bold">
                             Downloads:
                           </span>{" "}
-                          {selectedDocument.downloadCount ||
-                            0}
+                          {selectedDocument.downloadCount || 0}
                         </p>
 
                         <p>
-                          <span className="font-semibold">
+                          <span className="font-bold">
                             Last Downloaded:
                           </span>{" "}
                           {selectedDocument.lastDownloadedAt
@@ -996,7 +1256,7 @@ function App() {
                         </p>
 
                         <p>
-                          <span className="font-semibold">
+                          <span className="font-bold">
                             Expires:
                           </span>{" "}
                           {selectedDocument.expiresAt
@@ -1009,11 +1269,122 @@ function App() {
                     </section>
                   )}
 
-                  {secureLinkError && (
-                    <section className="mb-10 border border-black p-6">
+                  {secureLinkDocumentId && (
+                    <section
+                      ref={secureLinkSectionRef}
+                      className="mb-8 border border-black bg-white scroll-mt-24"
+                    >
+                      <div className="flex items-start justify-between gap-5 border-b border-black px-6 py-5 sm:px-7">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.25em]">
+                            Access Control
+                          </p>
+
+                          <h2 className="mt-1 text-2xl font-bold">
+                            Create Secure Link
+                          </h2>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={closeSecureLinkForm}
+                          className="border border-black bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black"
+                        >
+                          Close
+                        </button>
+                      </div>
+
+                      <form
+                        onSubmit={handleCreateSecureLink}
+                        className="space-y-5 p-6 sm:p-7"
+                      >
+                        <div>
+                          <label
+                            htmlFor="secure-link-recipient-email"
+                            className="mb-2 block text-sm font-bold uppercase tracking-[0.1em]"
+                          >
+                            Recipient Email
+                          </label>
+
+                          <input
+                            id="secure-link-recipient-email"
+                            type="email"
+                            value={secureLinkRecipientEmail}
+                            onChange={(event) =>
+                              setSecureLinkRecipientEmail(
+                                event.target.value
+                              )
+                            }
+                            placeholder="recipient@example.com"
+                            className="w-full border border-black bg-white px-4 py-3 text-black outline-none transition placeholder:text-black focus:border-black focus:ring-1 focus:ring-black"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="secure-link-create-password"
+                            className="mb-2 block text-sm font-bold uppercase tracking-[0.1em]"
+                          >
+                            Secure Link Password
+                          </label>
+
+                          <input
+                            id="secure-link-create-password"
+                            type="password"
+                            value={secureLinkCreatePassword}
+                            onChange={(event) =>
+                              setSecureLinkCreatePassword(
+                                event.target.value
+                              )
+                            }
+                            placeholder="Enter a password"
+                            className="w-full border border-black bg-white px-4 py-3 text-black outline-none transition placeholder:text-black focus:border-black focus:ring-1 focus:ring-black"
+                            required
+                          />
+                        </div>
+
+                        {secureLinkError && (
+                          <div
+                            role="alert"
+                            className="border border-black bg-white p-4 font-semibold text-black"
+                          >
+                            {secureLinkError}
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            type="submit"
+                            disabled={
+                              secureLinkLoadingId ===
+                              secureLinkDocumentId
+                            }
+                            className="border border-black bg-white px-5 py-3 text-sm font-bold uppercase tracking-[0.1em] text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed"
+                          >
+                            {secureLinkLoadingId ===
+                            secureLinkDocumentId
+                              ? "Creating..."
+                              : "Create Secure Link"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={closeSecureLinkForm}
+                            className="border border-black bg-white px-5 py-3 text-sm font-bold uppercase tracking-[0.1em] text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </section>
+                  )}
+
+                  {secureLinkError && !secureLinkDocumentId && (
+                    <section className="mb-8 border border-black bg-white p-6">
                       <p
                         role="alert"
-                        className="font-semibold"
+                        className="font-semibold text-black"
                       >
                         {secureLinkError}
                       </p>
@@ -1021,43 +1392,61 @@ function App() {
                   )}
 
                   {secureLinkData && (
-                    <section className="mb-10 border border-black p-6">
-                      <div className="flex items-start justify-between gap-5">
-                        <h2 className="text-2xl font-bold">
-                          Secure Link Created
-                        </h2>
+                    <section className="mb-8 border border-black bg-white">
+                      <div className="flex items-start justify-between gap-5 border-b border-black px-6 py-5 sm:px-7">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.25em]">
+                            Access Control
+                          </p>
+
+                          <h2 className="mt-1 text-2xl font-bold">
+                            Secure Link Created
+                          </h2>
+                        </div>
 
                         <button
                           type="button"
                           onClick={() =>
                             setSecureLinkData(null)
                           }
-                          className="border border-black bg-white px-4 py-2 font-semibold text-black"
+                          className="border border-black bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black"
                         >
                           Close
                         </button>
                       </div>
 
-                      <div className="mt-6 space-y-4">
-                        <p>
-                          <span className="font-semibold">
-                            Secure Link:
-                          </span>
+                      <div className="space-y-4 p-6 sm:p-7">
+                        <p className="font-bold">
+                          Secure Link:
                         </p>
 
-                        <div className="break-all border border-black p-4">
-                          {secureLinkData.secureLink ||
-                            secureLinkData.link ||
+                        <div className="break-all border border-black bg-white p-4 text-sm text-black">
+                          {secureLinkData.secureLink?.url ||
+                            secureLinkData.url ||
                             "Secure link created."}
                         </div>
 
-                        {secureLinkData.expiresAt && (
+                        {secureLinkData.secureLink
+                          ?.recipientEmail && (
                           <p>
-                            <span className="font-semibold">
+                            <span className="font-bold">
+                              Recipient:
+                            </span>{" "}
+                            {
+                              secureLinkData.secureLink
+                                .recipientEmail
+                            }
+                          </p>
+                        )}
+
+                        {secureLinkData.secureLink
+                          ?.expiresAt && (
+                          <p>
+                            <span className="font-bold">
                               Expires:
                             </span>{" "}
                             {new Date(
-                              secureLinkData.expiresAt
+                              secureLinkData.secureLink.expiresAt
                             ).toLocaleString()}
                           </p>
                         )}
@@ -1065,76 +1454,94 @@ function App() {
                     </section>
                   )}
 
-                  <section className="border border-black p-6">
-                    <h2 className="text-2xl font-bold">
-                      Access History
-                    </h2>
-
-                    {accessHistoryError && (
-                      <div
-                        role="alert"
-                        className="mt-5 border border-black p-4 font-semibold"
-                      >
-                        {accessHistoryError}
-                      </div>
-                    )}
-
-                    {accessHistoryLoading ? (
-                      <p className="mt-5">
-                        Loading access history...
+                  <section className="border border-black bg-white">
+                    <div className="border-b border-black px-6 py-5 sm:px-7">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.25em]">
+                        Security Activity
                       </p>
-                    ) : accessHistory.length === 0 ? (
-                      <p className="mt-5">
-                        No access history found.
-                      </p>
-                    ) : (
-                      <div className="mt-5 space-y-4">
-                        {accessHistory.map(
-                          (entry, index) => (
+
+                      <h2 className="mt-1 text-2xl font-bold">
+                        Access History
+                      </h2>
+                    </div>
+
+                    <div className="p-6 sm:p-7">
+                      {accessHistoryError && (
+                        <div
+                          role="alert"
+                          className="mb-5 border border-black bg-white p-4 font-semibold text-black"
+                        >
+                          {accessHistoryError}
+                        </div>
+                      )}
+
+                      {accessHistoryLoading ? (
+                        <div className="border border-black bg-white p-8 text-center">
+                          <p className="font-semibold uppercase tracking-[0.1em]">
+                            Loading access history...
+                          </p>
+                        </div>
+                      ) : accessHistory.length === 0 ? (
+                        <div className="border border-black bg-white p-8 text-center">
+                          <p className="font-semibold uppercase tracking-[0.1em]">
+                            No access history found.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {accessHistory.map((entry, index) => (
                             <div
                               key={
                                 entry._id ||
-                                `${entry.documentId}-${index}`
+                                `${
+                                  entry.document?._id || "document"
+                                }-${index}`
                               }
-                              className="border border-black p-4"
+                              className="border border-black bg-white p-4"
                             >
-                              <p>
-                                <span className="font-semibold">
-                                  Document:
-                                </span>{" "}
-                                {entry.documentName ||
-                                  entry.originalName ||
-                                  "Unknown"}
-                              </p>
+                              <div className="grid gap-2 sm:grid-cols-3">
+                                <p>
+                                  <span className="font-bold">
+                                    Document:
+                                  </span>{" "}
+                                  {entry.document
+                                    ?.originalFilename ||
+                                    "Unknown"}
+                                </p>
 
-                              <p className="mt-1">
-                                <span className="font-semibold">
-                                  Action:
-                                </span>{" "}
-                                {entry.action ||
-                                  "Download"}
-                              </p>
+                                <p>
+                                  <span className="font-bold">
+                                    Action:
+                                  </span>{" "}
+                                  {entry.action || "Download"}
+                                </p>
 
-                              <p className="mt-1">
-                                <span className="font-semibold">
-                                  Date:
-                                </span>{" "}
-                                {entry.createdAt
-                                  ? new Date(
-                                      entry.createdAt
-                                    ).toLocaleString()
-                                  : "Unknown"}
-                              </p>
+                                <p>
+                                  <span className="font-bold">
+                                    Date:
+                                  </span>{" "}
+                                  {entry.createdAt
+                                    ? new Date(
+                                        entry.createdAt
+                                      ).toLocaleString()
+                                    : "Unknown"}
+                                </p>
+                              </div>
                             </div>
-                          )
-                        )}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </section>
                 </main>
               </div>
             </ProtectedRoute>
           }
+        />
+
+        <Route
+          path="/secure/:token"
+          element={<SecureLinkAccess />}
         />
 
         <Route
@@ -1147,7 +1554,7 @@ function App() {
           element={<Navigate to="/" replace />}
         />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
 
