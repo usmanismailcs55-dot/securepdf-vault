@@ -4,7 +4,7 @@ import { FileUp, FileText } from "lucide-react";
 const API_URL =
   import.meta.env.VITE_API_URL || "https://localhost:5000/api";
 
-export default function PdfUpload() {
+export default function PdfUpload({ onUploadComplete }) {
   const [file, setFile] = useState(null);
   const [password, setPassword] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -116,6 +116,12 @@ export default function PdfUpload() {
 
       setFile(null);
       setPassword("");
+
+      if (onUploadComplete) {
+        await onUploadComplete(
+          protectData.document
+        );
+      }
     } catch (error) {
       console.error(
         "PDF processing error:",

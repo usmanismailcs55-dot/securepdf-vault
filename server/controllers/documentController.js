@@ -17,7 +17,6 @@ const {
 const { detectSuspiciousAccess } = require("../utils/suspiciousAccess");
 const { securityLog } = require("../utils/securityLogger");
 
-
 const getDocuments = async (req, res, next) => {
   try {
     const documents = await Document.find({
@@ -33,12 +32,10 @@ const getDocuments = async (req, res, next) => {
       success: true,
       documents,
     });
-
   } catch (error) {
     next(error);
   }
 };
-
 
 const getAccessHistory = async (req, res, next) => {
   try {
@@ -53,12 +50,10 @@ const getAccessHistory = async (req, res, next) => {
       success: true,
       accessLogs,
     });
-
   } catch (error) {
     next(error);
   }
 };
-
 
 const getDocumentDetails = async (req, res, next) => {
   try {
@@ -83,12 +78,10 @@ const getDocumentDetails = async (req, res, next) => {
       success: true,
       document,
     });
-
   } catch (error) {
     next(error);
   }
 };
-
 
 const protectDocument = async (req, res, next) => {
   let document = null;
@@ -253,14 +246,31 @@ const protectDocument = async (req, res, next) => {
       });
     }
 
+    /*
+     * Return the complete document data required by the
+     * dashboard so the new PDF can appear immediately
+     * without requiring a browser refresh.
+     */
+    const protectedDocument = {
+      _id: document._id,
+      originalFilename: document.originalFilename,
+      fileSize: document.fileSize,
+      protectionStatus: document.protectionStatus,
+      isPasswordProtected: document.isPasswordProtected,
+      downloadCount: document.downloadCount,
+      lastDownloadedAt: document.lastDownloadedAt,
+      expiresAt: document.expiresAt,
+      createdAt: document.createdAt,
+      updatedAt: document.updatedAt,
+    };
+
     return res.status(200).json({
       success: true,
       message: "PDF protected successfully",
       documentId: document._id,
+      document: protectedDocument,
     });
-
   } catch (error) {
-
     /*
      * Remove any temporary local protected PDF.
      */
@@ -298,7 +308,6 @@ const protectDocument = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const downloadDocument = async (req, res, next) => {
   try {
@@ -420,12 +429,10 @@ const downloadDocument = async (req, res, next) => {
     );
 
     return res.status(200).send(protectedPdf);
-
   } catch (error) {
     next(error);
   }
 };
-
 
 const deleteDocument = async (req, res, next) => {
   try {
@@ -484,12 +491,10 @@ const deleteDocument = async (req, res, next) => {
       success: true,
       message: "Document deleted successfully",
     });
-
   } catch (error) {
     next(error);
   }
 };
-
 
 module.exports = {
   getDocuments,

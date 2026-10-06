@@ -25,6 +25,9 @@ function App() {
   const secureLinkSectionRef = useRef(null);
   const accessTokenRef = useRef(localStorage.getItem("accessToken"));
 
+  const documentsRequestIdRef = useRef(0);
+  const accessHistoryRequestIdRef = useRef(0);
+
   const [accessToken, setAccessToken] = useState(
     localStorage.getItem("accessToken")
   );
@@ -134,24 +137,39 @@ function App() {
         return;
       }
 
+      const requestId = ++documentsRequestIdRef.current;
+
       setLoadingDocuments(true);
       setDocumentsError("");
       setSubscriptionError("");
 
       try {
-        const response = await axios.get(`${API_URL}/documents`, {
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-          },
-        });
+        const response = await axios.get(
+          `${API_URL}/documents?_refresh=${Date.now()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentToken}`,
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
+            },
+          }
+        );
 
         if (accessTokenRef.current !== currentToken) {
+          return;
+        }
+
+        if (requestId !== documentsRequestIdRef.current) {
           return;
         }
 
         setDocuments(response.data.documents || []);
       } catch (error) {
         if (accessTokenRef.current !== currentToken) {
+          return;
+        }
+
+        if (requestId !== documentsRequestIdRef.current) {
           return;
         }
 
@@ -171,10 +189,14 @@ function App() {
         }
 
         setDocumentsError(
-          error.response?.data?.message || "Failed to load documents."
+          error.response?.data?.message ||
+            "Failed to load documents."
         );
       } finally {
-        if (accessTokenRef.current === currentToken) {
+        if (
+          accessTokenRef.current === currentToken &&
+          requestId === documentsRequestIdRef.current
+        ) {
           setLoadingDocuments(false);
         }
       }
@@ -190,15 +212,19 @@ function App() {
         return;
       }
 
+      const requestId = ++accessHistoryRequestIdRef.current;
+
       setAccessHistoryLoading(true);
       setAccessHistoryError("");
 
       try {
         const response = await axios.get(
-          `${API_URL}/documents/access-history`,
+          `${API_URL}/documents/access-history?_refresh=${Date.now()}`,
           {
             headers: {
               Authorization: `Bearer ${currentToken}`,
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
             },
           }
         );
@@ -207,9 +233,17 @@ function App() {
           return;
         }
 
+        if (requestId !== accessHistoryRequestIdRef.current) {
+          return;
+        }
+
         setAccessHistory(response.data.accessLogs || []);
       } catch (error) {
         if (accessTokenRef.current !== currentToken) {
+          return;
+        }
+
+        if (requestId !== accessHistoryRequestIdRef.current) {
           return;
         }
 
@@ -232,7 +266,10 @@ function App() {
             "Failed to load access history."
         );
       } finally {
-        if (accessTokenRef.current === currentToken) {
+        if (
+          accessTokenRef.current === currentToken &&
+          requestId === accessHistoryRequestIdRef.current
+        ) {
           setAccessHistoryLoading(false);
         }
       }
@@ -951,9 +988,25 @@ function App() {
                     <div className="p-6 sm:p-7">
                       <PdfUpload
                         accessToken={accessToken}
-                        onUploadComplete={() => {
-                          loadDocuments(accessToken);
-                          loadAccessHistory(accessToken);
+                        onUploadComplete={async (uploadedDocument) => {
+                          if (!uploadedDocument) {
+                            return;
+                          }
+
+                          documentsRequestIdRef.current += 1;
+
+                          setLoadingDocuments(false);
+                          setDocumentsError("");
+
+                          setDocuments((currentDocuments) => [
+                            uploadedDocument,
+                            ...currentDocuments.filter(
+                              (document) =>
+                                document._id !== uploadedDocument._id
+                            ),
+                          ]);
+
+                          await loadAccessHistory(accessToken);
                         }}
                       />
                     </div>
