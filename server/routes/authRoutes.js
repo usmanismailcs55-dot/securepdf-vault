@@ -9,7 +9,7 @@ const {
 } = require("../services/sessionService");
 const generateVerificationToken = require("../utils/generateVerificationToken");
 const generatePasswordResetToken = require("../utils/generatePasswordResetToken");
-const transporter = require("../utils/sendEmail");
+const { sendMail } = require("../utils/sendEmail");
 const { validate, schemas } = require("../middleware/validateInput");
 const authMiddleware = require("../middleware/authMiddleware");
 
@@ -66,10 +66,12 @@ router.post(
         ),
       });
 
-      const verificationUrl = `https://localhost:5000/api/verify-email/${verificationToken}`;
+      const verificationUrl =
+        `${process.env.CLIENT_URL || "http://localhost:5173"}` +
+        `/api/verify-email/${verificationToken}`;
 
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+      await sendMail({
+        from: process.env.EMAIL_FROM,
         to: user.email,
         subject: "Verify your SecurePDF Vault email",
         text: `Hello ${user.name},
@@ -261,8 +263,8 @@ router.post(
         `${process.env.CLIENT_URL || "http://localhost:5173"}` +
         `/reset-password/${resetToken}`;
 
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+      await sendMail({
+        from: process.env.EMAIL_FROM,
         to: user.email,
         subject: "Reset your SecurePDF Vault password",
         text: `Hello ${user.name},
