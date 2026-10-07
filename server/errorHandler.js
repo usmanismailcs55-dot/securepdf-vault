@@ -1,9 +1,21 @@
 const multer = require("multer");
 
+const logToAxiom = require("./utils/axiomLogger");
+
 const errorHandler = (err, req, res, next) => {
   console.error("========== SERVER ERROR ==========");
+
   console.error(err);
+
   console.error("==================================");
+
+  void logToAxiom({
+    type: "application_error",
+    method: req.method,
+    path: req.originalUrl,
+    statusCode: err.statusCode || 500,
+    error: err.message || "Internal Server Error",
+  });
 
   if (err instanceof multer.MulterError) {
     return res.status(400).json({
