@@ -10,6 +10,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const { Axiom } = require("@axiomhq/js");
 
 const connectDB = require("./db");
 const errorHandler = require("./errorHandler");
@@ -29,13 +30,55 @@ const app = express();
 
 app.set("trust proxy", 1);
 
+const axiom =
+  process.env.AXIOM_TOKEN
+    ? new Axiom({
+        token: process.env.AXIOM_TOKEN,
+        edge: "us-east-1.aws.edge.axiom.co",
+        onError: (error) => {
+          console.error("Axiom logging error:", error.message);
+        },
+      })
+    : null;
+
+const logToAxiom = async (event) => {
+  if (!axiom) {
+    return;
+  }
+
+  try {
+    axiom.ingest("securepdf-vault", [
+      {
+        _time: new Date().toISOString(),
+        service: "securepdf-vault-api",
+        ...event,
+      },
+    ]);
+
+    await axiom.flush();
+  } catch (error) {
+    console.error("Axiom ingest failed:", error.message);
+  }
+};
+
 // Debug
 app.use((req, res, next) => {
   console.log("REQUEST:", req.method, req.originalUrl);
+
   console.log(
     "AUTH HEADER:",
     req.headers.authorization || "No Authorization Header"
   );
+
+  res.on("finish", () => {
+    void logToAxiom({
+      type: "http_request",
+      method: req.method,
+      path: req.originalUrl,
+      statusCode: res.statusCode,
+    });
+  });
+
   next();
 });
 
@@ -112,11 +155,23 @@ connectDB().then(async () => {
     console.log(
       `Expired document cleanup completed: ${cleanedCount} document(s) cleaned.`
     );
+
+    void logToAxiom({
+      type: "startup_cleanup",
+      status: "completed",
+      cleanedDocuments: cleanedCount,
+    });
   } catch (error) {
     console.error(
       "Expired document cleanup failed:",
       error.message
     );
+
+    void logToAxiom({
+      type: "startup_cleanup",
+      status: "failed",
+      error: error.message,
+    });
   }
 });
 
@@ -129,6 +184,11 @@ console.log(
     ? "wallet configured"
     : "wallet missing"
 );
+
+void logToAxiom({
+  type: "application_startup",
+  environment: process.env.NODE_ENV || "development",
+});
 
 // Server
 const PORT = process.env.PORT || 5000;
