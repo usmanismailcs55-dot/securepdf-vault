@@ -79,3 +79,4 @@ server/index.js.backup
 
 # Playwright test artifacts
 test-results/
+databasus-data/
