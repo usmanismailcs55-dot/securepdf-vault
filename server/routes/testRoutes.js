@@ -5,6 +5,13 @@ const { revokeSession } = require("../services/sessionService");
 
 const router = express.Router();
 
+router.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "SecurePDF Vault API is healthy",
+  });
+});
+
 router.get("/protected", authMiddleware, (req, res) => {
   res.json({
     success: true,
