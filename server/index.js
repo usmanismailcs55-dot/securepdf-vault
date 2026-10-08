@@ -105,6 +105,14 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 
+// Production health check
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "SecurePDF Vault API is healthy",
+  });
+});
+
 // Routes
 if (process.env.NODE_ENV !== "production") {
   app.use("/api/test", testRoutes);
