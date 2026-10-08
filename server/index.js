@@ -106,7 +106,10 @@ const apiLimiter = rateLimit({
 app.use("/api", apiLimiter);
 
 // Routes
-app.use("/api/test", testRoutes);
+if (process.env.NODE_ENV !== "production") {
+  app.use("/api/test", testRoutes);
+}
+
 app.use("/api/auth", authRoutes);
 app.use("/api", emailVerificationRoutes);
 app.use("/api/documents", documentRoutes);
