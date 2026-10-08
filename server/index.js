@@ -36,7 +36,7 @@ app.use((req, res, next) => {
 
   console.log(
     "AUTH HEADER:",
-    req.headers.authorization || "No Authorization Header"
+    req.headers.authorization ? "Present" : "No Authorization Header"
   );
 
   res.on("finish", () => {
